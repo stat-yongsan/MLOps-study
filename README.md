@@ -10,7 +10,7 @@ Machine Learning Platform Engineering Study
 3. Docker Compose: 여러 컨테이너를 한 번에(묶어서) 실행 *앱을 격리해서 패키징, 실행하는 기술/단위*
 
 
-<img width="940" alt="image" src="https://github.com/user-attachments/assets/3e463738-7e3c-4ad2-a031-1edd154d9202" 
+<img width="940" alt="image" src="https://github.com/user-attachments/assets/3e463738-7e3c-4ad2-a031-1edd154d9202">
   
 ```bash
 
