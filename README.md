@@ -17,7 +17,7 @@ Machine Learning Platform Engineering Study
 docker compose up -d
 
 ```
-*그림과 같은 구성의 실행을 하나의 명령어로 관리할 수 있다.*
+*위 그림과 같은 구성의 실행을 하나의 명령어로 관리할 수 있다.*
 
 5. Kubernetes: 여러 서버의 컨테이너를 자동 관리 *여러 서버의 컨테이너 총괄 관리자*
 6. CI/CD: 코드 변경부터 배포까지 자동화
