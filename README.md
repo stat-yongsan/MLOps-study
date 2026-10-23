@@ -1,7 +1,9 @@
 # MLOps-study
 Machine Learning Platform Engineering Study
-초보이기 때문에 기본 개념정리부터 하겠다.
-*Linux → Docker → Docker Compose → Kubernetes → CI/CD → MLOps 순으로 학습*
+
+OS는 window환경에서 진행했다.
+시작 전 나는 초보이기 때문에 기본 개념정리부터 하겠다
+- Linux → Docker → Docker Compose → Kubernetes → CI/CD → MLOps 순으로 학습
 
 ---
 
@@ -41,4 +43,29 @@ Docker Compose: FastAPI와 PostgreSQL을 함께 실행
 Kubernetes: Minikube 또는 kind로 로컬 배포
 CI/CD: GitHub Actions 자동 테스트·배포
 MLOps: MLflow 모델 학습·실험 기록·서빙
-'''
+
+---
+
+**인공지능 분야는 AI ⊃ ML ⊃ DL ⊇ 생성형 AI ⊇ LLM(Large Language Model)의 포함 관계다.**
+
+
+# CH1. MLOps와 ML 엔지니어링 시작
+
+머신러닝 프로젝트는 저마다 다르지만, 머신러닝 모델을 개발하고 배포하는 단계는 대체로 비슷합니다. 머신러닝 프로젝트는 **본질적으로 반복**적인 성격을 띱니다. 
+첫 번째 배포로 프로젝트가 마무리된 사례를 아직 본 적이 없습니다.
+
+## 1.1. 머신러닝 수명주기
+## 1.2 MLOps에 필요한 역량
+## 1.3 머신러닝 플랫폼 구축
+## 1.4 머신러닝 시스템 구축
+
+# CH2. MLOps란 무엇인가
+
+## 2.1.0 문제 정의 및 설계*
+## 2.1.1 데이터 수집*
+## 2.1.2 탐색적 데이터 분석 EDA
+## 2.1.3 모델링과 훈련*
+## 2.1.4 모델 평가*
+## 2.1.5 배포*
+## 2.1.6 모니터링
+## 2.1.7 유지보수, 업데이트, 검토
