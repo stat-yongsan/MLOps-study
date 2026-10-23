@@ -55,6 +55,8 @@ MLOps: MLflow 모델 학습·실험 기록·서빙
 첫 번째 배포로 프로젝트가 마무리된 사례를 아직 본 적이 없습니다.
 
 ## 1.1. 머신러닝 수명주기
+<img width="860"  alt="image" src="https://github.com/user-attachments/assets/f71fa6ce-a96b-4b39-bcd0-26f6d8b0b03d" />
+
 ## 1.2 MLOps에 필요한 역량
 ## 1.3 머신러닝 플랫폼 구축
 ## 1.4 머신러닝 시스템 구축
