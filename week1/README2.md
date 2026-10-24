@@ -1,12 +1,11 @@
 # 3장 실습 단계별 한 줄 정리
 
-> 기준: 2026-10-24 · ✅ 함께 끝냄 · 🔵 튜터가 먼저 해 둠(함께 다시 할 예정)
-> 자세한 기록: `notes/ch03-k8s.md`, `notes/ch03-cicd-monitoring.md`, `notes/kubernetes_step_by_step.md`
-
 ## 0. 환경 준비 ✅: 실습할 작업장 만들기
 1. WSL2 Ubuntu 24.04 설치. 네트워크는 **NAT 모드**로 둠 (mirrored 모드에서는 Pod 통신이 끊겼음)
 2. Python(uv), k3s, kubectl, helm, Docker 설치. k3s는 traefik을 끄고 설치
 3. WSL 메모리를 10GB로 늘림 (GitLab까지 띄우려고)
+
+*NAT 모드는 집 공유기처럼 Windows가 WSL(우분투)에게 따로 내부 주소(예: 172.x.x.x)를 주고 인터넷 연결은 Windows를 거쳐 나가게 하는 방식이라서, k3s의 Pod 네트워크는 잘 돌아가지만 Windows에서 localhost로 NodePort에 바로 들어갈 수 없어 WSL IP나 kubectl port-forward를 써야 한다는 뜻.*
 
 ## 3-1 앱 로컬 실행 ✅: 책 앱을 내 PC에서 먼저 돌려 보기
 1. 3장 전용 Python 3.10 가상환경 만들기: `uv venv --python 3.10 .venv`
@@ -14,6 +13,8 @@
 3. 테스트 실행 → **실패**. 버전을 고정하지 않은 httpx가 최신 0.28로 설치돼서 `TypeError ... 'app'` 발생
 4. `httpx<0.28`로 낮춰 설치 → `1 passed`
 5. `uvicorn`으로 서버를 켜고 `curl localhost:8083/` → 농담 응답
+
+
 
 ## 3-2 Pod → ReplicaSet → Deployment ✅: 앱을 쿠버네티스에 올리고 개수·버전 관리하기
 1. Pod 1개 띄우기 (`k8s/pod.yaml`)
@@ -24,12 +25,18 @@
 6. `kubectl set image`로 v2 교체 → "성공"이라고 나왔지만 **응답 없음** (v2는 80번 포트를 쓰는데 readinessProbe가 없음)
 7. `rollout history`로 이력 확인, `rollout undo`로 v1 복귀
 
+*kubectl은 쿠버네티스에게 띄우기·지우기·이미지 교체 같은 명령을 보내는 리모컨이고, *
+*Pod는 앱 컨테이너가 실제로 돌아가는 가장 작은 단위(k8s/pod.yaml로 띄운 1개)이며, *
+*ReplicaSet은 "이 이름표(label)가 붙은 Pod를 N개 유지하라"를 지키는 관리자라서 같은 이름표의 기존 Pod는 입양하고, Pod 하나가 지워지면 바로 새로 채우고, 자기가 지워질 때는 맡은 Pod도 함께 지운다.*
+
 ## 3-3 Service ✅: 바뀌는 Pod 앞에 고정 주소 달기
 1. ClusterIP 적용 → Endpoints에 Pod 3개 주소(`IP:8083`)가 보임
 2. 클러스터 안 테스트 Pod에서 이름(`joker-cluster-ip-service`)으로 접속 → 성공
 3. 요청 30개 → Pod 3개가 11·12·7개를 받음 (순서대로가 아니라 무작위 분배)
 4. NodePort(30420) → Windows에서 **WSL IP:30420**으로 접속 (`localhost`로는 안 됨)
 5. LoadBalancer → k3s가 노드 IP를 외부 IP로 줌, `WSL IP:80`으로 접속
+
+*LoadBalancer는 Service 종류 중 하나로, 클러스터 바깥에서 들어오는 요청을 받는 대표 주소(외부 IP)를 하나 만들어 뒤에 있는 여러 Pod에 골고루 나눠 주는 식당 입구 안내원 같은 것*
 
 ## 3-4 Namespace / ConfigMap / Secret ✅: 칸 나누기, 설정과 비밀값 넣기
 1. `funny` 네임스페이스용 매니페스트 적용 → `namespaces "funny" not found` (네임스페이스는 자동으로 생기지 않음)
@@ -40,6 +47,11 @@
 6. Secret 적용 → `base64 -d`로 원문이 바로 나옴 (인코딩일 뿐, 암호화가 아님)
 7. 책 Secret Pod → 오류 2개(`configMapKeyRef` 오용, `-`/`_` 혼동)를 하나씩 고쳐 Running
 8. `kubectl exec ... printenv` → 비밀번호가 평문으로 보임
+
+*Namespace는 한 클러스터를 여러 칸으로 나누는 폴더 같은 것으로, 같은 이름의 Pod나 Service도 칸이 다르면 함께 둘 수 있고, -n 없이 명령하면 default 칸에서 찾는다(k3s 자체 부품은 kube-system 칸에 있다)*
+*매니페스트 적용은 "Pod 3개, 이미지 v1, label app=…"처럼 원하는 상태를 적은 YAML 주문서(매니페스트)를 kubectl apply -f 파일.yaml로 쿠버네티스에 건네는 일이고, 그러면 쿠버네티스가 지금 상태를 그 주문서와 똑같이 맞춰 준다(없으면 만들고, 다르면 고친다).*
+*ConfigMap은 DB 주소나 모드 값 같은 설정을 이미지 밖에 따로 적어 두는 메모장으로, Pod가 뜰 때 환경변수나 파일로 받아 쓰기 때문에 설정을 바꿔도 이미지를 다시 빌드할 필요가 없다(비밀번호처럼 숨겨야 하는 값은 ConfigMap이 아니라 Secret에 둔다).*
+*Secret은 ConfigMap과 쓰는 방법(환경변수나 파일로 Pod에 넣기)은 같지만 비밀번호나 토큰 같은 민감한 값을 담는 봉투인데, 기본으로는 base64로 글자만 바꿔 적을 뿐 암호화되지 않기 때문에 "봉인된 금고"가 아니라 "불투명한 봉투" 정도로 보고, Git에 커밋하지 않는 등 조심해서 다뤄야 한다.*
 
 ## 3-5 Docker 이미지 🔵 (①~③ 일부 함께 함): 앱을 이미지로 포장해 창고(Docker Hub)에 올리기
 1. ① 책 Dockerfile 그대로 빌드 → **실패**. `[3/8] apt-get` 404 (Debian 10 buster 지원 종료)
