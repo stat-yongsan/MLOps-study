@@ -200,3 +200,26 @@ docker compose up -d
 ## 2.5 ML옵스 성숙도 수준
 
 <img width="762" alt="image" src="images/mlops_levels" />
+
+# CH3. 쿠버네티스 위에서 애플리케이션 구축하기
+
+이 장에서는 신뢰할 수 있는 머신러닝 시스템을 구축하는 데 필요한 핵심인 **DevOps** 도구와 실천 방법을 다룬다.
+
+이 장을 마치면 얻게 되는 것
+- 도커를 사용해 애플리케이션을 일관되게 패키징합니다
+- 쿠버네티스에서 애플리케이션을 배포하고 관리합니다
+- CI/CD를 활용해 워크플로를 자동화합니다
+- 애플리케이션의 상태와 성능을 모니터링합니
+
+---
+
+애플리케이션을 위한 CI/CD 중 "**Git + CI" 운영(경험 포함) 도구**에 대한 관련 간단한 투표 (중복 투표 가능)
+-  **Github** + Github Action : **16명**
+- **Github** + Self-hosted runners : **9명**
+- **GitLab**(SaaS형) + GitLab-hosted runners(SaaS형) : **1명**
+- **GitLab**(직접 설치형) + GitLab runners(직접 설치형) : 🔴 **10명**
+- Git(Any) + **Jenkins** CI Pipeline Job(직접 설치형) : **4명**
+
+---
+
+3장은 저에게는 너무 어려웠습니다. 그래서 거꾸로 공부했습니다. 단계 단계를 클로드가 진행하면서 제게 질문하고 설명하는 식으로 진행했습니다.
