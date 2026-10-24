@@ -223,3 +223,153 @@ docker compose up -d
 ---
 
 3장은 저에게는 너무 어려웠습니다. 그래서 거꾸로 공부했습니다. 단계 단계를 클로드가 진행하면서 제게 질문하고 설명하는 식으로 진행했습니다.
+
+# Kubernetes 실습 단계별 정리
+
+> **실습 범위:** 환경 준비(10/19~10/20) ~ 3-4 Namespace / ConfigMap / Secret  
+> **환경:** Windows · WSL2 Ubuntu 24.04 · k3s · Docker · Python
+
+## 한눈에 보는 실습 흐름
+
+```mermaid
+flowchart TD
+    A[0. 환경 준비<br/>WSL2 · k3s · Docker] --> B[3-1. FastAPI 로컬 실행<br/>venv · pytest · uvicorn]
+    B --> C[3-2. 워크로드 관리<br/>Pod → ReplicaSet → Deployment]
+    C --> D[3-3. 네트워크 연결<br/>ClusterIP · NodePort · LoadBalancer]
+    D --> E[3-4. 설정과 격리<br/>Namespace · ConfigMap · Secret]
+```
+
+## 단계별 정리
+
+| 단계 | 한 일 | 기억할 점 |
+|:---|:---|:---|
+| **0. 환경 준비**<br/>10/19~10/20 | WSL2 Ubuntu 24.04, uv/Python, k3s, kubectl/Helm, Docker 설치 | `mirrored` 네트워크 모드에서 Pod 네트워크 문제가 발생해 **NAT 모드로 복구**. k3s는 **Traefik 비활성화** 상태로 설치. Docker 그룹 설정 확인. |
+| **3-1. 앱 로컬 실행** | 챕터 전용 Python 3.10 가상환경 생성, `pytest` 테스트, `uvicorn` 실행 | 책에 `httpx` 버전이 고정되지 않아 테스트 실패 → **`httpx<0.28`**로 해결. |
+| **3-2. Pod → ReplicaSet → Deployment** | Pod 1개 생성 → ReplicaSet으로 3개 유지 → Deployment로 v1→v2 롤링 업데이트 및 롤백 | ReplicaSet은 **레이블 셀렉터와 일치하는 기존 Pod를 입양**할 수 있음. v2 포트 불일치로 앱 응답이 없었지만 롤아웃은 성공으로 표시 → **`readinessProbe` 필요**. |
+| **3-3. Service** | ClusterIP, NodePort, LoadBalancer 생성 및 접속 실습 | 일반적으로 NodePort는 ClusterIP 기능을, LoadBalancer는 NodePort/ClusterIP 경로를 활용할 수 있지만 **항상 단순한 포함 관계는 아님**. 로드밸런싱은 고정 순서가 아님. 실습 환경에서 Windows `localhost` 대신 **WSL IP**로 접속. |
+| **3-4. Namespace / ConfigMap / Secret** | `funny` Namespace 생성, 설정값과 비밀값을 환경변수로 주입 | 책의 매니페스트 오류 3개를 `scratch/ch03/`에서 수정. Secret의 base64 표현은 **인코딩이지 암호화가 아님**. |
+
+## 실습에서 배운 핵심 개념
+
+### 1. 안정적인 배포에는 상태 점검이 필요하다
+
+Deployment의 롤아웃이 성공했다고 해서 **애플리케이션이 실제 요청에 정상 응답한다는 뜻은 아닙니다.** `readinessProbe`로 트래픽을 받을 준비가 되었는지 확인해야 합니다.
+
+### 2. ReplicaSet은 Pod 이름보다 레이블을 본다
+
+ReplicaSet은 `selector`에 일치하는 Pod를 관리합니다. 기존 Pod를 의도치 않게 관리하지 않도록 **레이블 설계를 명확히** 해야 합니다.
+
+### 3. Service는 Pod의 변화와 접속 경로를 분리한다
+
+- **ClusterIP:** 클러스터 내부 접근용
+- **NodePort:** 노드 IP와 지정 포트를 통한 접근용
+- **LoadBalancer:** 지원 환경에서 외부 로드밸런서를 통한 접근용
+
+> **실습 환경 메모:** Windows와 WSL2의 네트워크 구성에 따라 `localhost` 접근 가능 여부가 달라집니다. 이번 실습에서는 WSL IP를 사용했습니다.
+
+### 4. Secret은 자동으로 안전해지는 비밀번호 금고가 아니다
+
+Secret의 `data` 필드는 base64로 인코딩되지만 이것만으로 암호화가 되지는 않습니다. 운영 환경에서는 접근 제어(RBAC), 저장 시 암호화 설정 등의 보호 조치가 중요합니다.
+## 🧩 개념별 관계
+
+### 1. FastAPI → Docker 이미지 (`3-1`, `3-5`)
+
+- `main.py`: 농담을 돌려주는 FastAPI 애플리케이션
+- **3-1**: Python으로 내 PC에서 직접 실행
+- **3-5**: `Dockerfile`을 작성하고 **내 앱의 이미지**를 직접 빌드
+- 앞선 실습에서는 남이 만든 `varunmallya/hello-joker` 이미지를 사용했음
+
+```bash
+# 예시: 현재 폴더의 Dockerfile로 이미지 빌드
+ docker build -t hello-joker:1.0 .
+```
+
+### 2. Kubernetes에서 실행·유지·교체 (`3-2`)
+
+```text
+Deployment ──관리──▶ ReplicaSet ──관리──▶ Pod ──실행──▶ 컨테이너
+```
+
+- **Pod**: 컨테이너를 실행하는 Kubernetes의 기본 배포 단위
+- **ReplicaSet**: 지정된 Pod 개수를 유지
+- **Deployment**: ReplicaSet을 관리하며 버전 업데이트·롤백·확장 담당
+
+> 실무에서는 보통 Pod를 직접 여러 개 관리하기보다 **Deployment**를 선언하여 운영합니다.
+
+### 3. 안정적인 접속 경로 (`3-3`)
+
+| Service 종류 | 접근 범위 | 용도 |
+|---|---|---|
+| **ClusterIP** | 기본적으로 클러스터 내부 | 서비스 간 통신 |
+| **NodePort** | 각 노드 IP와 지정 포트 | 외부 접속 경로 제공 |
+| **LoadBalancer** | 로드밸런서가 지원되는 환경 | 외부 트래픽 분산·진입 |
+
+Service는 Pod IP가 바뀌더라도 **안정적인 서비스 이름과 주소**를 제공합니다.
+
+### 4. 환경 및 설정 관리 (`3-4`)
+
+- **Namespace**: Kubernetes 리소스를 논리적으로 구분하는 공간
+- **ConfigMap**: 일반 설정값을 앱과 분리해 관리
+- **Secret**: 비밀번호·API 키 같은 민감정보를 관리하는 Kubernetes 리소스
+
+> ⚠️ Secret이라는 이름만으로 암호화가 자동 보장되는 것은 아닙니다. 저장 시 암호화, RBAC 등 별도 보안 설정이 중요합니다.
+
+### 5. 묶어서 배포 → 자동화 (`3-6`, `3-7`)
+
+- **Helm**: Deployment, Service, ConfigMap 등 여러 리소스를 **Chart**로 묶어 반복 배포
+- **GitLab CI**: 코드 변경을 계기로 이미지 빌드·테스트·레지스트리 업로드·Helm 배포 등을 자동 실행
+
+```text
+개발자 코드 수정
+       ↓
+GitLab 저장소에 Push
+       ↓
+GitLab CI 파이프라인
+       ├─ 테스트
+       ├─ Docker 이미지 빌드
+       ├─ 컨테이너 레지스트리에 Push
+       └─ Helm으로 Kubernetes 배포
+                        ↓
+                   Deployment
+                        ↓
+                    ReplicaSet
+                        ↓
+                       Pod
+                        ↓
+                     Service
+```
+
+
+
+---
+
+### 🎯 핵심 한 문장
+
+**FastAPI로 앱을 만들고 → Docker로 포장하고 → Kubernetes로 운영하고 → Helm으로 배포를 표준화하고 → GitLab CI로 전체 과정을 자동화한다.**
+
+*참고: 학습 번호는 수업 순서를 따르므로 3-5 Docker 이미지 제작은 개념 흐름도에서 Kubernetes 실행보다 앞에 표시했습니다.*
+
+
+
+---
+
+
+## ✅ 이제 시작!
+- [ ] WSL2 Ubuntu / Python / k3s / Docker 설치
+- [ ] FastAPI 앱 테스트 및 로컬 실행
+- [ ] Pod, ReplicaSet, Deployment 생성
+- [ ] 롤링 업데이트 및 롤백 실습(Service 이해)
+- [ ] ClusterIP, NodePort, LoadBalancer 실습
+- [ ] Namespace, ConfigMap, Secret 실습
+- [ ] 3-5 Docker 컨테이너 이미지 직접 빌드(Docker 이미지를 직접 제작)
+- [ ] 3-6 Helm으로 배포 구성 묶기
+- [ ] 3-7 GitLab CI로 배포 자동화
+
+---
+
+
+```bash
+
+docker run -d --rm -p 8083:8083 --name joker-local hello-joker:bookworm
+
+```
