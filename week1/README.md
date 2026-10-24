@@ -227,8 +227,20 @@ docker compose up -d
 
 # Kubernetes 실습 단계별 정리 (3장)
 
+*참고: https://velog.io/@chaujin00/TIL-261018*
+
 > **실습 범위:** 환경 준비(10/19~10/20) ~ 3-5 Docker 이미지 빌드
 > **환경:** Windows 11 · WSL2 Ubuntu 24.04(NAT 모드) · k3s v1.29.15 · Docker 29.9.1 · Python 3.10(uv)
+
+### 핵심 - K8s: Container(최종 실행물) · Kubelet(관리인) · Container Registry(외부 저장소)
+### 한 줄 요약: "Image : Container = 클래스 : 인스턴스"
+
+같은 이미지로 컨테이너를 몇 개든 찍어낼 수 있고, 컨테이너 안에서 바꾼 건 꺼지면 사라짐
+Pod는 K8s가 컨테이너를 다루는 최소 단위
+같은 Pod 안의 컨테이너는 IP와 볼륨을 공유하고 항상 같은 노드에 같이 뜸
+로그 수집기 같은 보조 컨테이너(사이드카)를 붙일 때 Pod로 묶음
+
+
 
 ## 1. 목표: 책 그림 3.2의 흐름
 
@@ -281,6 +293,99 @@ flowchart TD
 
 초록색은 완료, 노란색은 진행 중, 회색은 예정입니다.
 
+# Kubernetes 실습 단계별 정리 (3장)
+
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>10월 19~20일에 실습 환경을 만들었고, 10월 24일에는 Docker 이미지를 만드는 단계까지 진행한 기록입니다.</p></td>
+<td valign="top"><p><strong>실습 범위:</strong> 환경 준비(10/19~10/20) ~ 3-5 Docker 이미지 빌드(진행 중, 10/24)</p></td>
+</tr>
+<tr>
+<td valign="top"><p>Windows 컴퓨터 안에서 Ubuntu를 실행하고(WSL2), 가벼운 쿠버네티스(k3s)와 Docker, Python으로 실습했습니다. 괄호 안 숫자는 설치된 버전입니다.</p></td>
+<td valign="top"><p><strong>환경:</strong> Windows 11 · WSL2 Ubuntu 24.04(NAT 모드) · k3s v1.29.15 · Docker 29.9.1 · Python 3.10(uv)</p></td>
+</tr>
+<tr>
+<td valign="top"><p>상세한 명령어와 실행 결과는 오른쪽에 적힌 노트 파일에서 찾을 수 있습니다. 이 문서는 그 내용을 공부하기 쉽게 요약한 것입니다.</p></td>
+<td valign="top"><p><strong>기록 기준:</strong> <code>~/ml-study/notes/ch03-k8s.md</code>, <code>notes/_progress.md</code> (2026-10-24 갱신)</p></td>
+</tr>
+</tbody>
+</table>
+
+## 1. 목표: 책 그림 3.2의 흐름
+
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>최종 목표는 <strong>앱 수정 → 코드 저장소에 올리기 → 자동으로 새 버전 만들기 → 서버에 배포 → 상태 확인</strong>까지 이어지는 시스템을 직접 만들어 보는 것입니다. 지금은 각 과정을 손으로 연습하고 나중에 자동화합니다.</p></td>
+<td valign="top"><p>3장의 최종 목표는 아래 흐름을 직접 구성하는 것입니다. 지금은 각 화살표를 <strong>손으로 한 번씩 해 보는</strong> 단계이고, 3-7부터 이 손작업을 기계(CI/CD)에 맡깁니다.</p></td>
+</tr>
+</tbody>
+</table>
+
+```mermaid
+flowchart LR
+    dev["노트북"] -->|"git push"| repo["GitLab 저장소<br/>3-7"]
+    repo --> ci["GitLab CI + Runner<br/>3-7"]
+    ci -->|"① 이미지 빌드·push"| hub["Docker Hub<br/>3-5 수동 → 3-7 자동"]
+    ci -->|"② values.yaml 태그 수정"| chart["Helm 차트<br/>3-6 · 3-7"]
+    chart --> argo["Argo CD<br/>3-8"]
+    subgraph k3s["쿠버네티스 클러스터 (k3s)"]
+        app["hello-joker 앱<br/>3-2~3-4 수동 배포"]
+        prom["Prometheus<br/>3-9"]
+        graf["Grafana<br/>3-9"]
+        app -->|"/metrics"| prom
+        prom --> graf
+    end
+    argo -->|"배포·감시"| app
+    hub -.->|"이미지 pull"| app
+```
+
+| 지금 손으로 한 것 | 그림에서 자동화한 모습 |
+|:---|:---|
+| 3-5 `docker build` | ① GitLab CI가 이미지를 빌드하고 Docker Hub에 push |
+| 3-2 `kubectl set image ...:v2` | ② CI가 Helm 차트의 이미지 태그를 수정하면 Argo CD가 클러스터에 반영 |
+| 3-2 `kubectl get pods`로 상태 확인 | Argo CD가 배포 상태를 감시 |
+
+## 2. 실습 순서와 진행 상태
+
+```mermaid
+flowchart TD
+    A["0. 환경 준비<br/>WSL2 · k3s · Docker"] --> B["3-1. 앱 로컬 실행<br/>venv · pytest · uvicorn"]
+    B --> C["3-2. 워크로드<br/>Pod → ReplicaSet → Deployment"]
+    C --> D["3-3. 네트워크<br/>ClusterIP · NodePort · LoadBalancer"]
+    D --> E["3-4. 설정과 격리<br/>Namespace · ConfigMap · Secret"]
+    E --> F["3-5. 이미지 빌드<br/>Dockerfile · docker run · Docker Hub"]
+    F --> G["3-6. Helm 차트<br/>hello-joker · redis"]
+    G --> H["3-7. GitLab CI<br/>test → build·push → 차트 태그 수정"]
+    H --> I["3-8. Argo CD<br/>Git 기준 자동 배포"]
+    I --> J["3-9. Prometheus · Grafana<br/>모니터링"]
+    classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef doing fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef todo fill:#f3f4f6,stroke:#9ca3af,color:#374151
+    class A,B,C,D,E done
+    class F doing
+    class G,H,I,J todo
+```
+
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>그림에서 <strong>초록 = 끝낸 실습</strong>, <strong>노랑 = 현재 하는 실습</strong>, <strong>회색 = 앞으로 할 실습</strong>입니다. 지금은 3-5에서 Docker 이미지를 만들고 있습니다.</p></td>
+<td valign="top"><p>초록색은 완료, 노란색은 진행 중, 회색은 예정입니다.</p></td>
+</tr>
+</tbody>
+</table>
+
 ## 3. 단계별 정리
 
 | 단계 | 한 일 | 기억할 점 |
@@ -296,13 +401,43 @@ flowchart TD
 
 ### 1) "켜짐"과 "응답할 준비가 됨"은 다르다
 
-readinessProbe가 없으면 Kubernetes는 **컨테이너 프로세스가 살아 있는지만** 확인합니다. v2는 프로세스가 잘 떠 있었지만 엉뚱한 포트(80)에서 기다리고 있었고, Kubernetes는 이를 몰랐습니다. readinessProbe를 넣으면 실제로 요청을 보내 보고 응답이 와야 트래픽을 넘깁니다. 책의 Helm 차트(`hello-joker/templates/deployment.yaml`)에는 liveness/readinessProbe가 들어 있어 3-6에서 직접 확인할 예정입니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>가게의 <strong>불이 켜져 있는 것</strong>과 <strong>손님 주문을 받을 준비가 된 것</strong>은 다릅니다. 앱이 실행되어도 정해진 주소·포트로 답하지 않으면 사용자에게 서비스할 수 없습니다. <code>readinessProbe</code>는 “실제로 응답할 수 있나?”를 검사합니다.</p></td>
+<td valign="top"><p>readinessProbe가 없으면 Kubernetes는 <strong>컨테이너 프로세스가 살아 있는지만</strong> 확인합니다. v2는 프로세스가 잘 떠 있었지만 엉뚱한 포트(80)에서 기다리고 있었고, Kubernetes는 이를 몰랐습니다. readinessProbe를 넣으면 실제로 요청을 보내 보고 응답이 와야 트래픽을 넘깁니다. 책의 Helm 차트(<code>hello-joker/templates/deployment.yaml</code>)에는 liveness/readinessProbe가 들어 있어 3-6에서 직접 확인할 예정입니다.</p></td>
+</tr>
+</tbody>
+</table>
 
-> 앱 포트를 실제로 정하는 곳은 `entrypoint.sh`의 `uvicorn ... --port 8083`입니다. Dockerfile의 `EXPOSE`와 매니페스트의 `containerPort`는 **안내문일 뿐** 포트를 열지 않습니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>포트는 앱이 손님의 요청을 받는 <strong>문 번호</strong>입니다. 실제 문을 여는 것은 앱 실행 명령(<code>--port 8083</code>)이고, <code>EXPOSE</code>나 <code>containerPort</code>는 “8083번을 씁니다”라고 <strong>표시만 하는 안내판</strong>입니다.</p></td>
+<td valign="top"><p>앱 포트를 실제로 정하는 곳은 <code>entrypoint.sh</code>의 <code>uvicorn ... --port 8083</code>입니다. Dockerfile의 <code>EXPOSE</code>와 매니페스트의 <code>containerPort</code>는 <strong>안내문일 뿐</strong> 포트를 열지 않습니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ### 2) ReplicaSet은 Pod 이름이 아니라 label을 본다
 
-ReplicaSet은 `selector`와 label이 일치하는 Pod를 자기 것으로 관리합니다. 미리 떠 있던 `joker` Pod도 label이 같아 입양되었고, ReplicaSet을 지울 때 함께 지워졌습니다. Deployment는 `pod-template-hash` label을 붙여 버전별 ReplicaSet끼리 Pod가 섞이지 않게 합니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Pod는 실제 일하는 <strong>직원</strong>, ReplicaSet은 “같은 유니폼(label)을 입은 직원이 몇 명 있어야 하는지” 관리하는 <strong>팀장</strong>입니다. 이름이 달라도 label이 같으면 팀에 포함될 수 있습니다. Deployment는 앱 버전별 직원들을 구분해 관리합니다.</p></td>
+<td valign="top"><p>ReplicaSet은 <code>selector</code>와 label이 일치하는 Pod를 자기 것으로 관리합니다. 미리 떠 있던 <code>joker</code> Pod도 label이 같아 입양되었고, ReplicaSet을 지울 때 함께 지워졌습니다. Deployment는 <code>pod-template-hash</code> label을 붙여 버전별 ReplicaSet끼리 Pod가 섞이지 않게 합니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ### 3) Service는 바뀌는 Pod 앞에 고정된 주소를 준다
 
@@ -312,13 +447,43 @@ ReplicaSet은 `selector`와 label이 일치하는 Pod를 자기 것으로 관리
 | **NodePort** | 노드 IP + 30000~32767 포트 | `<WSL IP>:30420` |
 | **LoadBalancer** | 외부 IP | k3s ServiceLB가 노드 IP(WSL IP)를 EXTERNAL-IP로 줌 |
 
-`port`는 Service가 받는 포트(80), `targetPort`는 Pod 쪽 포트(8083)입니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Service는 <strong>건물 안내 데스크</strong>, Pod는 <strong>실제 일을 처리하는 사무실</strong>이라고 생각하면 됩니다. 방문객은 안내 데스크의 80번으로 오지만, 안내 데스크는 내부 8083번 사무실로 연결합니다.</p></td>
+<td valign="top"><p><code>port</code>는 Service가 받는 포트(80), <code>targetPort</code>는 Pod 쪽 포트(8083)입니다.</p></td>
+</tr>
+</tbody>
+</table>
 
-> **왜 Windows `localhost`로는 NodePort에 접속할 수 없나:** WSL은 리눅스에서 **실제로 포트를 열고 기다리는(LISTEN)** 프로세스가 있을 때만 그 포트를 Windows `localhost`로 연결해 줍니다. NodePort는 iptables 전달 규칙일 뿐이라 LISTEN 중인 프로세스가 없습니다(`ss -ltn`에 30420이 보이지 않음). 반대로 3-5의 `docker run -p 8083:8083`은 `docker-proxy` 프로세스가 실제로 8083을 열어 두기 때문에 Windows `localhost:8083`으로 접속됩니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>이번 환경에서는 <code>NodePort</code>가 외부 요청을 Pod에 <strong>전달하는 규칙</strong>으로 동작해 Windows의 <code>localhost</code>로 바로 접속되지 않았습니다. 반면 <code>docker run -p</code>는 실제 포트를 열어 두었기 때문에 접속됐습니다. <strong>WSL IP나 port-forward</strong>를 이용하는 방법도 있습니다.</p></td>
+<td valign="top"><p><strong>왜 Windows <code>localhost</code>로는 NodePort에 접속할 수 없나:</strong> WSL은 리눅스에서 <strong>실제로 포트를 열고 기다리는(LISTEN)</strong> 프로세스가 있을 때만 그 포트를 Windows <code>localhost</code>로 연결해 줍니다. NodePort는 iptables 전달 규칙일 뿐이라 LISTEN 중인 프로세스가 없습니다(<code>ss -ltn</code>에 30420이 보이지 않음). 반대로 3-5의 <code>docker run -p 8083:8083</code>은 <code>docker-proxy</code> 프로세스가 실제로 8083을 열어 두기 때문에 Windows <code>localhost:8083</code>으로 접속됩니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ### 4) Secret은 저절로 안전해지는 금고가 아니다
 
-Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바로 원문이 나옵니다. Pod에 `exec`할 수 있는 사람은 `printenv`로 평문을 볼 수 있습니다. 보호하려면 RBAC로 Secret 읽기와 exec 권한을 제한하고, 저장 시 암호화(k3s는 `--secrets-encryption`)를 켜야 합니다. 책의 ConfigMap 예제에 들어 있는 `api-key`도 원래는 Secret에 두어야 합니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Secret이라는 이름만 보고 <strong>암호 금고</strong>라고 생각하면 안 됩니다. base64는 누구나 되돌릴 수 있는 <strong>표기 방식</strong>입니다. 진짜 보호를 하려면 누가 볼 수 있는지 권한을 제한하고 저장 데이터도 암호화해야 합니다.</p></td>
+<td valign="top"><p>Secret의 <code>data</code>는 base64로 <strong>인코딩</strong>만 되어 있어 <code>base64 -d</code>로 바로 원문이 나옵니다. Pod에 <code>exec</code>할 수 있는 사람은 <code>printenv</code>로 평문을 볼 수 있습니다. 보호하려면 RBAC로 Secret 읽기와 exec 권한을 제한하고, 저장 시 암호화(k3s는 <code>--secrets-encryption</code>)를 켜야 합니다. 책의 ConfigMap 예제에 들어 있는 <code>api-key</code>도 원래는 Secret에 두어야 합니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ### 5) 버전은 고정한다. 고정한 버전은 언젠가 직접 올린다
 
@@ -327,13 +492,39 @@ Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바�
 | 예 | `httpx`, `python:3.10-slim` | `starlette==0.27.0`, `python:3.10-slim-buster` |
 | 문제 | 모르는 사이에 **조용히 바뀜**(httpx 0.28로 테스트 깨짐) | 바뀌지 않는 대신 지원이 끝나면 **눈에 띄게 깨짐**(buster 404) |
 
-실무에서는 보통 고정을 택합니다. 깨지더라도 언제, 왜 깨졌는지 알 수 있기 때문입니다. 2026-10 기준 `python:3.10-slim`은 Debian 13(trixie), `python:3.10-slim-bookworm`은 Debian 12를 가리킵니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>프로그램 부품의 버전을 정하지 않으면 <strong>저절로 최신 부품이 들어와</strong> 기존 기능이 고장 날 수 있습니다. 고정하면 변화는 막지만 <strong>오래된 부품이 지원 종료</strong>될 수 있으니, 정기적으로 점검하며 버전을 올려야 합니다.</p></td>
+<td valign="top"><p>실무에서는 보통 고정을 택합니다. 깨지더라도 언제, 왜 깨졌는지 알 수 있기 때문입니다. 2026-10 기준 <code>python:3.10-slim</code>은 Debian 13(trixie), <code>python:3.10-slim-bookworm</code>은 Debian 12를 가리킵니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ### 6) Dockerfile은 위에서부터 쌓는 레시피다
 
-- 빌드 로그의 `[3/8]`은 8단계 중 3단계라는 뜻이고, 한 단계라도 실패하면 이미지는 만들어지지 않습니다.
-- `docker build -f <Dockerfile> -t <이름:태그> <빌드 컨텍스트>`: `COPY`는 **빌드 컨텍스트 폴더 안의 파일만** 가져올 수 있습니다. 이 방법으로 책 코드는 그대로 두고 고친 Dockerfile(`scratch/ch03/Dockerfile`)만 바꿔 끼웠습니다.
-- `docker history`로 줄마다 크기를 볼 수 있습니다. 이번 이미지(909MB)는 `build-essential` 321MB, pip 패키지 104MB, `COPY .` 91.7MB 순으로 컸습니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Docker 이미지를 만드는 과정을 <strong>8단계 조립 작업</strong>으로 생각하세요. <code>[3/8]</code>은 세 번째 작업 중이라는 뜻이며, 중간에 실패하면 완성품은 나오지 않습니다.</p></td>
+<td valign="top"><p>빌드 로그의 <code>[3/8]</code>은 8단계 중 3단계라는 뜻이고, 한 단계라도 실패하면 이미지는 만들어지지 않습니다.</p></td>
+</tr>
+<tr>
+<td valign="top"><p>Docker 이미지는 <strong>레시피(Dockerfile)</strong> 와 <strong>재료가 놓인 작업 폴더(빌드 컨텍스트)</strong> 로 만듭니다. <code>-f</code>로 다른 레시피를 선택할 수 있지만 <code>COPY</code>로 가져올 재료는 작업 폴더 안에 있어야 합니다.</p></td>
+<td valign="top"><p><code>docker build -f &lt;Dockerfile&gt; -t &lt;이름:태그&gt; &lt;빌드 컨텍스트&gt;</code>: <code>COPY</code>는 <strong>빌드 컨텍스트 폴더 안의 파일만</strong> 가져올 수 있습니다. 이 방법으로 책 코드는 그대로 두고 고친 Dockerfile(<code>scratch/ch03/Dockerfile</code>)만 바꿔 끼웠습니다.</p></td>
+</tr>
+<tr>
+<td valign="top"><p>완성된 이미지는 여러 층으로 쌓입니다. <code>docker history</code>로 <strong>어느 층이 용량을 많이 차지하는지</strong> 확인하면 이미지를 가볍게 만들 힌트를 얻을 수 있습니다.</p></td>
+<td valign="top"><p><code>docker history</code>로 줄마다 크기를 볼 수 있습니다. 이번 이미지(909MB)는 <code>build-essential</code> 321MB, pip 패키지 104MB, <code>COPY .</code> 91.7MB 순으로 컸습니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ## 5. 만난 오류와 교훈
 
@@ -350,15 +541,47 @@ Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바�
 | 3-5 | `apt-get update` 404, `exit code: 100` | Debian 10(buster) EOL | `FROM python:3.10-slim-bookworm` |
 | 3-5 | `docker run` 실행 시 `requires at least 1 argument` | 필수 인자 `IMAGE` 누락 | Usage 표기법 `[ ]`는 선택, 대문자는 필수 |
 
-`CreateContainerConfigError`처럼 원인이 상태 이름에 드러나지 않을 때는 `kubectl describe pod <이름>`의 Events를 봅니다.
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Pod 실행에 실패했는데 화면의 상태 이름만으로 이유를 모르겠다면, <code>kubectl describe pod</code>를 실행해 <strong>Events(오류 기록)</strong> 를 살펴보세요.</p></td>
+<td valign="top"><p><code>CreateContainerConfigError</code>처럼 원인이 상태 이름에 드러나지 않을 때는 <code>kubectl describe pod &lt;이름&gt;</code>의 Events를 봅니다.</p></td>
+</tr>
+</tbody>
+</table>
 
 ## 6. 앞으로 확인할 것 (검토에서 발견)
 
-- **`.venv`가 이미지에 들어감**: `.dockerignore`에 `myvenv`라고 적혀 있는데 실제 폴더는 `.venv`(87MB). → 3-5 4단계
-- **책 CI(`.gitlab-ci.yml`)는 그대로는 동작하지 않음**: test 단계는 httpx 0.28, build 단계는 buster Dockerfile과 저자 Docker Hub 계정(`varunmallya`), update 단계는 저자 gitlab.com 저장소를 씀. → 3-7에서 우리 GitLab과 계정으로 수정
-- **Helm `values.yaml`의 이미지가 저자 것**(`varunmallya/hello-joker`) → 3-6에서 교체
-- **앱이 지표를 내보내지 않음**: `requirements.txt`에 `prometheus-fastapi-instrumentator`는 있지만 `main.py`가 쓰지 않아 `/metrics`가 404. → 3-9에서 `scratch/`에 추가
-- **메모리**: PC RAM 15.7GB, WSL 기본 7.6GB. GitLab, Argo CD, Prometheus를 동시에 띄우면 빠듯할 수 있음 → 단계별로 필요한 것만 켜기
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>Python 가상환경 폴더까지 Docker 이미지에 포장돼 <strong>불필요하게 87MB가 늘어난 문제</strong>입니다. <code>.dockerignore</code>에 실제 폴더 이름인 <code>.venv</code>를 써서 제외합니다.</p></td>
+<td valign="top"><p><strong><code>.venv</code>가 이미지에 들어감</strong>: <code>.dockerignore</code>에 <code>myvenv</code>라고 적혀 있는데 실제 폴더는 <code>.venv</code>(87MB). → 3-5 4단계</p></td>
+</tr>
+<tr>
+<td valign="top"><p>책에 있는 자동화 설정은 <strong>저자의 계정·예전 부품</strong>을 기준으로 만든 것입니다. 복사만 하면 작동하지 않을 수 있으니 내 GitLab·Docker Hub 계정과 사용할 패키지 버전에 맞춰 고쳐야 합니다.</p></td>
+<td valign="top"><p><strong>책 CI(<code>.gitlab-ci.yml</code>)는 그대로는 동작하지 않음</strong>: test 단계는 httpx 0.28, build 단계는 buster Dockerfile과 저자 Docker Hub 계정(<code>varunmallya</code>), update 단계는 저자 gitlab.com 저장소를 씀. → 3-7에서 우리 GitLab과 계정으로 수정</p></td>
+</tr>
+<tr>
+<td valign="top"><p>Helm 설정 파일이 <strong>책 저자의 Docker 이미지 주소</strong>를 가리키고 있습니다. 내가 만든 이미지를 배포하려면 주소를 내 이미지로 바꿔야 합니다.</p></td>
+<td valign="top"><p><strong>Helm <code>values.yaml</code>의 이미지가 저자 것</strong>(<code>varunmallya/hello-joker</code>) → 3-6에서 교체</p></td>
+</tr>
+<tr>
+<td valign="top"><p>모니터링 도구가 읽을 <strong>앱 상태 데이터(<code>/metrics</code>)</strong> 를 아직 제공하지 않는 상황입니다. 관련 도구만 설치되어 있고 앱 코드가 연결하지 않아, 다음 단계에서 연결해야 합니다.</p></td>
+<td valign="top"><p><strong>앱이 지표를 내보내지 않음</strong>: <code>requirements.txt</code>에 <code>prometheus-fastapi-instrumentator</code>는 있지만 <code>main.py</code>가 쓰지 않아 <code>/metrics</code>가 404. → 3-9에서 <code>scratch/</code>에 추가</p></td>
+</tr>
+<tr>
+<td valign="top"><p>내 PC의 메모리가 무한하지 않기 때문에 GitLab, Argo CD, Prometheus를 <strong>한꺼번에 실행하면 버거울 수 있습니다</strong>. 실습할 때 필요한 것만 켜는 편이 낫습니다.</p></td>
+<td valign="top"><p><strong>메모리</strong>: PC RAM 15.7GB, WSL 기본 7.6GB. GitLab, Argo CD, Prometheus를 동시에 띄우면 빠듯할 수 있음 → 단계별로 필요한 것만 켜기</p></td>
+</tr>
+</tbody>
+</table>
 
 ## 7. 결정 사항
 
@@ -373,22 +596,77 @@ Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바�
 
 ## 8. 실습 체크리스트
 
-- [x] WSL2 Ubuntu / Python / k3s / Docker 설치
-- [x] 3-1 FastAPI 앱 테스트 및 로컬 실행
-- [x] 3-2 Pod, ReplicaSet, Deployment 생성 / 롤링 업데이트와 롤백
-- [x] 3-3 ClusterIP, NodePort, LoadBalancer
-- [x] 3-4 Namespace, ConfigMap, Secret
-- [ ] 3-5 Docker 이미지 빌드
-  - [x] ① 책 Dockerfile 빌드 → buster 실패 확인
-  - [x] ② bookworm으로 고쳐 빌드
-  - [x] ③ `docker run`으로 실행·응답 확인
-  - [ ] ④ `.dockerignore` 정리(`.venv` 제외)
-  - [ ] ⑤ Docker Hub에 push
-  - [ ] ⑥ k3s에서 Docker Hub 이미지로 배포
-- [ ] 3-6 Helm 차트(hello-joker, redis)
-- [ ] 3-7 GitLab CE + Runner 설치, CI 파이프라인(test → build·push → 차트 태그 수정)
-- [ ] 3-8 Argo CD로 Git 기준 자동 배포
-- [ ] 3-9 Prometheus + Grafana 모니터링
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>☑ 실습에 필요한 <strong>운영체제와 도구</strong> 준비를 마쳤습니다.</p></td>
+<td valign="top"><p>☑ WSL2 Ubuntu / Python / k3s / Docker 설치</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☑ 클라우드에 올리기 전에 <strong>내 컴퓨터에서 앱이 실행되는지</strong> 확인했습니다.</p></td>
+<td valign="top"><p>☑ 3-1 FastAPI 앱 테스트 및 로컬 실행</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☑ 앱 실행 단위를 만들고, 여러 개 유지하고, <strong>중단을 최소화하며 버전을 바꾼 뒤 되돌리는 작업</strong>까지 했습니다.</p></td>
+<td valign="top"><p>☑ 3-2 Pod, ReplicaSet, Deployment 생성 / 롤링 업데이트와 롤백</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☑ 앱에 접속하는 <strong>내부용·노드 경유·외부용 통로</strong>를 실습했습니다.</p></td>
+<td valign="top"><p>☑ 3-3 ClusterIP, NodePort, LoadBalancer</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☑ 앱의 <strong>작업 공간을 나누고 설정값과 비밀값을 전달하는 방법</strong>을 배웠습니다.</p></td>
+<td valign="top"><p>☑ 3-4 Namespace, ConfigMap, Secret</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☐ 앱을 실행 가능한 <strong>하나의 꾸러미(Docker 이미지)</strong> 로 만든 뒤 공유·배포하는 단계입니다. 일부는 완료됐습니다.</p></td>
+<td valign="top"><p>☐ 3-5 Docker 이미지 빌드</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☑ 책 레시피 그대로 만들었을 때 <strong>오래된 운영체제 때문에 실패</strong>한 사실을 확인했습니다.</p></td>
+<td valign="top"><p>↳ ☑ ① 책 Dockerfile 빌드 → buster 실패 확인</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☑ 지원되는 운영체제 버전으로 바꿔 <strong>이미지 제작에 성공</strong>했습니다.</p></td>
+<td valign="top"><p>↳ ☑ ② bookworm으로 고쳐 빌드</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☑ 만든 이미지로 앱을 켜서 <strong>실제로 응답하는지</strong> 확인했습니다.</p></td>
+<td valign="top"><p>↳ ☑ ③ <code>docker run</code>으로 실행·응답 확인</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☐ 이미지에 필요 없는 <strong>가상환경 파일을 빼서 용량을 줄일 예정</strong>입니다.</p></td>
+<td valign="top"><p>↳ ☐ ④ <code>.dockerignore</code> 정리(<code>.venv</code> 제외)</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☐ 완성한 이미지를 <strong>온라인 이미지 보관소</strong>에 올릴 예정입니다.</p></td>
+<td valign="top"><p>↳ ☐ ⑤ Docker Hub에 push</p></td>
+</tr>
+<tr>
+<td valign="top"><p>↳ ☐ 보관소에 올린 이미지를 <strong>쿠버네티스 서버가 내려받아 실행</strong>하게 할 예정입니다.</p></td>
+<td valign="top"><p>↳ ☐ ⑥ k3s에서 Docker Hub 이미지로 배포</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☐ 여러 쿠버네티스 설정 파일을 <strong>설치 패키지처럼 묶어서 관리</strong>할 예정입니다.</p></td>
+<td valign="top"><p>☐ 3-6 Helm 차트(hello-joker, redis)</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☐ 코드를 올리면 <strong>테스트·이미지 제작·업로드·배포 설정 변경</strong>이 자동으로 이어지게 만들 예정입니다.</p></td>
+<td valign="top"><p>☐ 3-7 GitLab CE + Runner 설치, CI 파이프라인(test → build·push → 차트 태그 수정)</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☐ Git에 적힌 목표 상태를 보고 <strong>쿠버네티스 배포를 자동으로 맞춰 주는 도구</strong>를 사용할 예정입니다.</p></td>
+<td valign="top"><p>☐ 3-8 Argo CD로 Git 기준 자동 배포</p></td>
+</tr>
+<tr>
+<td valign="top"><p>☐ Prometheus로 실행 데이터를 모으고 Grafana에서 <strong>그래프로 관찰</strong>할 예정입니다.</p></td>
+<td valign="top"><p>☐ 3-9 Prometheus + Grafana 모니터링</p></td>
+</tr>
+</tbody>
+</table>
 
 ## 9. 실습 파일 위치
 
@@ -403,8 +681,15 @@ Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바�
 
 ---
 
-```bash
+<table>
+<thead>
+<tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><p>실습 결과는 Windows·WSL 네트워크 설정이나 설치된 프로그램 버전에 따라 다를 수 있습니다. 다른 PC에서 결과가 달라도 반드시 실습이 잘못된 것은 아닙니다.</p></td>
+<td valign="top"><p><em>환경(WSL 네트워크 모드, k3s 버전 등)에 따라 동작이 다를 수 있습니다.</em></p></td>
+</tr>
+</tbody>
+</table>
 
-docker run -d --rm -p 8083:8083 --name joker-local hello-joker:bookworm
-
-```
