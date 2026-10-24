@@ -27,13 +27,13 @@ docker compose up -d
 *CI: 코드가 변경되면 자동으로 검사·테스트·빌드*
 *CD: 검증된 코드를 배포 가능한 상태로 준비하거나 실제 배포*
 
-<img width="762" alt="image" src="https://github.com/user-attachments/assets/7235a156-2ace-4e36-b95f-74a6d4003e92" />
+<img width="762" alt="image" src="https://raw.githubusercontent.com/stat-yongsan/MLOps-study/main/MLOps/week1/images/ml_lifecycle_exp_stage_fixed.gif" />
 
 8. MLOps: AI 모델의 학습·배포·성능 관리를 자동화
 
 **위 6개 기술을 비교하면**
 
-<img width="798" height="328" alt="image" src="https://github.com/user-attachments/assets/cf65f348-c075-42ac-b6a2-f691353193b4" />
+<img width="798" alt="image" src="https://github.com/stat-yongsan/week1/images/ml_lifecycle_flow.gif" />
 
 ---
 
@@ -53,14 +53,14 @@ MLOps: MLflow 모델 학습·실험 기록·서빙
 
 머신러닝 프로젝트는 저마다 다르지만, 머신러닝 모델을 개발하고 배포하는 단계는 대체로 비슷합니다. 머신러닝 프로젝트는 **본질적으로 반복**적인 성격을 띱니다. 
 첫 번째 배포로 프로젝트가 마무리된 사례를 아직 본 적이 없습니다.
-<img width="860" alt="ml_lifecycle_flow" src="https://github.com/MLOps-study/week1/images/ml_lifecycle_exp_stage_fixed.gif" />
+
 
 ## 1.1. 머신러닝 수명주기
 머신러닝 프로젝트는 **수많은 시행착오를 동반하는 지속적인 실험의 연속**이다.
 - 화살표가 단방향을 가리키고 있지만, 실제로는 **거의 모든 단계에서 반복이 빈번히 발생**합니다. 예를 들어, 모델 훈련과 모델 평가 evaluation 단계 사이에 있다고 가정해보겠습니다. 평가 지표가 기준에 미치지 못한다면, 다른 모델 아키텍처를 검토하거나 더 앞 단계로 돌아가 충분한 고품질 데이터가 확보되었는지 확인할 수도 있습니다. 각 단계는 상당히 복잡할 수 있으며, 단계 간 흐름은 루프를 포함한 비선형 구조인 경우가 많다는 점에 유의하십시오.
 - 바로 이런 이유로, 이 **모든 단계를 하나의 오케스트레이션 파이프라인으로 통합**합니다. 오케스트레이션 파이프라인을 구성하면 처음부터 자동화가 내재되므로, 추적하기 어려운 실수를 저지를 가능성을 벗어날 수 있습니다.
 
-![머신러닝 수명주기](images/ml_lifecycle_exp_stage.gif)
+![머신러닝 수명주기](images/ml_lifecycle_dev_stage_loop.gif)
 
 ## 1.2 MLOps에 필요한 역량
 ## 1.3 머신러닝 플랫폼 구축
