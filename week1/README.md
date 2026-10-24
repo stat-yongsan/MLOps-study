@@ -199,7 +199,7 @@ docker compose up -d
 - ML옵스의 모델은 코드베이스에 어떠한 코드 변경이 없어도 지속적으로 변화하고 진화
 ## 2.5 ML옵스 성숙도 수준
 
-<img width="762" alt="image" src="images/mlops_levels" />
+<img width="762" alt="image" src="images/mlops_levels.jpg" />
 
 # CH3. 쿠버네티스 위에서 애플리케이션 구축하기
 
