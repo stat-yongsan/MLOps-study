@@ -53,7 +53,7 @@ MLOps: MLflow 모델 학습·실험 기록·서빙
 
 머신러닝 프로젝트는 저마다 다르지만, 머신러닝 모델을 개발하고 배포하는 단계는 대체로 비슷합니다. 머신러닝 프로젝트는 **본질적으로 반복**적인 성격을 띱니다. 
 첫 번째 배포로 프로젝트가 마무리된 사례를 아직 본 적이 없습니다.
-<img width="860" alt="ml_lifecycle_flow" src="https://github.com/user-attachments/assets/9d6dc8e0-3511-4f09-bcfa-3cf38cf0d89d" />
+<img width="860" alt="ml_lifecycle_flow" src="https://github.com/MLOps-study/week1/images/ml_lifecycle_exp_stage_fixed.gif" />
 
 ## 1.1. 머신러닝 수명주기
 머신러닝 프로젝트는 **수많은 시행착오를 동반하는 지속적인 실험의 연속**이다.
