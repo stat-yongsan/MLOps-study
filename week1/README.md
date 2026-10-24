@@ -27,13 +27,13 @@ docker compose up -d
 *CI: 코드가 변경되면 자동으로 검사·테스트·빌드*
 *CD: 검증된 코드를 배포 가능한 상태로 준비하거나 실제 배포*
 
-<img width="762" alt="image" src="https://raw.githubusercontent.com/stat-yongsan/MLOps-study/main/MLOps/week1/images/ml_lifecycle_exp_stage_fixed.gif" />
+<img width="762" alt="image" src="images/ml_lifecycle_exp_stage_fixed.gif" />
 
 8. MLOps: AI 모델의 학습·배포·성능 관리를 자동화
 
 **위 6개 기술을 비교하면**
 
-<img width="798" alt="image" src="https://github.com/stat-yongsan/week1/images/ml_lifecycle_flow.gif" />
+<img width="762" alt="image" src="images/ml_lifecycle_flow.gif" />
 
 ---
 
