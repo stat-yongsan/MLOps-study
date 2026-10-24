@@ -239,62 +239,6 @@ docker compose up -d
 Pod는 K8s가 컨테이너를 다루는 최소 단위
 같은 Pod 안의 컨테이너는 IP와 볼륨을 공유하고 항상 같은 노드에 같이 뜸
 로그 수집기 같은 보조 컨테이너(사이드카)를 붙일 때 Pod로 묶음
-
-
-
-## 1. 목표: 책 그림 3.2의 흐름
-
-3장의 최종 목표는 아래 흐름을 직접 구성하는 것입니다. 지금은 각 화살표를 **손으로 한 번씩 해 보는** 단계이고, 3-7부터 이 손작업을 기계(CI/CD)에 맡깁니다.
-
-```mermaid
-flowchart LR
-    dev["노트북"] -->|"git push"| repo["GitLab 저장소<br/>3-7"]
-    repo --> ci["GitLab CI + Runner<br/>3-7"]
-    ci -->|"① 이미지 빌드·push"| hub["Docker Hub<br/>3-5 수동 → 3-7 자동"]
-    ci -->|"② values.yaml 태그 수정"| chart["Helm 차트<br/>3-6 · 3-7"]
-    chart --> argo["Argo CD<br/>3-8"]
-    subgraph k3s["쿠버네티스 클러스터 (k3s)"]
-        app["hello-joker 앱<br/>3-2~3-4 수동 배포"]
-        prom["Prometheus<br/>3-9"]
-        graf["Grafana<br/>3-9"]
-        app -->|"/metrics"| prom
-        prom --> graf
-    end
-    argo -->|"배포·감시"| app
-    hub -.->|"이미지 pull"| app
-```
-
-| 지금 손으로 한 것 | 그림에서 자동화한 모습 |
-|:---|:---|
-| 3-5 `docker build` | ① GitLab CI가 이미지를 빌드하고 Docker Hub에 push |
-| 3-2 `kubectl set image ...:v2` | ② CI가 Helm 차트의 이미지 태그를 수정하면 Argo CD가 클러스터에 반영 |
-| 3-2 `kubectl get pods`로 상태 확인 | Argo CD가 배포 상태를 감시 |
-
-## 2. 실습 순서와 진행 상태
-
-```mermaid
-flowchart TD
-    A["0. 환경 준비<br/>WSL2 · k3s · Docker"] --> B["3-1. 앱 로컬 실행<br/>venv · pytest · uvicorn"]
-    B --> C["3-2. 워크로드<br/>Pod → ReplicaSet → Deployment"]
-    C --> D["3-3. 네트워크<br/>ClusterIP · NodePort · LoadBalancer"]
-    D --> E["3-4. 설정과 격리<br/>Namespace · ConfigMap · Secret"]
-    E --> F["3-5. 이미지 빌드<br/>Dockerfile · docker run · Docker Hub"]
-    F --> G["3-6. Helm 차트<br/>hello-joker · redis"]
-    G --> H["3-7. GitLab CI<br/>test → build·push → 차트 태그 수정"]
-    H --> I["3-8. Argo CD<br/>Git 기준 자동 배포"]
-    I --> J["3-9. Prometheus · Grafana<br/>모니터링"]
-    classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
-    classDef doing fill:#fef3c7,stroke:#d97706,color:#78350f
-    classDef todo fill:#f3f4f6,stroke:#9ca3af,color:#374151
-    class A,B,C,D,E done
-    class F doing
-    class G,H,I,J todo
-```
-
-초록색은 완료, 노란색은 진행 중, 회색은 예정입니다.
-
-# Kubernetes 실습 단계별 정리 (3장)
-
 <table>
 <thead>
 <tr><th align="left" width="44%">쉬운 설명 · 이해하기</th><th align="left" width="56%">기존 설명 · 원문</th></tr>
