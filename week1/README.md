@@ -224,149 +224,184 @@ docker compose up -d
 
 3장은 저에게는 너무 어려웠습니다. 그래서 거꾸로 공부했습니다. 단계 단계를 클로드가 진행하면서 제게 질문하고 설명하는 식으로 진행했습니다.
 
-# Kubernetes 실습 단계별 정리
+# Kubernetes 실습 단계별 정리 (3장)
 
-> **실습 범위:** 환경 준비(10/19~10/20) ~ 3-4 Namespace / ConfigMap / Secret  
-> **환경:** Windows · WSL2 Ubuntu 24.04 · k3s · Docker · Python
+> **실습 범위:** 환경 준비(10/19~10/20) ~ 3-5 Docker 이미지 빌드(진행 중, 10/24)
+> **환경:** Windows 11 · WSL2 Ubuntu 24.04(NAT 모드) · k3s v1.29.15 · Docker 29.9.1 · Python 3.10(uv)
+> **기록 기준:** `~/ml-study/notes/ch03-k8s.md`, `notes/_progress.md` (2026-10-24 갱신)
 
-## 한눈에 보는 실습 흐름
+## 1. 목표: 책 그림 3.2의 흐름
+
+3장의 최종 목표는 아래 흐름을 직접 구성하는 것입니다. 지금은 각 화살표를 **손으로 한 번씩 해 보는** 단계이고, 3-7부터 이 손작업을 기계(CI/CD)에 맡깁니다.
+
+```mermaid
+flowchart LR
+    dev["노트북"] -->|"git push"| repo["GitLab 저장소<br/>3-7"]
+    repo --> ci["GitLab CI + Runner<br/>3-7"]
+    ci -->|"① 이미지 빌드·push"| hub["Docker Hub<br/>3-5 수동 → 3-7 자동"]
+    ci -->|"② values.yaml 태그 수정"| chart["Helm 차트<br/>3-6 · 3-7"]
+    chart --> argo["Argo CD<br/>3-8"]
+    subgraph k3s["쿠버네티스 클러스터 (k3s)"]
+        app["hello-joker 앱<br/>3-2~3-4 수동 배포"]
+        prom["Prometheus<br/>3-9"]
+        graf["Grafana<br/>3-9"]
+        app -->|"/metrics"| prom
+        prom --> graf
+    end
+    argo -->|"배포·감시"| app
+    hub -.->|"이미지 pull"| app
+```
+
+| 지금 손으로 한 것 | 그림에서 자동화한 모습 |
+|:---|:---|
+| 3-5 `docker build` | ① GitLab CI가 이미지를 빌드하고 Docker Hub에 push |
+| 3-2 `kubectl set image ...:v2` | ② CI가 Helm 차트의 이미지 태그를 수정하면 Argo CD가 클러스터에 반영 |
+| 3-2 `kubectl get pods`로 상태 확인 | Argo CD가 배포 상태를 감시 |
+
+## 2. 실습 순서와 진행 상태
 
 ```mermaid
 flowchart TD
-    A[0. 환경 준비<br/>WSL2 · k3s · Docker] --> B[3-1. FastAPI 로컬 실행<br/>venv · pytest · uvicorn]
-    B --> C[3-2. 워크로드 관리<br/>Pod → ReplicaSet → Deployment]
-    C --> D[3-3. 네트워크 연결<br/>ClusterIP · NodePort · LoadBalancer]
-    D --> E[3-4. 설정과 격리<br/>Namespace · ConfigMap · Secret]
+    A["0. 환경 준비<br/>WSL2 · k3s · Docker"] --> B["3-1. 앱 로컬 실행<br/>venv · pytest · uvicorn"]
+    B --> C["3-2. 워크로드<br/>Pod → ReplicaSet → Deployment"]
+    C --> D["3-3. 네트워크<br/>ClusterIP · NodePort · LoadBalancer"]
+    D --> E["3-4. 설정과 격리<br/>Namespace · ConfigMap · Secret"]
+    E --> F["3-5. 이미지 빌드<br/>Dockerfile · docker run · Docker Hub"]
+    F --> G["3-6. Helm 차트<br/>hello-joker · redis"]
+    G --> H["3-7. GitLab CI<br/>test → build·push → 차트 태그 수정"]
+    H --> I["3-8. Argo CD<br/>Git 기준 자동 배포"]
+    I --> J["3-9. Prometheus · Grafana<br/>모니터링"]
+    classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef doing fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef todo fill:#f3f4f6,stroke:#9ca3af,color:#374151
+    class A,B,C,D,E done
+    class F doing
+    class G,H,I,J todo
 ```
 
-## 단계별 정리
+초록색은 완료, 노란색은 진행 중, 회색은 예정입니다.
+
+## 3. 단계별 정리
 
 | 단계 | 한 일 | 기억할 점 |
 |:---|:---|:---|
-| **0. 환경 준비**<br/>10/19~10/20 | WSL2 Ubuntu 24.04, uv/Python, k3s, kubectl/Helm, Docker 설치 | `mirrored` 네트워크 모드에서 Pod 네트워크 문제가 발생해 **NAT 모드로 복구**. k3s는 **Traefik 비활성화** 상태로 설치. Docker 그룹 설정 확인. |
-| **3-1. 앱 로컬 실행** | 챕터 전용 Python 3.10 가상환경 생성, `pytest` 테스트, `uvicorn` 실행 | 책에 `httpx` 버전이 고정되지 않아 테스트 실패 → **`httpx<0.28`**로 해결. |
-| **3-2. Pod → ReplicaSet → Deployment** | Pod 1개 생성 → ReplicaSet으로 3개 유지 → Deployment로 v1→v2 롤링 업데이트 및 롤백 | ReplicaSet은 **레이블 셀렉터와 일치하는 기존 Pod를 입양**할 수 있음. v2 포트 불일치로 앱 응답이 없었지만 롤아웃은 성공으로 표시 → **`readinessProbe` 필요**. |
-| **3-3. Service** | ClusterIP, NodePort, LoadBalancer 생성 및 접속 실습 | 일반적으로 NodePort는 ClusterIP 기능을, LoadBalancer는 NodePort/ClusterIP 경로를 활용할 수 있지만 **항상 단순한 포함 관계는 아님**. 로드밸런싱은 고정 순서가 아님. 실습 환경에서 Windows `localhost` 대신 **WSL IP**로 접속. |
-| **3-4. Namespace / ConfigMap / Secret** | `funny` Namespace 생성, 설정값과 비밀값을 환경변수로 주입 | 책의 매니페스트 오류 3개를 `scratch/ch03/`에서 수정. Secret의 base64 표현은 **인코딩이지 암호화가 아님**. |
+| **0. 환경 준비**<br/>10/19~10/20 | WSL2 Ubuntu 24.04, uv/Python, k3s, kubectl/Helm, Docker 설치 | `mirrored` 네트워크 모드에서 Pod 네트워크가 주기적으로 끊겨 **NAT 모드로 되돌림**. k3s는 **Traefik 끄고**, flannel `host-gw`로 설치. Docker 그룹 설정은 10/24에 확인(sudo 없이 `docker ps`). |
+| **3-1. 앱 로컬 실행** | 챕터 전용 Python 3.10 가상환경 생성, `pytest` 테스트, `uvicorn` 실행 | 책이 `httpx` 버전을 고정하지 않아 최신 0.28이 설치되며 테스트 실패 → **`httpx<0.28`**로 해결. |
+| **3-2. Pod → ReplicaSet → Deployment** | Pod 1개 → ReplicaSet으로 3개 유지 → Deployment로 v1→v2 롤링 업데이트와 롤백 | ReplicaSet은 **label이 같은 기존 Pod를 입양**함. v2 이미지는 앱을 **80번** 포트로 띄우는데 Service는 **8083**을 가리켜 응답이 없었음. 그런데도 롤아웃은 성공으로 표시 → **`readinessProbe` 필요**. |
+| **3-3. Service** | ClusterIP, NodePort, LoadBalancer 생성 및 접속 | 기본 설정에서는 **LoadBalancer ⊃ NodePort ⊃ ClusterIP**(LoadBalancer에 nodePort 31319가 자동 배정됨). 요청 30개가 11/12/7개로 나뉨 → 순서대로가 아니라 **무작위 분배**. Windows `localhost`로는 접속되지 않아 **WSL IP**나 `kubectl port-forward` 사용. |
+| **3-4. Namespace / ConfigMap / Secret** | `funny` Namespace 생성, 설정값과 비밀값을 환경변수로 주입 | 책 매니페스트 오류 3개를 `scratch/ch03/`에서 수정(아래 오류 표 참고). Secret의 base64는 **인코딩이지 암호화가 아님**. |
+| **3-5. Docker 이미지 빌드**<br/>(진행 중) | ① 책 Dockerfile 그대로 빌드 → 실패<br/>② `FROM`만 bookworm으로 고쳐 빌드 → 성공<br/>③ `docker run -p 8083:8083`로 실행 → 응답 확인 | 베이스 이미지 `python:3.10-slim-buster`는 Debian 10 **지원 종료(EOL)** 로 `apt-get update`가 404. 오류는 3번째 줄에서 났지만 **원인은 1번째 줄(`FROM`)**. `-buster`만 지우면 그때의 최신 Debian(현재 trixie)이 되므로 **`-bookworm`처럼 코드네임을 고정**. |
 
-## 실습에서 배운 핵심 개념
+## 4. 실습에서 배운 핵심 개념
 
-### 1. 안정적인 배포에는 상태 점검이 필요하다
+### 1) "켜짐"과 "응답할 준비가 됨"은 다르다
 
-Deployment의 롤아웃이 성공했다고 해서 **애플리케이션이 실제 요청에 정상 응답한다는 뜻은 아닙니다.** `readinessProbe`로 트래픽을 받을 준비가 되었는지 확인해야 합니다.
+readinessProbe가 없으면 Kubernetes는 **컨테이너 프로세스가 살아 있는지만** 확인합니다. v2는 프로세스가 잘 떠 있었지만 엉뚱한 포트(80)에서 기다리고 있었고, Kubernetes는 이를 몰랐습니다. readinessProbe를 넣으면 실제로 요청을 보내 보고 응답이 와야 트래픽을 넘깁니다. 책의 Helm 차트(`hello-joker/templates/deployment.yaml`)에는 liveness/readinessProbe가 들어 있어 3-6에서 직접 확인할 예정입니다.
 
-### 2. ReplicaSet은 Pod 이름보다 레이블을 본다
+> 앱 포트를 실제로 정하는 곳은 `entrypoint.sh`의 `uvicorn ... --port 8083`입니다. Dockerfile의 `EXPOSE`와 매니페스트의 `containerPort`는 **안내문일 뿐** 포트를 열지 않습니다.
 
-ReplicaSet은 `selector`에 일치하는 Pod를 관리합니다. 기존 Pod를 의도치 않게 관리하지 않도록 **레이블 설계를 명확히** 해야 합니다.
+### 2) ReplicaSet은 Pod 이름이 아니라 label을 본다
 
-### 3. Service는 Pod의 변화와 접속 경로를 분리한다
+ReplicaSet은 `selector`와 label이 일치하는 Pod를 자기 것으로 관리합니다. 미리 떠 있던 `joker` Pod도 label이 같아 입양되었고, ReplicaSet을 지울 때 함께 지워졌습니다. Deployment는 `pod-template-hash` label을 붙여 버전별 ReplicaSet끼리 Pod가 섞이지 않게 합니다.
 
-- **ClusterIP:** 클러스터 내부 접근용
-- **NodePort:** 노드 IP와 지정 포트를 통한 접근용
-- **LoadBalancer:** 지원 환경에서 외부 로드밸런서를 통한 접근용
+### 3) Service는 바뀌는 Pod 앞에 고정된 주소를 준다
 
-> **실습 환경 메모:** Windows와 WSL2의 네트워크 구성에 따라 `localhost` 접근 가능 여부가 달라집니다. 이번 실습에서는 WSL IP를 사용했습니다.
+| 종류 | 접근 범위 | 이번 실습 |
+|:---|:---|:---|
+| **ClusterIP** | 클러스터 안. DNS 이름 `<서비스>.<네임스페이스>.svc.cluster.local` | 다른 네임스페이스는 `joker-cluster-ip-service.funny`처럼 접근 |
+| **NodePort** | 노드 IP + 30000~32767 포트 | `<WSL IP>:30420` |
+| **LoadBalancer** | 외부 IP | k3s ServiceLB가 노드 IP(WSL IP)를 EXTERNAL-IP로 줌 |
 
-### 4. Secret은 자동으로 안전해지는 비밀번호 금고가 아니다
+`port`는 Service가 받는 포트(80), `targetPort`는 Pod 쪽 포트(8083)입니다.
 
-Secret의 `data` 필드는 base64로 인코딩되지만 이것만으로 암호화가 되지는 않습니다. 운영 환경에서는 접근 제어(RBAC), 저장 시 암호화 설정 등의 보호 조치가 중요합니다.
-## 🧩 개념별 관계
+> **왜 Windows `localhost`로는 NodePort에 접속할 수 없나:** WSL은 리눅스에서 **실제로 포트를 열고 기다리는(LISTEN)** 프로세스가 있을 때만 그 포트를 Windows `localhost`로 연결해 줍니다. NodePort는 iptables 전달 규칙일 뿐이라 LISTEN 중인 프로세스가 없습니다(`ss -ltn`에 30420이 보이지 않음). 반대로 3-5의 `docker run -p 8083:8083`은 `docker-proxy` 프로세스가 실제로 8083을 열어 두기 때문에 Windows `localhost:8083`으로 접속됩니다.
 
-### 1. FastAPI → Docker 이미지 (`3-1`, `3-5`)
+### 4) Secret은 저절로 안전해지는 금고가 아니다
 
-- `main.py`: 농담을 돌려주는 FastAPI 애플리케이션
-- **3-1**: Python으로 내 PC에서 직접 실행
-- **3-5**: `Dockerfile`을 작성하고 **내 앱의 이미지**를 직접 빌드
-- 앞선 실습에서는 남이 만든 `varunmallya/hello-joker` 이미지를 사용했음
+Secret의 `data`는 base64로 **인코딩**만 되어 있어 `base64 -d`로 바로 원문이 나옵니다. Pod에 `exec`할 수 있는 사람은 `printenv`로 평문을 볼 수 있습니다. 보호하려면 RBAC로 Secret 읽기와 exec 권한을 제한하고, 저장 시 암호화(k3s는 `--secrets-encryption`)를 켜야 합니다. 책의 ConfigMap 예제에 들어 있는 `api-key`도 원래는 Secret에 두어야 합니다.
 
-```bash
-# 예시: 현재 폴더의 Dockerfile로 이미지 빌드
- docker build -t hello-joker:1.0 .
-```
+### 5) 버전은 고정한다. 고정한 버전은 언젠가 직접 올린다
 
-### 2. Kubernetes에서 실행·유지·교체 (`3-2`)
+| | 고정하지 않음 | 고정함 |
+|:---|:---|:---|
+| 예 | `httpx`, `python:3.10-slim` | `starlette==0.27.0`, `python:3.10-slim-buster` |
+| 문제 | 모르는 사이에 **조용히 바뀜**(httpx 0.28로 테스트 깨짐) | 바뀌지 않는 대신 지원이 끝나면 **눈에 띄게 깨짐**(buster 404) |
 
-```text
-Deployment ──관리──▶ ReplicaSet ──관리──▶ Pod ──실행──▶ 컨테이너
-```
+실무에서는 보통 고정을 택합니다. 깨지더라도 언제, 왜 깨졌는지 알 수 있기 때문입니다. 2026-10 기준 `python:3.10-slim`은 Debian 13(trixie), `python:3.10-slim-bookworm`은 Debian 12를 가리킵니다.
 
-- **Pod**: 컨테이너를 실행하는 Kubernetes의 기본 배포 단위
-- **ReplicaSet**: 지정된 Pod 개수를 유지
-- **Deployment**: ReplicaSet을 관리하며 버전 업데이트·롤백·확장 담당
+### 6) Dockerfile은 위에서부터 쌓는 레시피다
 
-> 실무에서는 보통 Pod를 직접 여러 개 관리하기보다 **Deployment**를 선언하여 운영합니다.
+- 빌드 로그의 `[3/8]`은 8단계 중 3단계라는 뜻이고, 한 단계라도 실패하면 이미지는 만들어지지 않습니다.
+- `docker build -f <Dockerfile> -t <이름:태그> <빌드 컨텍스트>`: `COPY`는 **빌드 컨텍스트 폴더 안의 파일만** 가져올 수 있습니다. 이 방법으로 책 코드는 그대로 두고 고친 Dockerfile(`scratch/ch03/Dockerfile`)만 바꿔 끼웠습니다.
+- `docker history`로 줄마다 크기를 볼 수 있습니다. 이번 이미지(909MB)는 `build-essential` 321MB, pip 패키지 104MB, `COPY .` 91.7MB 순으로 컸습니다.
 
-### 3. 안정적인 접속 경로 (`3-3`)
+## 5. 만난 오류와 교훈
 
-| Service 종류 | 접근 범위 | 용도 |
-|---|---|---|
-| **ClusterIP** | 기본적으로 클러스터 내부 | 서비스 간 통신 |
-| **NodePort** | 각 노드 IP와 지정 포트 | 외부 접속 경로 제공 |
-| **LoadBalancer** | 로드밸런서가 지원되는 환경 | 외부 트래픽 분산·진입 |
+| 단계 | 증상 | 원인 | 해결 / 교훈 |
+|:---|:---|:---|:---|
+| 환경 | Pod 네트워크가 주기적으로 끊김 | WSL `mirrored` 모드와 k3s veth 충돌 | NAT 모드 유지 |
+| 3-1 | `TypeError: ... unexpected keyword argument 'app'` | httpx 0.28에서 `app` 인자 제거 | `httpx<0.28`. 의존성 고정의 이유 |
+| 3-2 | 롤아웃 성공인데 응답 없음 | v2가 80번 포트 사용, probe 없음 | 롤백. readinessProbe 필요 |
+| 3-4 | `namespaces "funny" not found` | 매니페스트에 적은 네임스페이스는 자동으로 생기지 않음 | `kubectl create namespace funny` 먼저 |
+| 3-4 | `serviceaccount "default" not found` | 새 네임스페이스의 ServiceAccount는 비동기로 생성 | 잠시 기다린 뒤 적용 |
+| 3-4 | exit 0인데 `CrashLoopBackOff` | ubuntu 컨테이너가 할 일이 없어 종료 + `restartPolicy: Always` | `command`로 할 일 지정(`env` 출력 후 `sleep infinity`) |
+| 3-4 | `configmap "test-secret" not found` | Secret을 `configMapKeyRef`로 참조 | `secretKeyRef`로 수정 |
+| 3-4 | `couldn't find key database-username` | 키 이름 `-`와 `_` 혼동 | `database_username`으로 수정 |
+| 3-5 | `apt-get update` 404, `exit code: 100` | Debian 10(buster) EOL | `FROM python:3.10-slim-bookworm` |
+| 3-5 | `docker run` 실행 시 `requires at least 1 argument` | 필수 인자 `IMAGE` 누락 | Usage 표기법 `[ ]`는 선택, 대문자는 필수 |
 
-Service는 Pod IP가 바뀌더라도 **안정적인 서비스 이름과 주소**를 제공합니다.
+`CreateContainerConfigError`처럼 원인이 상태 이름에 드러나지 않을 때는 `kubectl describe pod <이름>`의 Events를 봅니다.
 
-### 4. 환경 및 설정 관리 (`3-4`)
+## 6. 앞으로 확인할 것 (검토에서 발견)
 
-- **Namespace**: Kubernetes 리소스를 논리적으로 구분하는 공간
-- **ConfigMap**: 일반 설정값을 앱과 분리해 관리
-- **Secret**: 비밀번호·API 키 같은 민감정보를 관리하는 Kubernetes 리소스
+- **`.venv`가 이미지에 들어감**: `.dockerignore`에 `myvenv`라고 적혀 있는데 실제 폴더는 `.venv`(87MB). → 3-5 4단계
+- **책 CI(`.gitlab-ci.yml`)는 그대로는 동작하지 않음**: test 단계는 httpx 0.28, build 단계는 buster Dockerfile과 저자 Docker Hub 계정(`varunmallya`), update 단계는 저자 gitlab.com 저장소를 씀. → 3-7에서 우리 GitLab과 계정으로 수정
+- **Helm `values.yaml`의 이미지가 저자 것**(`varunmallya/hello-joker`) → 3-6에서 교체
+- **앱이 지표를 내보내지 않음**: `requirements.txt`에 `prometheus-fastapi-instrumentator`는 있지만 `main.py`가 쓰지 않아 `/metrics`가 404. → 3-9에서 `scratch/`에 추가
+- **메모리**: PC RAM 15.7GB, WSL 기본 7.6GB. GitLab, Argo CD, Prometheus를 동시에 띄우면 빠듯할 수 있음 → 단계별로 필요한 것만 켜기
 
-> ⚠️ Secret이라는 이름만으로 암호화가 자동 보장되는 것은 아닙니다. 저장 시 암호화, RBAC 등 별도 보안 설정이 중요합니다.
+## 7. 결정 사항
 
-### 5. 묶어서 배포 → 자동화 (`3-6`, `3-7`)
+| 날짜 | 결정 | 이유 |
+|:---|:---|:---|
+| 10/19 | WSL2 NAT 모드 유지 | mirrored 모드에서 k3s Pod 네트워크가 끊김 |
+| 10/20 | k3s flannel `host-gw` | 스터디 참고 설치 명령과 맞춤 |
+| 10/24 | CI는 GitLab CE + Runner 직접 설치 | 스터디와 맞추고 GitLab 운영까지 배우기 위해 |
+| 10/24 | 3-8 Argo CD, 3-9 Prometheus·Grafana 추가 | 그림 3.2 전체를 직접 구성하기 위해 |
+| 10/24 | 레지스트리는 Docker Hub | 책과 같고 설정이 가장 적음 |
+| 10/24 | 3-5 배포는 Docker Hub push → k3s pull | 그림 3.2 경로를 손으로 먼저 해 보기. `k3s ctr import`는 선택 |
 
-- **Helm**: Deployment, Service, ConfigMap 등 여러 리소스를 **Chart**로 묶어 반복 배포
-- **GitLab CI**: 코드 변경을 계기로 이미지 빌드·테스트·레지스트리 업로드·Helm 배포 등을 자동 실행
+## 8. 실습 체크리스트
 
-```text
-개발자 코드 수정
-       ↓
-GitLab 저장소에 Push
-       ↓
-GitLab CI 파이프라인
-       ├─ 테스트
-       ├─ Docker 이미지 빌드
-       ├─ 컨테이너 레지스트리에 Push
-       └─ Helm으로 Kubernetes 배포
-                        ↓
-                   Deployment
-                        ↓
-                    ReplicaSet
-                        ↓
-                       Pod
-                        ↓
-                     Service
-```
+- [x] WSL2 Ubuntu / Python / k3s / Docker 설치
+- [x] 3-1 FastAPI 앱 테스트 및 로컬 실행
+- [x] 3-2 Pod, ReplicaSet, Deployment 생성 / 롤링 업데이트와 롤백
+- [x] 3-3 ClusterIP, NodePort, LoadBalancer
+- [x] 3-4 Namespace, ConfigMap, Secret
+- [ ] 3-5 Docker 이미지 빌드
+  - [x] ① 책 Dockerfile 빌드 → buster 실패 확인
+  - [x] ② bookworm으로 고쳐 빌드
+  - [x] ③ `docker run`으로 실행·응답 확인
+  - [ ] ④ `.dockerignore` 정리(`.venv` 제외)
+  - [ ] ⑤ Docker Hub에 push
+  - [ ] ⑥ k3s에서 Docker Hub 이미지로 배포
+- [ ] 3-6 Helm 차트(hello-joker, redis)
+- [ ] 3-7 GitLab CE + Runner 설치, CI 파이프라인(test → build·push → 차트 태그 수정)
+- [ ] 3-8 Argo CD로 Git 기준 자동 배포
+- [ ] 3-9 Prometheus + Grafana 모니터링
 
+## 9. 실습 파일 위치
 
-
----
-
-### 🎯 핵심 한 문장
-
-**FastAPI로 앱을 만들고 → Docker로 포장하고 → Kubernetes로 운영하고 → Helm으로 배포를 표준화하고 → GitLab CI로 전체 과정을 자동화한다.**
-
-*참고: 학습 번호는 수업 순서를 따르므로 3-5 Docker 이미지 제작은 개념 흐름도에서 Kubernetes 실행보다 앞에 표시했습니다.*
-
-
-
----
-
-
-## ✅ 이제 시작!
-- [ ] WSL2 Ubuntu / Python / k3s / Docker 설치
-- [ ] FastAPI 앱 테스트 및 로컬 실행
-- [ ] Pod, ReplicaSet, Deployment 생성
-- [ ] 롤링 업데이트 및 롤백 실습(Service 이해)
-- [ ] ClusterIP, NodePort, LoadBalancer 실습
-- [ ] Namespace, ConfigMap, Secret 실습
-- [ ] 3-5 Docker 컨테이너 이미지 직접 빌드(Docker 이미지를 직접 제작)
-- [ ] 3-6 Helm으로 배포 구성 묶기
-- [ ] 3-7 GitLab CI로 배포 자동화
+| 파일 | 내용 |
+|:---|:---|
+| `chapters/ch03-k8s/` | 책 원본 코드(수정하지 않음) |
+| `scratch/ch03/pod-using-configmap-fixed.yaml` | `command` 추가 |
+| `scratch/ch03/pod-using-secret-fix1.yaml`, `-fixed.yaml` | `secretKeyRef`와 키 이름 수정(2단계) |
+| `scratch/ch03/Dockerfile` | `FROM python:3.10-slim-bookworm` |
+| `notes/ch03-k8s.md` | 상세 노트(Q&A, 명령과 결과, 막힌 점) |
+| `notes/_glossary.md` | 용어집 |
 
 ---
-
 
 ```bash
 
