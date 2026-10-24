@@ -641,6 +641,6 @@ flowchart TD
 
 # 3장 결과를 봤음. 이제 처음부터 한 단계씩 실습 시작
 
-
+[github.com/사용자명/저장소명/blob/main/docs/installation.md](https://github.com/stat-yongsan/MLOps-study/blob/main/week1/README2.md)
 
 
