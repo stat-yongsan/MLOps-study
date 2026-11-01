@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>MLOps 05장 용어 풀이</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 모바일 한 열. 라인 지도 → 핵심 6 → 직접 해 보기 → 실습 환경 짓기 → 헷갈리는 짝 → 용어 사전 → 실행 기록 */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --ink:#15201E; --muted:#56635F; --line:#D3DBD8;
+  --accent:#0B6E69; --soft:#E2EEEB; --mark:rgba(232,178,27,.40); --warn:#8F6200;
+  --good:#2C7A4F; --bad:#B4462A; --pv:#8F6200; --pp:#0B6E69; --pq:#7A4FB8;
+  --c-line:#0B6E69; --c-station:#7A4FB8; --c-steps:#2F6DB5; --c-store:#8C6A2E;
+  --c-ship:#B9512A; --c-site:#2C8A57; --c-gate:#9A4E8C; --c-guard:#5B6770;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --nav-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+    --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+    --good:#6CCB95; --bad:#EE8F64; --pv:#F2C230; --pp:#4CC2B9; --pq:#B595E6;
+    --c-line:#4CC2B9; --c-station:#B595E6; --c-steps:#7EA9E6; --c-store:#D2B06E;
+    --c-ship:#EE8F64; --c-site:#6CCB95; --c-gate:#E08FCF; --c-guard:#A7B3BB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+  --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+  --good:#6CCB95; --bad:#EE8F64; --pv:#F2C230; --pp:#4CC2B9; --pq:#B595E6;
+  --c-line:#4CC2B9; --c-station:#B595E6; --c-steps:#7EA9E6; --c-store:#D2B06E;
+  --c-ship:#EE8F64; --c-site:#6CCB95; --c-gate:#E08FCF; --c-guard:#A7B3BB;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.68;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:5px;word-break:break-all}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + var(--nav-h) + 12px)}
+h1,h2{font-family:var(--f-display);font-weight:400;text-wrap:balance;letter-spacing:-.01em}
+.mark{background:linear-gradient(transparent 55%,var(--mark) 55%);padding:0 .1em}
+a{color:var(--accent)}
+
+header.wrap{padding-block:28px 18px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:0 0 8px}
+h1{font-size:clamp(31px,8.4vw,46px);line-height:1.14;margin:0 0 14px}
+.lede{font-size:17px;margin:0 0 10px;max-width:60ch}
+.how{font-size:14.5px;color:var(--muted);margin:0}
+.src{display:grid;gap:6px;margin-top:12px}
+.src div{font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.src b{font-weight:700}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{flex:none;font-size:14px;font-weight:500;padding:6px 13px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink);text-decoration:none;background:var(--surface);white-space:nowrap}
+.nav a:active{background:var(--soft)}
+
+section.wrap{padding-block:34px 6px}
+h2{font-size:clamp(25px,6.6vw,32px);line-height:1.2;margin:0 0 6px}
+h3.sub{font-size:18px;margin:28px 0 10px}
+.sec-lead{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:62ch}
+.note{font-size:14.5px;margin:12px 0 0}
+
+/* map */
+.map{display:grid;gap:4px}
+.zone{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);min-width:0}
+.zone-label{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.zone-label .hint{font-weight:400;color:var(--muted);font-size:13px}
+.zone.cluster{border:1.5px dashed var(--accent);background:var(--soft);display:grid;gap:10px}
+.zone.cluster>.zone-label{margin-bottom:0}
+.zone-note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.arrow{text-align:center;font-size:13px;color:var(--muted);padding-block:4px}
+.arrow::before{content:"↓";display:block;font-size:18px;line-height:1;color:var(--accent)}
+.nodes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{display:inline-flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left}
+.node .k{font-size:12.5px;font-weight:400;color:var(--muted)}
+.node:active,.station:active{background:var(--soft)}
+.node.big{font-size:15px;border-color:var(--accent);color:var(--accent)}
+.to{color:var(--muted);font-size:14px}
+.dept{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px;min-width:0}
+.dept .node{background:var(--bg)}
+.dept-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-weight:700;font-size:14.5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cat);flex:none}
+.stations{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.stations li{display:grid;gap:4px}
+.station{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg);cursor:pointer;text-align:left;font-size:14.5px;font-weight:600}
+.station .k{font-weight:400;color:var(--muted);font-size:13px;margin-left:auto}
+.st{font-family:var(--f-mono);font-size:12px;font-weight:500;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:var(--cat);color:var(--surface);flex:none}
+.handoff{font-size:12.5px;color:var(--muted);padding-left:16px}
+.handoff::before{content:"↓ ";color:var(--accent);font-weight:700}
+
+/* core */
+.core-grid{display:grid;gap:14px}
+.core{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;min-width:0}
+.core-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:6px}
+.core-name{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.core-full{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.core-top .cat-tag{margin-left:auto}
+.core-one{font-size:17px;font-weight:600;margin:0 0 14px}
+dl{margin:0;display:grid;gap:12px}
+dl>div{min-width:0}
+dt{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.03em;margin-bottom:2px}
+dd{margin:0}
+.excel dd{background:var(--soft);padding:8px 11px;border-radius:8px}
+.warn dt{color:var(--warn)}
+.cat-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--cat);
+  background:color-mix(in srgb,var(--cat) 13%,transparent)}
+
+/* try */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg);gap:2px;margin-bottom:10px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+pre.cmd{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;
+  font-family:var(--f-mono);font-size:12.5px;line-height:1.7;white-space:pre;word-break:normal;overflow-wrap:normal}
+pre.cmd .cm{color:var(--muted)}
+pre.cmd .v{color:var(--pv);font-weight:500}
+pre.cmd .p1{color:var(--pp);font-weight:500;background:color-mix(in srgb,var(--pp) 12%,transparent);border-radius:4px}
+pre.cmd .p2{color:var(--pq);font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.tog{font-size:13.5px;font-weight:600;padding:6px 11px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);cursor:pointer;font-family:var(--f-mono)}
+.tog[aria-pressed="true"]{border-color:var(--accent);background:var(--soft);color:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.preset{font-size:13px;font-weight:500;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.preset:active{background:var(--soft)}
+.tbl-wrap{overflow-x:auto;margin-top:10px}
+table.t{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.t th,.t td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+.t th{background:var(--soft);font-weight:600;font-size:13px}
+.t td.mono{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.t td.ok{color:var(--good);font-weight:700}
+.t td.no{color:var(--bad);font-weight:700}
+.t tr.sum td{font-weight:700}
+.verdict{font-size:15px;margin:10px 0 0;font-weight:600}
+.verdict.no{color:var(--bad)}
+.verdict.ok{color:var(--good)}
+.lbl{font-size:13px;font-weight:600;color:var(--muted);margin:4px 0 0}
+
+/* env */
+.envs{display:grid;gap:10px}
+.env{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.env h4{margin:0;font-size:16px}
+.env .who{font-size:13px;color:var(--muted);margin:0 0 8px}
+.env dl{gap:4px}
+.env dl>div{display:grid;grid-template-columns:5.6em 1fr;gap:8px;font-size:14.5px}
+.env dt{font-size:12.5px;margin:2px 0 0;color:var(--muted)}
+.env .tag{margin-top:8px;font-size:14px;font-weight:600}
+@media (min-width:620px){.envs{grid-template-columns:1fr 1fr}}
+.route{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;margin-bottom:10px}
+.route-title{font-size:14px;font-weight:700}
+.route-title span{font-weight:400;color:var(--muted);font-size:13px;margin-left:4px}
+.hops{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.hop{display:grid;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);min-width:0}
+.hop b{font-weight:600;font-size:14px}
+.hop small{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.via{font-size:12px;color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:2px}
+.via::after{content:"→";font-size:15px}
+.breaks{display:grid;gap:10px}
+.brk{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface)}
+.brk h4{margin:0 0 6px;font-size:15.5px}
+.brk dl{gap:6px}
+.brk dt{display:inline;margin-right:6px}
+.brk dd{display:inline;font-size:15px}
+
+/* pairs */
+.pair{padding-block:16px;border-top:1px solid var(--line)}
+.pair:last-child{border-bottom:1px solid var(--line)}
+.pair h3{font-size:17.5px;margin:0 0 10px;line-height:1.35}
+.vs{color:var(--muted);font-weight:400;padding-inline:4px}
+.pair-grid{display:grid;gap:8px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.side p{margin:2px 0 0;font-size:15px}
+.side-name{font-weight:700;font-size:14.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.side-name.static{color:var(--ink);text-decoration:none;cursor:default}
+.pair-key{margin:10px 0 0;font-size:15px}
+.pair-key b{font-weight:700;margin-right:6px}
+@media (min-width:520px){.pair-grid{grid-template-columns:1fr 1fr}}
+
+/* glossary */
+.tools{display:grid;gap:10px;margin-bottom:6px}
+.search{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:7px;height:7px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list-bar{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);padding-block:6px}
+.textbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 0}
+.term-list{border-top:1px solid var(--line)}
+details.term{border-bottom:1px solid var(--line)}
+details.term>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding-block:13px}
+details.term>summary::-webkit-details-marker{display:none}
+.t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.t-name{font-weight:700;font-size:17px}
+.t-sub{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.t-d{grid-column:1/-1;color:var(--muted);font-size:15px}
+.t-right{display:flex;align-items:center;gap:8px;align-self:start}
+.chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+details[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.t-body{padding:2px 0 16px}
+.t-body dl{gap:10px}
+.go{margin-top:6px;font-size:14px;font-weight:600}
+.empty{padding:22px 0;color:var(--muted)}
+
+/* flow */
+.flow{list-style:none;margin:0;padding:0}
+.flow li{position:relative;padding:0 0 22px 46px}
+.flow li::before{content:attr(data-step);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:14px;background:var(--accent);color:var(--surface)}
+.flow li::after{content:"";position:absolute;left:15px;top:36px;bottom:4px;border-left:2px dotted var(--line)}
+.flow li:last-child::after{display:none}
+.flow h3{margin:3px 0 4px;font-size:17.5px}
+.flow p{margin:0 0 6px;font-size:15px}
+.flow .left{font-size:14px;color:var(--muted)}
+.flow .left b{color:var(--ink);font-weight:600}
+.flow .nodes{margin-top:8px}
+.flow .node{font-size:13px;padding:4px 9px;font-weight:500}
+
+footer.wrap{padding-block:30px 40px;color:var(--muted);font-size:13.5px}
+footer p{margin:0 0 8px}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,30%{background:var(--mark)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){
+  .flash{animation:none;outline:2px solid var(--accent);outline-offset:4px}
+  .chev{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">머신러닝 플랫폼 엔지니어링 · 05장 KFP 배치 추론 파이프라인</p>
+  <h1>05장 용어를 공장으로 풀어 보기</h1>
+  <p class="lede">04장에서 생산 라인(KFP)을 처음 봤다면, 05장은 그 라인의 <span class="mark">작업대를 직접 만들고 잇는</span> 장입니다. 작업대 하나(컴포넌트)를 코드, 밀키트(이미지), 안내판(component.yaml) 세 겹으로 만들고, 네 개를 이어 사용자 30,162명을 한 번에 예측해요.</p>
+  <p class="how">두 사람의 실습 기록을 함께 담았습니다. 용어 이름을 누르면 설명으로 이동해요.</p>
+  <div class="src">
+    <div><b>ken-0913님</b> · 홈랩 KFP 2.17.3에서 책의 파이프라인을 만들고 돌린 기록</div>
+    <div><b>kurtyoon님</b> · 블로그가 도는 k3s 한 대에 4·5장 실습 환경을 지은 기록</div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap nav-inner">
+    <a href="#map">라인 지도</a>
+    <a href="#core">핵심 6</a>
+    <a href="#try">직접 해 보기</a>
+    <a href="#env">환경 짓기</a>
+    <a href="#pairs">헷갈리는 짝</a>
+    <a href="#dict">용어 사전</a>
+    <a href="#flow">실행 기록</a>
+  </div>
+</nav>
+
+<main>
+<section class="wrap" id="map">
+  <h2>라인 지도</h2>
+  <p class="sec-lead">ken-0913님 홈랩 기준입니다. 위에서 작업대를 만들어 포장하고, 아래 공장에서 네 작업대가 차례로 돌아요.</p>
+  <div class="map">
+    <div class="zone">
+      <div class="zone-label">개발 PC와 GitHub <span class="hint">작업대 설계와 포장</span></div>
+      <div class="nodes">
+        <button class="node" data-term="argparse">src/*.py <span class="k">작업 매뉴얼</span></button>
+        <span class="to">→</span>
+        <button class="node" data-term="gha">GitHub Actions <span class="k">자동 포장 라인</span></button>
+        <span class="to">→</span>
+        <button class="node" data-term="dockerhub">Docker Hub <span class="k">밀키트 창고</span></button>
+      </div>
+      <div class="nodes" style="margin-top:8px">
+        <button class="node" data-term="compyaml">component.yaml <span class="k">작업대 안내판</span></button>
+        <button class="node" data-term="dsl">@dsl.pipeline <span class="k">라인 배치도</span></button>
+        <span class="to">→</span>
+        <button class="node" data-term="compile">컴파일 <span class="k">YAML 지시서</span></button>
+      </div>
+    </div>
+    <div class="arrow">UI에 올리거나 SDK로 실행 요청</div>
+
+    <div class="zone cluster">
+      <div class="zone-label"><button class="node big" data-term="kfp">KFP 2.17.3</button><span class="hint">생산 관리실. <button class="node" data-term="argo" style="padding:2px 7px;font-size:13px">Argo</button> 반장이 작업자(Pod)를 차례로 부른다</span></div>
+
+      <div class="dept" style="--cat:var(--c-steps)">
+        <div class="dept-head"><i class="dot"></i>생산 라인 <span class="k" style="font-weight:400;color:var(--muted);font-size:13px">작업대마다 Pod 하나</span></div>
+        <ol class="stations">
+          <li><button class="station" data-term="readdata"><span class="st">1</span>read_data<span class="k">주문서 읽기</span></button></li>
+          <li class="handoff">Dataset 상자 (엔티티 30,162행)</li>
+          <li><button class="station" data-term="retrieve"><span class="st">2</span>retrieve_features<span class="k">재료 받기</span></button></li>
+          <li class="handoff">Dataset 상자 (피처 8개를 붙인 10컬럼)</li>
+          <li><button class="station" data-term="inference"><span class="st">3</span>run_inference<span class="k">레시피로 굽기</span></button></li>
+          <li class="handoff">Dataset 상자 (더미 90컬럼 + 예측 확률)</li>
+          <li><button class="station" data-term="writedata"><span class="st">4</span>write_data<span class="k">창고에 넣기</span></button></li>
+        </ol>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-store)">
+        <div class="dept-head"><i class="dot"></i>창고 <button class="node" data-term="rustfs">RustFS</button></div>
+        <div class="nodes">
+          <button class="node" data-term="buckets">inference-datasets <span class="k">입력과 결과</span></button>
+          <button class="node" data-term="buckets">feature-registry <span class="k">Feast 설정</span></button>
+          <button class="node" data-term="pipelineroot">mlpipeline <span class="k">작업대 사이 선반</span></button>
+        </div>
+      </div>
+      <div class="dept" style="--cat:var(--c-line)">
+        <div class="dept-head"><i class="dot"></i>연구실과 재료실</div>
+        <div class="nodes">
+          <button class="node" data-term="stage">MLflow <span class="k">Production 레시피 v2</span></button>
+          <button class="node" data-term="colpkl">column_list.pkl <span class="k">재료 배치도</span></button>
+          <button class="node" data-term="historical">Feast <span class="k">날짜 기준 재료</span></button>
+        </div>
+      </div>
+      <div class="dept" style="--cat:var(--c-guard)">
+        <div class="dept-head"><i class="dot"></i>열쇠 보관함</div>
+        <div class="nodes">
+          <button class="node" data-term="secret">Secret rustfs-credentials <span class="k">잠긴 서랍</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note">kurtyoon님 환경은 창고가 공용 SeaweedFS, 냉장고가 Valkey이고, 공장 정문에 로그인(authentik)이 붙어 있어요. 아래 <a href="#env">환경 짓기</a>에서 비교합니다.</p>
+</section>
+
+<section class="wrap" id="core">
+  <h2>핵심 6</h2>
+  <p class="sec-lead">이 여섯 개가 잡히면 나머지는 대부분 설정 이름이에요.</p>
+  <div class="core-grid">
+    <article class="core" id="core-orch" style="--cat:var(--c-line)">
+      <div class="core-top"><span class="core-name">오케스트레이션</span><span class="core-full">orchestration</span><span class="cat-tag">생산 관리</span></div>
+      <p class="core-one">여러 단계를 정해진 순서로 실행하면서, 단계마다 필요한 데이터와 컴퓨팅 자원을 갖춰 주는 일. Kubeflow에서는 KFP가 맡습니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>공장장. 어떤 작업대를 어떤 순서로 돌릴지, 작업자(Pod)를 언제 부를지, 상자를 어디에 둘지 정합니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>추론 흐름(읽기 → 피처 붙이기 → 예측 → 저장)은 정해진 주기로 반복되고, 매번 날짜나 테이블 이름만 바뀝니다. 사람이 순서대로 돌리면 빠뜨리기 쉬워요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>"기준일" 셀만 바꾸면 매크로가 데이터 가져오기 → 가공 → 계산 → 저장을 차례로 돌리는 보고서 자동화.</dd></div>
+        <div><dt>이번 장에서</dt><dd>4장에서 손으로 잇던 MLflow와 Feast를 KFP 파이프라인 하나로 묶어, 읽기부터 저장까지 한 번에 돌립니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>KFP는 단계와 순서를 관리할 뿐, 모델을 학습하거나 고르지 않습니다. 이 파이프라인은 4장에서 등록한 모델로 예측만 해요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-component" style="--cat:var(--c-station)">
+      <div class="core-top"><span class="core-name">컴포넌트</span><span class="core-full">component</span><span class="cat-tag">작업대</span></div>
+      <p class="core-one">파이프라인의 단계 하나. Python 코드 → Docker 이미지 → component.yaml 순서로 만들고, 실행할 때 Pod 하나에서 따로 돕니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>작업대 하나. 작업 매뉴얼(코드), 작업자가 들고 오는 공구·재료 키트(이미지), 작업대 앞 안내판(component.yaml)이 한 세트입니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>기능 하나씩 나눠야 다른 파이프라인에서 다시 쓰고, 나눠 맡고, 따로 테스트할 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>인수를 받는 매크로(Sub) 하나. 매크로마다 한 가지 일만 하게 나누면 다른 파일에서도 불러 쓸 수 있죠.</dd></div>
+        <div><dt>이번 장에서</dt><dd>read_data, retrieve_features, run_inference, write_data 네 개. ken-0913님은 책의 <code>src/*.py</code>를 한 줄도 고치지 않고 연결 방식만 바꿨습니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>책은 이미지 이름을 넷으로 나누지만, Dockerfile이 저장소 전체를 복사해서 네 이미지의 내용은 모두 같아요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-compyaml" style="--cat:var(--c-station)">
+      <div class="core-top"><span class="core-name">component.yaml</span><span class="core-full">컴포넌트 명세</span><span class="cat-tag">작업대</span></div>
+      <p class="core-one">컴포넌트의 입력과 출력, 타입, 실행할 이미지와 명령을 적은 명세. KFP는 코드 대신 이 안내판을 보고 값을 채우고 상자를 연결합니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>작업대 안내판. "받는 것: 버킷 이름(메모), 앞 작업대의 상자(선반 위치) / 내놓는 것: 상자 하나 / 실행: 이 키트로 이 명령".</dd></div>
+        <div><dt>왜 필요해</dt><dd>값을 넣는 자리와 파일을 주고받는 자리를 구분해 적어 둬야, KFP가 실행할 때 알맞은 값과 경로를 채울 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>함수의 인수 목록. <code>=VLOOKUP(찾을값, 범위, 열번호, 일치)</code>처럼 무엇을 어떤 자리에 넣는지 정해 둔 틀.</dd></div>
+        <div><dt>이번 장에서</dt><dd><code>inputValue</code>는 문자열 값을 그대로, <code>inputPath</code>와 <code>outputPath</code>는 KFP가 파일 경로를 채워 넣는 자리예요. 아래 <a href="#try">직접 해 보기</a>에서 채워지는 모습을 볼 수 있어요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>컴포넌트끼리 데이터를 주고받게 하는 건 <code>inputPath</code>와 <code>outputPath</code>입니다. 타입을 Dataset으로 적어도 열 이름이나 결측은 검사해 주지 않아요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-dag" style="--cat:var(--c-line)">
+      <div class="core-top"><span class="core-name">파이프라인과 DAG</span><span class="core-full">@dsl.pipeline</span><span class="cat-tag">생산 관리</span></div>
+      <p class="core-one"><code>@dsl.pipeline</code> 함수 안에서 태스크를 만들고 앞 태스크의 출력을 다음 태스크 입력으로 넘기면, KFP가 그 참조를 보고 실행 순서(DAG)를 정합니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>공정 순서도. 화살표 하나가 "이 상자가 나와야 다음 작업대가 시작"을 뜻해요. DAG는 방향이 있고 되돌아가는 고리가 없는 순서도라는 뜻입니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>순서를 따로 적지 않아도, 데이터가 흐르는 방향이 곧 실행 순서가 됩니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>계산 순서. B1에 <code>=A1*2</code>가 있으면 엑셀은 A1부터 계산하죠. <code>task.outputs["data_output"]</code>을 넘기는 게 셀 참조와 같아요.</dd></div>
+        <div><dt>이번 장에서</dt><dd><code>retrieve_features_task</code>는 <code>fetch_data_task.outputs["data_output"]</code>을 받으므로 read_data가 끝난 뒤 실행됩니다. 함수 전체를 <code>compiler.Compiler().compile()</code>로 YAML로 바꿔 올려요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>출력 참조로 잇지 않은 태스크끼리는 순서가 정해지지 않아 동시에 돌 수 있습니다.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-param" style="--cat:var(--c-line)">
+      <div class="core-top"><span class="core-name">파이프라인 파라미터</span><span class="core-full">runtime parameter</span><span class="cat-tag">생산 관리</span></div>
+      <p class="core-one"><code>@dsl.pipeline</code> 함수의 인자. 실행할 때마다 값을 바꿀 수 있는 런타임 파라미터가 됩니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>매번 라인에 꽂는 주문서. 라인은 그대로 두고 주문서(버킷, 파일 이름, 모델 이름, stage)만 바꿉니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>코드를 고치지 않고 다른 날짜, 다른 테이블, 다른 모델로 돌릴 수 있어요. 주소를 하드코딩하지 않는 게 설계 원칙(파라미터화)입니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>보고서 상단의 입력 셀(기준일, 부서). 이 셀만 바꾸면 아래 수식이 전부 다시 계산되죠.</dd></div>
+        <div><dt>이번 장에서</dt><dd>minio_host, entity_df_bucket, feature_list, model_name, model_stage, mlflow_host, output_bucket 등 14개. 주소는 Pod 기준이라 <code>localhost</code>를 쓰면 안 돼요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>책은 access_key, secret_key도 파라미터로 넘겨서 실행 기록(UI와 DB)에 평문으로 남습니다. 두 분 모두 이 둘을 빼고 Secret으로 넣었어요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-artifactstore" style="--cat:var(--c-store)">
+      <div class="core-top"><span class="core-name">아티팩트 저장소</span><span class="core-full">pipeline root</span><span class="cat-tag">창고</span></div>
+      <p class="core-one">단계 사이에 넘기는 중간 데이터(Dataset)와 로그를 쌓아 두는 저장소. 다음 단계는 여기서 읽어 갑니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>작업대 사이 임시 선반. 작업자(Pod)는 일이 끝나면 퇴근하니, 결과를 선반에 두고 가야 다음 작업자가 가져갑니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>Pod끼리 메모리를 공유하지 않아요. 파일로 남겨야 이어지고, 나중에 단계별 결과와 로그를 다시 볼 수 있습니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>매크로 단계마다 결과를 임시 시트에 붙여 두고, 다음 단계가 그 시트를 읽는 것.</dd></div>
+        <div><dt>이번 장에서</dt><dd>책은 KFP에 딸린 MinIO, ken-0913님은 RustFS의 <code>mlpipeline</code> 버킷, kurtyoon님은 공용 SeaweedFS의 <code>mlpipeline</code> 버킷을 씁니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>KFP 2.17.3은 함께 설치하는 SeaweedFS 주소를 여러 곳의 기본값으로 써서, 저장소를 바꾸려면 네 곳을 모두 고쳐야 했어요.</dd></div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="try">
+  <h2>직접 해 보기</h2>
+  <p class="sec-lead">05장에서 가장 헷갈리는 두 가지를 직접 눌러 보며 확인하는 곳입니다.</p>
+
+  <h3 class="sub">component.yaml 빈칸이 채워지는 모습</h3>
+  <div class="panel">
+    <div class="seg" role="group" aria-label="보기 전환">
+      <button type="button" id="segWrite" aria-pressed="true">작성할 때</button>
+      <button type="button" id="segRun" aria-pressed="false">실행할 때</button>
+    </div>
+    <pre class="cmd" id="cmdView"></pre>
+    <div class="legend">
+      <span><i style="background:var(--pv)"></i>inputValue · 값 그대로</span>
+      <span><i style="background:var(--pp)"></i>같은 파일 · 1단계 outputPath = 2단계 inputPath</span>
+      <span><i style="background:var(--pq)"></i>2단계 outputPath</span>
+    </div>
+    <p class="note">책 저장소의 component.yaml에서 키 인자는 빼고 옮겼어요. 실행할 때의 값은 ken-0913님 홈랩 기준이고, 아티팩트 경로는 모양을 보여 주는 예시입니다. <span class="mark">앞 단계가 상자를 놓은 선반 위치가 그대로 다음 단계 입력으로 들어가는 것</span>이 연결의 전부예요.</p>
+  </div>
+
+  <h3 class="sub">오류 없이 틀리는 원-핫 인코딩</h3>
+  <div class="panel">
+    <p style="margin:0 0 8px;font-size:15px">run_inference는 배치 데이터에 <code>get_dummies(drop_first=True)</code>를 다시 적용하고, 학습 때 열 순서로 맞추면서 없는 열은 0으로 채웁니다. 직업군(Workclass) 4개로 줄여서 따라가 볼게요. 학습 때는 알파벳순 첫 값인 Federal-gov 열이 지워졌습니다.</p>
+    <div class="presets" role="group" aria-label="예시 배치">
+      <button type="button" class="preset" data-batch="all">전체 30,162행</button>
+      <button type="button" class="preset" data-batch="nofed">Federal-gov가 없는 배치</button>
+      <button type="button" class="preset" data-batch="private">Private만 있는 배치</button>
+    </div>
+    <p class="lbl">이번 배치에 들어 있는 직업군 (눌러서 켜고 끄기)</p>
+    <div class="toggles" id="wcToggles"></div>
+    <div class="tbl-wrap">
+      <table class="t" id="wcTable" aria-describedby="wcVerdict"></table>
+    </div>
+    <p class="verdict" id="wcVerdict" aria-live="polite"></p>
+    <p class="note">0/1 칸은 학습 때 남은 세 열 Local-gov · Private · State-gov 순서입니다. 모델은 이 세 칸만 보고 직업군을 알아내요. 전체 데이터를 넣으면 모든 직업군이 들어 있어 문제가 드러나지 않습니다. <span class="mark">실행 성공과 올바른 예측은 다른 문제</span>라는 05장의 경고를 숫자로 보여 주는 예예요.</p>
+  </div>
+</section>
+
+<section class="wrap" id="env">
+  <h2>실습 환경 짓기</h2>
+  <p class="sec-lead">5장 파이프라인이 돌려면 공장 부지(클러스터)와 설비(MLflow, 저장소, Feast, KFP)가 먼저 있어야 해요. 같은 책을 네 가지 방식으로 지은 사례를 나란히 놓았습니다.</p>
+
+  <h3 class="sub">같은 책, 네 가지 공장</h3>
+  <div class="envs">
+    <article class="env">
+      <h4>책</h4>
+      <p class="who">부록 A 기준</p>
+      <dl>
+        <div><dt>부지</dt><dd>k3s v1.24 위에 Kubeflow 1.7 전체</dd></div>
+        <div><dt>창고</dt><dd>MinIO (minio / minio123)</dd></div>
+        <div><dt>냉장고</dt><dd>Redis</dd></div>
+        <div><dt>생산 라인</dt><dd>Kubeflow에 든 KFP</dd></div>
+        <div><dt>S3 키</dt><dd>파이프라인 파라미터</dd></div>
+      </dl>
+      <p class="tag">Istio, Dex, Notebooks까지 다 들어 있는 종합 공장</p>
+    </article>
+    <article class="env">
+      <h4>04장 정리 (johklo님)</h4>
+      <p class="who">Windows PC 한 대</p>
+      <dl>
+        <div><dt>부지</dt><dd>kind (Docker 속 미니 클러스터)</dd></div>
+        <div><dt>창고</dt><dd>SeaweedFS, 서비스 이름은 minio-service 유지</dd></div>
+        <div><dt>냉장고</dt><dd>Redis</dd></div>
+        <div><dt>생산 라인</dt><dd>KFP 2.4.1 단독판</dd></div>
+        <div><dt>S3 키</dt><dd>파라미터 (로컬 실습 한정)</dd></div>
+      </dl>
+      <p class="tag">지우고 다시 짓기 쉬운 방 안의 미니어처 공장</p>
+    </article>
+    <article class="env">
+      <h4>05장 ken-0913님</h4>
+      <p class="who">홈랩 클러스터</p>
+      <dl>
+        <div><dt>부지</dt><dd>홈랩 쿠버네티스, KFP Pod는 amd64 노드에 고정</dd></div>
+        <div><dt>창고</dt><dd>RustFS 하나로 통일 (SeaweedFS 끔)</dd></div>
+        <div><dt>냉장고</dt><dd>Redis</dd></div>
+        <div><dt>생산 라인</dt><dd>KFP 2.17.3 단독판</dd></div>
+        <div><dt>S3 키</dt><dd>Secret rustfs-credentials → 환경 변수</dd></div>
+      </dl>
+      <p class="tag">이미지는 GitHub Actions가 빌드해 Docker Hub로</p>
+    </article>
+    <article class="env">
+      <h4>05장 kurtyoon님</h4>
+      <p class="who">블로그가 도는 k3s 한 대 (arm64, 4코어)</p>
+      <dl>
+        <div><dt>부지</dt><dd>단일 노드 k3s, Argo CD로 관리</dd></div>
+        <div><dt>창고</dt><dd>공용 SeaweedFS, ExternalName으로 minio-service 이름 유지</dd></div>
+        <div><dt>냉장고</dt><dd>Valkey 9.1.2</dd></div>
+        <div><dt>생산 라인</dt><dd>KFP 2.17.3 단일 사용자판</dd></div>
+        <div><dt>S3 키</dt><dd>Secret kfp-pipeline-s3 → 환경 변수</dd></div>
+      </dl>
+      <p class="tag">정문 로그인(authentik)과 출입 규칙까지 갖춘 공장</p>
+    </article>
+  </div>
+
+  <h3 class="sub">kurtyoon님 순서: 블로그 k3s에 공장 들이기</h3>
+  <p class="sec-lead">책은 Kubeflow 전체를 올리지만, 4·5장이 실제로 쓰는 건 MLflow, 객체 저장소, Redis, KFP뿐이라는 데서 출발합니다.</p>
+  <ol class="flow">
+    <li data-step="1"><h3>부지 살피기</h3><p>arm64 VM 한 대의 k3s. CPU 2코어, 객체 저장소 없음, Argo CD 프로젝트는 default 하나, 실습용 Git과 CI 없음.</p>
+      <div class="nodes"><button class="node" data-term="singlenode">단일 노드</button><button class="node" data-term="arch">arm64</button><button class="node" data-term="appofapps">app-of-apps</button></div></li>
+    <li data-step="2"><h3>책과 나란히 놓기</h3><p>Kubeflow 전체는 CPU가 넘치고, 버전이 안 맞고(1.7은 k8s 1.25까지), MLMD와 Feast 서버에 arm64 이미지가 없어요. 실습이 쓰는 것만 대체해 올렸습니다.</p>
+      <div class="nodes"><button class="node" data-term="kfslim">필요한 것만 올리기</button><button class="node" data-term="k3s">k3s</button></div></li>
+    <li data-step="3"><h3>부지 넓히고 예약 계산</h3><p>2코어를 4코어로 늘리고(재부팅으로 블로그가 몇 분 내려감), 앱마다 requests를 더했어요.</p>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>항목</th><th>CPU (코어)</th><th>메모리 (Gi)</th></tr></thead>
+        <tbody>
+          <tr><td>기존 운영 워크로드</td><td>1.02</td><td>3.34</td></tr>
+          <tr><td>실습 공용 기반 (SeaweedFS, Gitea, 모니터링)</td><td>0.64</td><td>2.30</td></tr>
+          <tr><td>MLflow</td><td>0.15</td><td>0.81</td></tr>
+          <tr><td>Valkey</td><td>0.05</td><td>0.13</td></tr>
+          <tr><td>KFP</td><td>0.18</td><td>0.98</td></tr>
+          <tr class="sum"><td>합계</td><td>2.04</td><td>7.56</td></tr>
+          <tr><td>참고: 책의 Kubeflow 전체만 (Istio 사이드카 포함)</td><td>약 3.9</td><td>약 10.3</td></tr>
+        </tbody>
+      </table></div>
+      <div class="nodes"><button class="node" data-term="requestsum">requests 합계</button><button class="node" data-term="limitrange">LimitRange · ResourceQuota</button></div></li>
+    <li data-step="4"><h3>정문과 출입증</h3><p>앱마다 열던 IngressRoute를 Gateway API로 옮기고, 로그인은 authentik이 맡아요. MLflow와 KFP는 forward auth, Argo CD·Grafana·Gitea는 OIDC.</p>
+      <div class="nodes"><button class="node" data-term="gateway">Gateway API</button><button class="node" data-term="listener">리스너</button><button class="node" data-term="authentik">authentik</button><button class="node" data-term="forwardauth">forward auth</button><button class="node" data-term="oidc">OIDC</button></div></li>
+    <li data-step="5"><h3>감독 구역 나누기</h3><p>Argo CD 프로젝트를 ops, mlops-lab, default로 나눠 실습 앱이 손댈 수 있는 곳을 줄였어요.</p>
+      <div class="nodes"><button class="node" data-term="argoproj">Argo CD 프로젝트</button></div></li>
+    <li data-step="6"><h3>공용 설비</h3><p>MinIO 대신 SeaweedFS(용도별 키), GitLab 대신 Gitea와 runner, 계기판은 kube-prometheus-stack.</p>
+      <div class="nodes"><button class="node" data-term="seaweedfs">SeaweedFS</button><button class="node" data-term="keysplit">용도별 키</button><button class="node" data-term="gitea">Gitea</button><button class="node" data-term="kps">kube-prometheus-stack</button></div></li>
+    <li data-step="7"><h3>연구실 MLflow</h3><p>공식 이미지 v3.17.2-full, CNPG Postgres, 아티팩트 프록시. SDK는 app password로 로그인해요.</p>
+      <div class="nodes"><button class="node" data-term="cnpg">CNPG</button><button class="node" data-term="svcartifacts">아티팩트 프록시</button><button class="node" data-term="allowedhosts">ALLOWED_HOSTS</button><button class="node" data-term="recreate">Recreate</button><button class="node" data-term="apppw">app password</button><button class="node" data-term="mlflowmem">MLflow 메모리</button></div></li>
+    <li data-step="8"><h3>재료실 Feast와 Valkey</h3><p>Feast 서버 없이 SDK만 쓰고, 냉장고는 Valkey. 노트북은 SSH 터널로 접속하고, 5장용 레지스트리는 클러스터 안 Job으로 따로 만들어요.</p>
+      <div class="nodes"><button class="node" data-term="valkey">Valkey</button><button class="node" data-term="noeviction">noeviction</button><button class="node" data-term="sshtunnel">SSH 터널</button><button class="node" data-term="feastapplyjob">feast-apply Job</button><button class="node" data-term="wheel">의존성 고정</button><button class="node" data-term="teardown">teardown 금지</button></div></li>
+    <li data-step="9"><h3>생산 라인 KFP</h3><p>2.17.3 단독판을 단일 사용자로 올리고, v1용 구성 요소는 빼고, MLMD는 arm64 빌드로 바꾸고, 파이프라인 실행이 할 수 있는 일을 여러 겹으로 줄였어요.</p>
+      <div class="nodes"><button class="node" data-term="singleuser">단일 사용자</button><button class="node" data-term="mlmd">MLMD</button><button class="node" data-term="v1v2">v1 · v2</button><button class="node" data-term="svcenv">Service 환경 변수</button><button class="node" data-term="externalname">ExternalName</button><button class="node" data-term="runnerrole">pipeline-runner</button><button class="node" data-term="podsec">Pod Security</button><button class="node" data-term="netpol">NetworkPolicy</button><button class="node" data-term="vap">입장 심사 규칙</button></div></li>
+    <li data-step="10"><h3>요청 경로 정리</h3><p>브라우저·노트북·파이프라인 Pod가 각각 어떤 길로 MLflow, S3, Valkey에 닿는지 정리했어요. 아래 세 갈래 그림이에요.</p>
+      <div class="nodes"><button class="node" data-term="headerstrip">인증 헤더 제거</button><button class="node" data-term="cloudflare">100MB 제한</button><button class="node" data-term="presigned">presigned URL</button></div></li>
+  </ol>
+
+  <h3 class="sub">요청이 가는 세 갈래</h3>
+  <div class="route">
+    <div class="route-title">브라우저·노트북 SDK → MLflow, KFP <span>공개 주소</span></div>
+    <div class="hops">
+      <div class="hop"><b>Cloudflare</b><small>요청당 100MB</small></div><span class="via">TLS</span>
+      <div class="hop"><b>Gateway public</b><small>호스트별 리스너</small></div><span class="via">출입증</span>
+      <div class="hop"><b>authentik</b><small>쿠키 · app password</small></div><span class="via">통과</span>
+      <div class="hop"><b>MLflow · KFP UI</b><small>mlflow.example.dev</small></div>
+    </div>
+  </div>
+  <div class="route">
+    <div class="route-title">노트북 → 창고와 냉장고</div>
+    <div class="hops">
+      <div class="hop"><b>노트북</b><small>용도별 키</small></div><span class="via">SigV4 서명</span>
+      <div class="hop"><b>SeaweedFS S3</b><small>s3.example.dev</small></div>
+    </div>
+    <div class="hops">
+      <div class="hop"><b>노트북</b><small>127.0.0.1:6379</small></div><span class="via">SSH 터널</span>
+      <div class="hop"><b>노드</b><small>kube-router 통과</small></div><span class="via">ClusterIP</span>
+      <div class="hop"><b>Valkey</b><small>공개 주소 없음</small></div>
+    </div>
+  </div>
+  <div class="route">
+    <div class="route-title">파이프라인 Pod → 클러스터 안 <span>로그인 없음, 출입 명단이 지킴</span></div>
+    <div class="hops">
+      <div class="hop"><b>step Pod</b><small>kubeflow</small></div><span class="via">NetworkPolicy</span>
+      <div class="hop"><b>MLflow Service</b><small>mlflow.mlflow.svc.cluster.local:5000</small></div>
+    </div>
+    <div class="hops">
+      <div class="hop"><b>step Pod</b><small>Secret 키</small></div><span class="via">ExternalName</span>
+      <div class="hop"><b>minio-service</b><small>kubeflow:9000</small></div><span class="via">같은 이름</span>
+      <div class="hop"><b>SeaweedFS</b><small>storage</small></div>
+    </div>
+  </div>
+  <p class="note">공개 주소는 <span class="mark">출입증(authentik)</span>이, 클러스터 안 주소는 <span class="mark">출입 명단(NetworkPolicy)</span>이 지킵니다. 그래서 책의 컴포넌트에 로그인 코드를 넣지 않아도 돼요.</p>
+
+  <h3 class="sub">책 코드 주소와 바꾼 주소 (kurtyoon님)</h3>
+  <div class="tbl-wrap"><table class="t">
+    <thead><tr><th>용도</th><th>책 코드</th><th>kurtyoon님 환경</th></tr></thead>
+    <tbody>
+      <tr><td>MLflow (노트북)</td><td><code>mlflow ui</code> 로컬 서버</td><td>mlflow.example.dev, Basic</td></tr>
+      <tr><td>데이터셋 업로드</td><td>MinIO, 공개 기본 계정</td><td>s3.example.dev, 실습 키</td></tr>
+      <tr><td>Feast 오프라인·레지스트리</td><td>MinIO, localhost:9000</td><td>s3.example.dev, Feast 키</td></tr>
+      <tr><td>Feast 온라인</td><td>Redis</td><td>Valkey, SSH 터널</td></tr>
+      <tr><td>KFP 화면, SDK</td><td>Kubeflow 대시보드</td><td>kfp.example.dev, Basic</td></tr>
+      <tr><td>파이프라인의 S3</td><td>minio-service.kubeflow:9000</td><td>같은 이름, SeaweedFS로 연결</td></tr>
+      <tr><td>파이프라인의 S3 키</td><td>파이프라인 파라미터</td><td>Secret → 환경 변수</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="wrap" id="pairs">
+  <h2>헷갈리는 짝</h2>
+  <p class="sec-lead">두 글이 "둘은 다르다"고 짚은 것들입니다. 위쪽은 파이프라인, 아래쪽은 실습 환경 이야기예요.</p>
+  <div>
+    <article class="pair"><h3>컴포넌트 <span class="vs">↔</span> 태스크</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="component">컴포넌트</button><p><code>fetch_data_op</code>. component.yaml로 불러온 작업대 설계.</p></div>
+        <div class="side"><button class="side-name" data-term="task">태스크</button><p><code>fetch_data_task</code>. 그 설계로 오늘 라인에 놓은 작업대 하나.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">엑셀의 함수 정의와, 셀에 그 함수를 한 번 쓴 것의 차이예요.</span></p></article>
+    <article class="pair"><h3>inputValue <span class="vs">↔</span> inputPath · outputPath</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="inputvalue">inputValue</button><p>문자열 값이 그대로 명령줄에 들어감. 지시서 메모.</p></div>
+        <div class="side"><button class="side-name" data-term="inoutpath">inputPath · outputPath</button><p>KFP가 파일 경로를 채움. 선반 위치 번호.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">작업대끼리 상자를 주고받는 길은 경로 자리뿐입니다.</span></p></article>
+    <article class="pair"><h3>UI에 올려 실행 <span class="vs">↔</span> SDK로 바로 실행</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="upload">UI</button><p>Upload pipeline → Experiment → Create run → 파라미터 입력 → Start.</p></div>
+        <div class="side"><button class="side-name" data-term="sdkrun">SDK</button><p><code>create_run_from_pipeline_package</code>로 컴파일과 실행을 한 번에.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">SDK로 돌리면 Pipelines 메뉴엔 안 보이고 Experiments 아래에만 Run이 쌓여요.</span></p></article>
+    <article class="pair"><h3>stage <span class="vs">↔</span> alias</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="stage">stage</button><p>"Production" 같은 상태 꼬리표. 책 코드가 이걸로 모델을 찾음.</p></div>
+        <div class="side"><button class="side-name" data-term="alias">alias</button><p>자유 이름표. MLflow 3에서 권장하는 방식.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">책 코드를 쓰려면 stage를 지정해야 하고, MLflow 3.16 화면에서 Stage 열을 보려면 새 UI 토글을 꺼야 해요.</span></p></article>
+    <article class="pair"><h3>실행 성공 <span class="vs">↔</span> 올바른 예측</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">실행 성공</span><p>네 단계 모두 초록 체크.</p></div>
+        <div class="side"><button class="side-name" data-term="dummies">올바른 예측</button><p>배치에 빠진 범주가 있으면 다른 열이 지워져 조용히 틀릴 수 있음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">위 "오류 없이 틀리는 원-핫 인코딩"에서 직접 확인할 수 있어요.</span></p></article>
+    <article class="pair"><h3>Redis에 접속 안 함 <span class="vs">↔</span> feast[redis]는 설치</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="historical">과거 조회만</button><p>5장 파이프라인은 온라인 저장소에 연결하지 않음.</p></div>
+        <div class="side"><button class="side-name" data-term="feastredis">feast[redis]</button><p>설정에 <code>type: redis</code>가 있으면 검증하느라 모듈을 불러옴.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">"안 쓰니까 설치 안 해도 된다"가 통하지 않아서 ken-0913님 첫 실행이 실패했어요.</span></p></article>
+    <article class="pair"><h3>latest 태그 <span class="vs">↔</span> 커밋 SHA 태그</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="ifnotpresent">latest</button><p>같은 이름이면 노드가 새 이미지를 안 받을 수 있음.</p></div>
+        <div class="side"><button class="side-name" data-term="shatag">커밋 SHA</button><p>커밋마다 이름이 달라 항상 새로 받음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">IfNotPresent 정책 때문에 ken-0913님은 매니페스트에 latest를 두지 않았어요.</span></p></article>
+    <article class="pair"><h3>파라미터로 키 넘기기 <span class="vs">↔</span> Secret 환경 변수</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">파라미터 (책)</span><p>실행 기록에 키가 평문으로 남음.</p></div>
+        <div class="side"><button class="side-name" data-term="secret">Secret (두 분)</button><p>컴파일된 YAML에는 Secret 이름만 들어감.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">막는 건 "기록에 키가 남는 일"이에요. 파이프라인을 올릴 수 있는 사람은 그 Secret도 읽을 수 있어요.</span></p></article>
+    <article class="pair"><h3>이미지 이름 넷 <span class="vs">↔</span> 내용은 하나</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">이름</span><p>read-minio-data, retrieve-feast-features, run-inference, write-minio-data.</p></div>
+        <div class="side"><button class="side-name" data-term="fourimages">내용</button><p>Dockerfile이 저장소 전체를 복사해서 모두 같음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">같은 층이라 두 번째 단계부터는 이미지 받는 데 2~4초면 끝나요.</span></p></article>
+    <article class="pair"><h3>배치 추론 <span class="vs">↔</span> 실시간 서빙</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="batch">배치 추론</button><p>모아 둔 대상을 한꺼번에. KFP가 잘 맞음.</p></div>
+        <div class="side"><button class="side-name" data-term="bentoml">실시간 서빙</button><p>요청마다 바로 답함. 6장 BentoML.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">5장은 배치, 6장은 실시간입니다.</span></p></article>
+    <article class="pair"><h3>Kubeflow 전체 <span class="vs">↔</span> 필요한 것만</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">Kubeflow 1.7 전체</span><p>Istio, Dex, Notebooks, Katib까지. 약 3.9코어.</p></div>
+        <div class="side"><button class="side-name" data-term="kfslim">필요한 것만</button><p>MLflow, 저장소, Valkey, KFP. 실습 쪽 합계 약 1코어.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">대신 사용자 간 격리가 없고 클러스터 안 통신은 암호화되지 않는 한계를 받아들였어요.</span></p></article>
+    <article class="pair"><h3>공개 주소 <span class="vs">↔</span> 클러스터 안 주소</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="forwardauth">mlflow.example.dev</button><p>authentik 로그인을 거쳐야 들어감.</p></div>
+        <div class="side"><button class="side-name" data-term="netpol">mlflow.mlflow.svc…:5000</button><p>로그인 없음. NetworkPolicy가 누가 닿을지 정함.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">같은 MLflow를 문 두 개로 열고, 문마다 지키는 방식이 달라요.</span></p></article>
+    <article class="pair"><h3>forward auth <span class="vs">↔</span> OIDC</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="forwardauth">forward auth</button><p>정문이 대신 출입증 확인. 로그인 기능 없는 앱(MLflow, KFP)에.</p></div>
+        <div class="side"><button class="side-name" data-term="oidc">OIDC</button><p>앱이 직접 발급소에 확인. Argo CD, Grafana, Gitea.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">앱이 로그인을 지원하느냐에 따라 고릅니다.</span></p></article>
+    <article class="pair"><h3>S3에 직접 쓰기 <span class="vs">↔</span> MLflow 아티팩트 프록시</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">직접 쓰기</span><p>노트북과 Pod마다 S3 키가 필요.</p></div>
+        <div class="side"><button class="side-name" data-term="svcartifacts">프록시</button><p>MLflow 서버가 자기 키로 대신 저장. 손님은 키가 필요 없음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">그래서 kurtyoon님 환경의 추론 단계는 S3 키 없이 모델을 받아요.</span></p></article>
+    <article class="pair"><h3>4장 레지스트리 <span class="vs">↔</span> 5장 레지스트리</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">registry_local.db</span><p>노트북에서 apply. 노트북 기준 주소가 적힘.</p></div>
+        <div class="side"><button class="side-name" data-term="feastapplyjob">registry.db</button><p>클러스터 안 Job으로 apply. Pod가 닿는 주소가 적힘.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">레지스트리에는 데이터 위치 주소가 같이 저장돼서, 쓰는 곳이 다르면 따로 만들어야 해요.</span></p></article>
+    <article class="pair"><h3>Redis <span class="vs">↔</span> Valkey</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">Redis</span><p>책과 다른 정리들이 쓰는 냉장고.</p></div>
+        <div class="side"><button class="side-name" data-term="valkey">Valkey</button><p>Redis와 같은 말을 알아듣는 오픈소스 냉장고.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Feast의 Redis 클라이언트를 고치지 않고 그대로 쓸 수 있어요.</span></p></article>
+    <article class="pair"><h3>amd64 <span class="vs">↔</span> arm64</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">amd64</span><p>일반 PC·서버. ken-0913님 KFP Pod가 도는 곳.</p></div>
+        <div class="side"><button class="side-name" data-term="arch">arm64</button><p>kurtyoon님 노드. amd64 전용 이미지는 그냥은 안 돎.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">MLMD와 Feast 서버 이미지가 amd64 전용이라 kurtyoon님은 다른 길을 찾아야 했어요.</span></p></article>
+  </div>
+</section>
+
+<section class="wrap" id="dict">
+  <h2>용어 사전</h2>
+  <p class="sec-lead">두 글에 나오는 용어를 공장 구역별로 모았습니다. 03·04장에서 자세히 다룬 용어는 해당 페이지로 이어져요.</p>
+  <div class="tools">
+    <input id="q" class="search" type="search" aria-label="용어 검색" placeholder="용어 찾기 (예: outputPath, Secret, Valkey)" autocomplete="off" enterkeyhint="search">
+    <div class="chips" id="chips" role="group" aria-label="구역 고르기"></div>
+  </div>
+  <div class="list-bar"><span id="count"></span><button class="textbtn" id="toggleAll" type="button">모두 펼치기</button></div>
+  <div class="term-list" id="list"></div>
+</section>
+
+<section class="wrap" id="flow">
+  <h2>실행 기록 (ken-0913님)</h2>
+  <p class="sec-lead">홈랩 KFP 2.17.3에서 책의 파이프라인을 처음부터 끝까지 돌린 순서입니다. 컴포넌트 코드는 그대로 두고 연결 방식과 실행 환경만 바꿨어요.</p>
+  <ol class="flow">
+    <li data-step="1"><h3>준비 네 가지</h3><p>모델 v2를 Production으로 전환, <code>inference-datasets</code> 버킷에 <code>entity_df.parquet</code>(30,162행) 업로드, <code>feature-registry</code>에 <code>feature_store.yaml</code> 업로드, 아티팩트 저장소를 RustFS <code>mlpipeline</code>으로 변경.</p>
+      <div class="nodes"><button class="node" data-term="stage">stage 전환</button><button class="node" data-term="buckets">버킷</button><button class="node" data-term="fourplaces">저장소 네 곳</button><button class="node" data-term="launcher">kfp-launcher</button></div></li>
+    <li data-step="2"><h3>컴포넌트 포장</h3><p>Dockerfile 베이스를 <code>python:3.13-slim</code>으로 바꾸고, GitHub Actions가 이미지를 빌드해 이름 네 개로 푸시. component.yaml은 키 입력을 빼고 <code>sh -c</code>로 감쌌어요.</p>
+      <div class="nodes"><button class="node" data-term="dockerfile">Dockerfile</button><button class="node" data-term="gha">GitHub Actions</button><button class="node" data-term="shatag">SHA 태그</button><button class="node" data-term="shc">sh -c</button></div></li>
+    <li data-step="3"><h3>파이프라인 잇고 컴파일</h3><p>태스크마다 Secret을 환경 변수로 붙이고 캐시를 끈 뒤, SDK 2.17.3으로 컴파일.</p>
+      <div class="nodes"><button class="node" data-term="secret">Secret 주입</button><button class="node" data-term="caching">캐시</button><button class="node" data-term="sdk">kfp SDK</button></div></li>
+    <li data-step="4"><h3>실행</h3><p>UI에 올리지 않고 <code>create_run_from_pipeline_package</code>로 바로 실행. Run은 Experiment <code>income-classifier</code> 아래에 쌓여요.</p>
+      <div class="nodes"><button class="node" data-term="sdkrun">SDK 실행</button><button class="node" data-term="experiment">Experiment · Run</button></div></li>
+    <li data-step="5"><h3>결과 확인</h3><p>네 단계 모두 성공, 전체 3분 6초. 결과 파일은 30,162행 × 91컬럼(더미 90 + 예측 확률), 결측 0.</p>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>단계</th><th>10-28 (단계 안에서 설치)</th><th>10-29 (Docker Hub 이미지)</th></tr></thead>
+        <tbody>
+          <tr><td>read-data</td><td>16초</td><td>45초 (이미지 받기 29초)</td></tr>
+          <tr><td>retrieve-features</td><td>35초</td><td>20초</td></tr>
+          <tr><td>model-inference</td><td>43초</td><td>21초</td></tr>
+          <tr><td>write-data</td><td>16초</td><td>10초</td></tr>
+          <tr class="sum"><td>전체 (driver 기동 포함)</td><td>3분 8초</td><td>3분 6초</td></tr>
+        </tbody>
+      </table></div>
+      <p class="left" style="margin-top:8px"><b>예측 확률</b> 평균 0.249 · 0.5 이상 22.2% (데이터의 실제 고소득 비율 24.9%) · 같은 모델로 직접 예측한 값과 차이 0.0</p>
+      <div class="nodes"><button class="node" data-term="proba">predict_proba</button><button class="node" data-term="executorlogs">executor-logs</button><button class="node" data-term="pipelineroot">pipeline root</button></div></li>
+  </ol>
+
+  <h3 class="sub">막힌 곳과 푼 방법</h3>
+  <div class="breaks">
+    <div class="brk"><h4>피처 조회 단계 실패 (1분 32초)</h4><dl>
+      <div><dt>증상</dt><dd><code>FeastModuleImportError</code>: redis 모듈을 불러올 수 없음.</dd></div>
+      <div><dt>해결</dt><dd><code>feast[aws]</code>를 <code>feast[aws,redis]</code>로 바꿔 설치.</dd></div></dl></div>
+    <div class="brk"><h4>추론 단계가 로그 없이 멈춤 (12분 15초)</h4><dl>
+      <div><dt>증상</dt><dd>MLflow 서버 로그에 요청이 오지 않음. MLflow Service에 엔드포인트가 없었음.</dd></div>
+      <div><dt>원인</dt><dd>노드 재기동 뒤 Postgres보다 먼저 뜬 MLflow Pod의 init 컨테이너가 재시도 간격을 약 8시간까지 늘린 채 대기.</dd></div>
+      <div><dt>해결</dt><dd><code>kubectl rollout restart</code>로 MLflow 재기동, 멈춘 Run은 Terminate.</dd></div></dl></div>
+    <div class="brk"><h4>책 저장소를 그대로 쓰면</h4><dl>
+      <div><dt>이미지</dt><dd><code>python:3.10-slim-buster</code>는 지원 종료로 빌드 실패, 저자 계정 <code>varunmallya/*:latest</code>.</dd></div>
+      <div><dt>모델</dt><dd>4장에서 stage를 지정하지 않아 Production 모델을 못 찾음.</dd></div>
+      <div><dt>레지스트리</dt><dd>책 4장 레지스트리는 localhost를 가리킴.</dd></div>
+      <div><dt>키</dt><dd>파이프라인 파라미터라 실행 기록에 평문 저장.</dd></div>
+      <div><dt>SDK</dt><dd>저장소 YAML은 kfp 2.9.0으로 컴파일됨.</dd></div></dl></div>
+  </div>
+
+  <h3 class="sub">파이프라인 파라미터: 책과 ken-0913님 홈랩</h3>
+  <div class="tbl-wrap"><table class="t">
+    <thead><tr><th>파라미터</th><th>책 (Kubeflow + MinIO)</th><th>홈랩</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">minio_host</td><td>minio-service.kubeflow:9000</td><td>rustfs.mlflow.svc:9000</td></tr>
+      <tr><td class="mono">access_key, secret_key</td><td>MinIO Secret 값</td><td>빼고 Secret으로 주입</td></tr>
+      <tr><td class="mono">entity_df_bucket / filename</td><td colspan="2">inference-datasets / entity_df.parquet</td></tr>
+      <tr><td class="mono">feature_store_bucket_name</td><td colspan="2">feature-registry (feature_store.yaml)</td></tr>
+      <tr><td class="mono">model_name / type / stage</td><td colspan="2">random-forest-classifier / sklearn / Production</td></tr>
+      <tr><td class="mono">mlflow_host</td><td>Pod 기준 MLflow 주소 (localhost 불가)</td><td>http://mlflow.mlflow.svc:5000</td></tr>
+      <tr><td class="mono">output_bucket / file_name</td><td colspan="2">inference-datasets / inference_result.parquet</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>이전 장: <a href="04-experiments-features-pipelines.html" target="_blank" rel="noopener">MLOps 04장 용어 풀이</a> · 책 지도: <a href="00-book-map.html" target="_blank" rel="noopener">MLOps 00장 책 지도</a></p>
+  <p>원문: <a href="https://ken-0913.github.io/myblog/posts/mlpe/mlpe-05-1-kfp-income-pipeline/" target="_blank" rel="noopener">ken-0913님, Ch5. KFP로 소득 분류기 배치 추론 파이프라인 만들기</a> · <a href="https://blog.somnitor.dev/posts/89/k3s-lab-for-mlflow-feast-kfp" target="_blank" rel="noopener">kurtyoon님, 블로그가 도는 k3s에 4, 5장 실습 환경 만들기</a> · <a href="https://github.com/practical-mlops/chapter-5" target="_blank" rel="noopener">책 예제 코드 chapter-5</a></p>
+  <p>숫자와 설정은 두 글 기준입니다. 공장 비유와 엑셀 예시는 이해를 돕기 위해 단순화한 것이고, 직접 해 보기의 아티팩트 경로는 모양을 보여 주는 예시예요.</p>
+</footer>
+
+<script>
+(function(){
+  var PAGES = {
+    ch03:{name:'03장', url:'03-kubernetes-foundation.html'},
+    ch04:{name:'04장', url:'04-experiments-features-pipelines.html'}
+  };
+  var CATS = {
+    line:{name:'생산 관리', hint:'KFP'},
+    station:{name:'작업대 만들기', hint:'컴포넌트'},
+    steps:{name:'네 작업대', hint:'read~write'},
+    store:{name:'창고와 재료실', hint:'저장소·Feast'},
+    ship:{name:'밀키트 배송', hint:'이미지'},
+    site:{name:'부지와 설비', hint:'k3s·MLflow'},
+    gate:{name:'정문과 출입증', hint:'Gateway·로그인'},
+    guard:{name:'경비와 규칙', hint:'Secret·권한'}
+  };
+  var TERMS = [
+    {id:'orch',c:'line',t:'오케스트레이션',sub:'orchestration',core:true,d:'여러 단계를 순서대로 실행하며 데이터와 자원을 갖춰 주는 일. 공장장.'},
+    {id:'kfp',c:'line',t:'KFP',sub:'Kubeflow Pipelines',
+      d:'Kubeflow의 오케스트레이션 도구. 파이프라인을 실행하고 단계별 기록을 남긴다.',
+      a:'생산 라인과 관리실.',
+      l:'두 분 모두 Kubeflow 전체 대신 KFP 2.17.3 단독판을 올렸다.',p:'ch04'},
+    {id:'singleuser',c:'line',t:'단일 사용자 KFP',sub:'single-user',
+      d:'사용자별 프로필 격리 없이 한 사람(한 팀)이 쓰는 KFP 구성.',
+      a:'개인 작업장.',
+      l:'kurtyoon님은 멀티유저 모드에서 사용자 네임스페이스에 KFP Secret이 생기지 않아 Pod가 멈추자 단일 사용자로 바꿨다. Central Dashboard와 Profiles도 뺐다.',
+      n:'사용자 사이의 격리는 없다.'},
+    {id:'sdk',c:'line',t:'kfp SDK',sub:'Python 라이브러리',
+      d:'파이프라인을 Python 코드로 정의하고 컴파일·실행하는 라이브러리.',
+      a:'라인 설계용 프로그램.',
+      l:'책 저장소 YAML은 kfp 2.9.0으로 컴파일됐다. ken-0913님은 SDK 2.17.3으로 다시 컴파일했고, kurtyoon님은 2.4.0, 2.9.0으로 컴파일한 것도 돌아가는 것을 확인했다.',
+      n:'서버와 SDK는 다른 구성 요소라 버전 번호가 같을 필요는 없다.'},
+    {id:'dsl',c:'line',t:'@dsl.pipeline',sub:'파이프라인 정의',
+      d:'Python 함수를 파이프라인으로 만드는 표시(데코레이터). 함수의 인자가 파이프라인 파라미터가 된다.',
+      a:'"이 함수는 라인 배치도"라고 찍는 도장.',
+      x:'메인 매크로 맨 위에 붙이는 이름표.',
+      l:'`income_classifier_pipeline(minio_host, ..., output_file_name)` 인자 14개.'},
+    {id:'dag',c:'line',t:'파이프라인과 DAG',sub:'실행 순서',core:true,d:'출력 참조로 이은 태스크의 실행 순서. 셀 참조로 정해지는 엑셀 계산 순서와 같다.'},
+    {id:'param',c:'line',t:'파이프라인 파라미터',sub:'runtime parameter',core:true,d:'실행할 때마다 바꾸는 값. 매번 꽂는 주문서.'},
+    {id:'task',c:'line',t:'태스크',sub:'task',
+      d:'파이프라인 안에서 컴포넌트를 한 번 호출한 것.',
+      a:'설계해 둔 작업대를 오늘 라인에 실제로 놓은 자리.',
+      x:'함수 정의와, 셀에 그 함수를 한 번 써 넣은 것의 차이.',
+      w:'같은 컴포넌트로 태스크를 여러 개 만들 수 있다.',
+      l:'`fetch_data_op`는 불러온 컴포넌트, `fetch_data_task`는 그걸로 만든 태스크.'},
+    {id:'loadcomp',c:'line',t:'load_component_from_file',sub:'kfp.components',
+      d:'component.yaml을 읽어 파이프라인에서 쓸 수 있는 컴포넌트로 만드는 함수.',
+      a:'안내판을 보고 같은 작업대를 라인에 들여놓기.',
+      l:'컴포넌트 4개를 각각 `components/<이름>/component.yaml`에서 불러온다.'},
+    {id:'compile',c:'line',t:'컴파일',sub:'compiler.Compiler().compile',
+      d:'Python 파이프라인 정의를 KFP가 읽는 YAML 실행 명세로 바꾸는 일.',
+      a:'작업 지시서를 공식 양식에 옮겨 적기. 아직 아무도 일을 시작하지 않았다.',
+      l:'결과 파일은 `income_classifier_pipeline.yaml`.',p:'ch04'},
+    {id:'upload',c:'line',t:'Upload pipeline · Create run',sub:'KFP UI',
+      d:'UI에서 YAML을 올려 파이프라인을 등록하고, 파라미터를 채워 실행을 만드는 순서.',
+      a:'라인 설계도를 관리실에 등록하고, 주문서를 꽂아 가동 버튼 누르기.',
+      l:'Pipelines → Upload pipeline → Experiment 만들기 → Create run → 파라미터 입력 → Start.'},
+    {id:'experiment',c:'line',t:'Experiment · Run (KFP)',sub:'실행 묶음과 실행 한 번',
+      d:'Run은 파이프라인을 한 번 실행한 기록, Experiment는 Run을 묶어 비교하는 단위.',
+      a:'라인 가동 일지와 그 일지를 묶은 바인더.',
+      l:'UI에서 실행을 만들 땐 Experiment를 꼭 지정한다. ken-0913님의 Run은 `income-classifier` 아래에 있다.',
+      n:'MLflow의 Experiment와 이름이 같아도 서로 다른 것이다.',p:'ch04'},
+    {id:'sdkrun',c:'line',t:'SDK로 바로 실행',sub:'create_run_from_pipeline_package',
+      d:'UI에 올리지 않고 Python에서 컴파일한 YAML로 바로 실행을 만드는 방법.',
+      a:'관리실 창구를 거치지 않고 전화로 가동 지시.',
+      l:'`KFP_HOST=http://192.168.0.242`로 서버를 지정했다.',
+      n:'이렇게 실행하면 Pipelines 메뉴에는 안 보이고 Experiments 아래에만 Run이 쌓인다.'},
+    {id:'argo',c:'line',t:'Argo Workflows',sub:'KFP 실행 엔진',
+      d:'KFP가 각 단계를 실제 Pod로 띄울 때 쓰는 엔진.',
+      a:'생산 라인 반장.',
+      l:'kurtyoon님은 Argo Workflows 4.0.6이 kubeflow 네임스페이스만 보게 했다.',p:'ch04'},
+    {id:'driver',c:'line',t:'driver Pod',sub:'KFP v2',
+      d:'단계마다 실제 작업 Pod보다 먼저 떠서 입력을 정리하고 실행 기록을 준비하는 짧은 Pod.',
+      a:'작업자가 오기 전에 작업대에 재료와 지시서를 놓아 두는 준비 담당.',
+      l:'3분 8초 안에는 단계마다 driver Pod가 뜨는 시간도 들어 있다. v2 캐시도 driver가 처리한다.'},
+    {id:'mlmd',c:'line',t:'MLMD · envoy',sub:'ML Metadata',
+      d:'MLMD는 파이프라인 실행의 입력·출력·이력을 기록하는 메타데이터 저장소, envoy는 그 앞의 중계 프록시.',
+      a:'공정 이력 장부와 장부 창구.',
+      w:'KFP 2.17의 driver와 launcher가 v2 실행마다 기록해서 뺄 수 없다.',
+      l:'공식 이미지가 amd64 전용이라 kurtyoon님은 deployKF가 arm64로 빌드한 이미지를 다이제스트로 고정해 썼다.',
+      n:'실행 중 "Cannot get MLMD objects" 메시지는 driver가 기록하기 전에 UI가 먼저 조회한 일시적 현상이었다.'},
+    {id:'v1v2',c:'line',t:'v1 · v2 파이프라인',sub:'KFP 규격',
+      d:'KFP 파이프라인의 옛 규격과 새 규격.',
+      a:'구형 라인과 신형 라인.',
+      l:'kurtyoon님은 캐시 웹훅, metadata-writer, 시각화 서버처럼 v1용인 것을 빼고 v1 파이프라인을 막았다.',
+      n:'v1은 resource 템플릿으로 실행 계정이 만들 수 있는 객체를 무엇이든 만들 수 있어 위험하다.'},
+    {id:'caching',c:'line',t:'캐시',sub:'set_caching_options',
+      d:'입력이 같으면 이전 실행 결과를 다시 쓰는 기능.',
+      a:'어제와 같은 주문이면 어제 만든 걸 선반에서 꺼내 주기.',
+      w:'같은 계산을 반복하지 않아 빠르다.',
+      l:'ken-0913님은 `set_caching_options(False)`로 꺼서 매번 실제로 다시 돌렸다.',
+      n:'켜 두면 입력이 같을 때 단계가 실제로 실행되지 않을 수 있다.'},
+    {id:'batch',c:'line',t:'배치 추론',sub:'batch inference',
+      d:'모아 둔 대상 전체를 한꺼번에 예측하는 방식.',
+      a:'주문을 모아 한 번에 굽는 대량 생산.',
+      x:'채우기 핸들을 더블클릭해 3만 행에 수식을 한 번에 채우기.',
+      l:'30,162명을 3분 6초에 예측했다.',p:'ch04'},
+    {id:'bentoml',c:'line',t:'BentoML',sub:'6장 실시간 서빙',
+      d:'모델을 API로 띄워 요청마다 바로 예측을 돌려주는 서빙 도구.',
+      a:'주문이 오면 바로 만들어 주는 즉석 판매대.',
+      l:'5장의 배치 추론은 KFP가, 실시간 추론과 서빙은 6장의 BentoML이 맡는다.'},
+    {id:'principles',c:'line',t:'컴포넌트 설계 원칙',sub:'모듈성 · 입출력 명시 · 파라미터화 · 문서화',
+      d:'컴포넌트 하나는 기능 하나, 입출력은 명세에 적고, 바뀌는 값은 파라미터로 빼고, 설명을 단다.',
+      a:'작업대 하나에 일 하나, 안내판 필수.',
+      w:'재사용, 협업, 테스트가 쉬워진다.',
+      l:'추론과 쓰기를 나누고, 주소를 하드코딩하지 않고, `description` 필드에 설명을 적었다.'},
+
+    {id:'component',c:'station',t:'컴포넌트',sub:'component',core:true,d:'파이프라인의 단계 하나. 코드, 이미지, component.yaml 세 겹.'},
+    {id:'compyaml',c:'station',t:'component.yaml',sub:'컴포넌트 명세',core:true,d:'입출력, 타입, 이미지, 명령을 적은 작업대 안내판.'},
+    {id:'inputvalue',c:'station',t:'inputValue',sub:'값 자리',
+      d:'문자열 값을 그대로 명령줄에 넣는 자리.',
+      a:'지시서 빈칸에 적는 메모.',
+      x:'함수에 숫자나 글자를 직접 넣는 것.',
+      l:'`--bucket_name {inputValue: bucket_name}`은 실행할 때 `--bucket_name inference-datasets`가 된다.'},
+    {id:'inoutpath',c:'station',t:'inputPath · outputPath',sub:'파일 경로 자리',
+      d:'KFP가 아티팩트 파일 경로를 채워 넣는 자리. 앞 단계 outputPath와 다음 단계 inputPath가 같은 파일을 가리키게 된다.',
+      a:'선반 위치 번호. 앞 작업자가 상자를 놓은 칸을 다음 작업자에게 알려 준다.',
+      x:'다른 시트의 셀을 참조하는 주소.',
+      w:'컴포넌트끼리 데이터를 주고받게 해 주는 연결 고리다.',
+      l:'위 "직접 해 보기"에서 채워지는 모습을 볼 수 있다.'},
+    {id:'types',c:'station',t:'String · Dataset',sub:'입출력 타입',
+      d:'String은 값 그대로, Dataset은 KFP가 아티팩트로 관리하는 파일.',
+      a:'메모 한 줄과 택배 상자.',
+      n:'Dataset이라고 열 이름이나 결측을 검사해 주지는 않는다. 그런 검사는 코드에서 해야 한다.'},
+    {id:'argparse',c:'station',t:'argparse',sub:'명령줄 인자',
+      d:'Python 스크립트가 `--minio_host` 같은 명령줄 인자를 받게 해 주는 기본 모듈.',
+      a:'지시서 칸을 읽는 접수원.',
+      x:'매크로가 인수를 받는 것.',
+      w:'이미지를 만들거나 쿠버네티스에 올리기 전에 로컬에서 먼저 돌려 볼 수 있다.',
+      l:'read_data는 인자 6개를 받는다.'},
+    {id:'dockerfile',c:'station',t:'Dockerfile (5장)',sub:'python:3.13-slim',
+      d:'컴포넌트 코드를 이미지로 묶는 레시피. 저장소 루트에 하나만 두고 저장소 전체를 /app으로 복사한다.',
+      a:'밀키트 조립 설명서.',
+      l:'책의 `python:3.10-slim-buster`는 빌드가 실패해 `python:3.13-slim`으로 바꿨다. `ENV PYTHONPATH=/app`처럼 새 표기로 써야 경고가 없다.',p:'ch03'},
+    {id:'buster',c:'station',t:'buster 지원 종료',sub:'Debian 10',
+      d:'지원이 끝난 운영체제 버전이라 패키지 저장소가 내려가 `apt-get update`가 실패하는 상태.',
+      a:'단종돼 부품 카탈로그가 사라진 기계.',
+      w:'오래된 책 예제가 갑자기 빌드되지 않는 흔한 이유다.'},
+    {id:'pythonpath',c:'station',t:'PYTHONPATH',sub:'모듈 찾는 경로',
+      d:'Python이 모듈을 찾아보는 폴더 목록.',
+      a:'부품 창고 위치 안내.',
+      l:'`/app`을 넣어 저장소 코드를 찾게 했다.'},
+    {id:'wheel',c:'station',t:'휠 · 의존성 고정',sub:'wheel · requirements.txt',
+      d:'휠은 미리 빌드된 설치 파일. 맞는 휠이 없으면 소스에서 빌드해야 해 컴파일러가 필요하다. 의존성 고정은 패키지 버전을 정해 두는 것.',
+      a:'완제품 부품과 조립 키트.',
+      l:'ken-0913님은 feast 0.67.0, mlflow 3.17.2, scikit-learn 1.9.1로 고정해 전부 휠로 설치했다. kurtyoon님은 책 파일 커밋 날짜(2024-12-21) 기준으로 고정했다. 그대로 풀면 pyarrow 26이 numpy 2를 요구해 feast 0.40.1에서 `import feast`가 실패한다.',
+      n:'버전을 고정하지 않으면 같은 requirements.txt도 설치하는 날짜에 따라 결과가 달라진다.'},
+    {id:'repo',c:'station',t:'저장소 구조',sub:'components · src',
+      d:'Dockerfile과 requirements.txt는 루트에 하나, 컴포넌트마다 `components/<이름>/component.yaml`과 `src/<이름>/<이름>.py`.',
+      a:'작업대별 안내판 서랍과 매뉴얼 서랍.'},
+
+    {id:'readdata',c:'steps',t:'read_data',sub:'1단계 주문서 읽기',
+      d:'MinIO 클라이언트로 parquet를 내려받아 DataFrame으로 읽고 출력 경로에 다시 저장한다.',
+      a:'주문서 읽기.',
+      l:'`entity_df.parquet`(30,162행, user_id와 event_timestamp)를 읽는다. 출력은 1,408,944바이트.'},
+    {id:'minioclient',c:'steps',t:'MinIO 클라이언트',sub:'fget_object · fput_object',
+      d:'S3 방식 저장소에서 파일을 내려받고(fget) 올리는(fput) Python 라이브러리.',
+      a:'창고 출입 카트.',
+      l:'RustFS와 SeaweedFS도 S3 방식이라 같은 클라이언트로 쓴다.'},
+    {id:'retrieve',c:'steps',t:'retrieve_features',sub:'2단계 재료 받기',
+      d:'feature_store.yaml을 내려받아 FeatureStore를 만들고 get_historical_features로 피처 8개를 붙인다.',
+      a:'재료실에서 날짜 기준 재료 받기.',
+      l:'결과는 10컬럼(엔티티 2 + 피처 8), 1,513,367바이트.'},
+    {id:'featurelist',c:'steps',t:'feature_list',sub:'쉼표 문자열',
+      d:'`demographic:Sex,demographic:Race,...`처럼 피처 이름을 쉼표로 이은 문자열. 코드에서 split으로 나눈다.',
+      x:'쉼표로 이은 텍스트를 TEXTSPLIT으로 나누는 것.',
+      w:'파이프라인 파라미터로는 문자열 하나를 넘기기 쉬워서 이렇게 이어 붙인다.'},
+    {id:'historical',c:'steps',t:'get_historical_features',sub:'과거 시점 조회',
+      d:'각 엔티티의 기준 시각에 맞는 피처 값을 오프라인 저장소에서 붙인다.',
+      a:'그날 있던 재료만 꺼내 주는 재료실.',
+      l:'그래서 5장 파이프라인은 온라인 저장소(Redis, Valkey)에 접속하지 않는다.',p:'ch04'},
+    {id:'localhostreg',c:'steps',t:'레지스트리 주소 문제',sub:'s3_endpoint_override',
+      d:'노트북에서 `feast apply`하면 데이터 소스 주소가 노트북 기준(localhost나 공개 주소)으로 레지스트리에 저장된다. Pod에서는 그 주소에 닿지 않는다.',
+      a:'사무실 내선 번호만 적힌 재료 목록을 공장 현장에서 쓰려는 것.',
+      l:'책은 클러스터 주소로 바꿔 Job으로 다시 apply한다. ken-0913님은 4장에서 이미 클러스터 주소로 등록했고, kurtyoon님은 `feast-apply` Job으로 5장용 `registry.db`를 따로 만들었다.'},
+    {id:'feastredis',c:'steps',t:'feast[redis]',sub:'extra 설치',
+      d:'Feast의 Redis 지원 모듈까지 함께 설치하는 옵션.',
+      w:'feature_store.yaml에 `type: redis`가 있으면 접속하지 않아도 설정을 검증하면서 모듈을 불러온다.',
+      l:'ken-0913님 첫 실행은 `feast[aws]`만 설치해 `FeastModuleImportError`로 실패했다. `feast[aws,redis]`로 바꾸자 성공.'},
+    {id:'inference',c:'steps',t:'run_inference',sub:'3단계 레시피로 굽기',
+      d:'MLflow에서 지정 stage의 모델과 column_list.pkl을 받아, 입력 컬럼을 학습 때와 맞춘 뒤 확률을 예측한다.',
+      a:'공식 레시피로 굽기.',
+      l:'결과는 더미 90컬럼 + 예측 확률, 296,524바이트.'},
+    {id:'stage',c:'steps',t:'stage로 모델 찾기',sub:'current_stage',
+      d:'`search_model_versions`로 버전을 훑어 `current_stage == "Production"`인 버전을 고른다.',
+      a:'"현재 공식" 스티커가 붙은 레시피 찾기.',
+      l:'ken-0913님은 v2(clean-gnat-110)를 Production으로 전환했다. MLflow 3.16 UI는 기본으로 Stage 열을 숨겨서 New model registry UI 토글을 꺼야 보인다.',
+      n:'MLflow 3에서 stage는 deprecated이고 alias가 권장된다. 그래도 책 코드는 stage로 찾는다.',p:'ch04'},
+    {id:'alias',c:'steps',t:'alias',sub:'MLflow 모델 별칭',
+      d:'모델 버전에 붙이는 이름표(예: champion). stage 대신 권장된다.',
+      a:'레시피에 붙이는 자유 이름표.',
+      n:'책 코드는 stage로 찾으므로 alias만 붙여서는 이 파이프라인이 모델을 찾지 못한다.'},
+    {id:'colpkl',c:'steps',t:'run_id · column_list.pkl',sub:'학습 컬럼 순서',
+      d:'모델을 만든 run의 ID와, 그 run에 저장한 학습 컬럼 순서 파일.',
+      a:'레시피를 만든 실험 노트 페이지 번호와 재료 배치도.',
+      w:'등록 버전에 run_id가 있어야 컬럼 파일을 내려받을 수 있다.',
+      l:'`runs:/{run_id}/column_list.pkl`에서 90컬럼 순서를 받는다.',p:'ch04'},
+    {id:'dummies',c:'steps',t:'get_dummies(drop_first=True)',sub:'원-핫 인코딩',
+      d:'범주를 0/1 열로 펼치고, 그 배치 안에서 알파벳순 첫 범주 열을 지운다.',
+      a:'배치마다 "기준 범주"가 바뀔 수 있는 펼치기.',
+      x:'피벗으로 0/1 열을 만든 뒤 첫 열을 지우는데, 이번 달 데이터에 무엇이 있느냐에 따라 "첫 열"이 달라지는 것.',
+      n:'배치에 빠진 범주가 있으면 학습 때와 다른 열이 지워져 오류 없이 틀린 예측이 나올 수 있다. 위 "직접 해 보기"에서 확인할 수 있다.'},
+    {id:'reindex',c:'steps',t:'reindex(fill_value=0)',sub:'열 순서 맞추기',
+      d:'열을 학습 때 순서로 다시 세우고, 없는 열은 0으로 채운다.',
+      a:'기준 양식에 맞춰 붙여넣고 빈칸은 0.',
+      x:'양식 시트에 열 이름 기준으로 값을 옮기고 없는 건 0.',
+      n:'없는 열을 조용히 0으로 채우므로 잘못 펼쳐진 입력도 오류 없이 통과한다.'},
+    {id:'proba',c:'steps',t:'predict_proba',sub:'Predicted_Income_Class',
+      d:'각 클래스일 확률을 돌려주는 sklearn 메서드. 두 번째 값(고소득 확률)을 결과 열로 쓴다.',
+      a:'"이 손님이 고소득일 가능성 70%" 같은 점수.',
+      l:'평균 0.249, 0.5 이상 22.2%(데이터의 실제 고소득 비율 24.9%).',
+      n:'확률이지 클래스 번호가 아니다. 임계값은 업무 비용에 맞춰 정한다.'},
+    {id:'sklearnxgb',c:'steps',t:'sklearn 모델 · xgboost Booster',sub:'모델 형식',
+      d:'`mlflow.xgboost.load_model`이 돌려주는 Booster에는 predict_proba가 없다.',
+      w:'파이프라인 코드가 기대하는 모델 형식에 맞춰야 한다.',
+      l:'그래서 책은 AUC 1등 대신 랜덤 포레스트를 `random-forest-classifier`로 등록한 것으로 보인다.'},
+    {id:'writedata',c:'steps',t:'write_data',sub:'4단계 창고에 넣기',
+      d:'앞 단계 결과를 읽어 버킷에 parquet로 올린다.',
+      a:'완성품을 창고에 넣기.',
+      l:'`inference-datasets/inference_result.parquet`(289.1KiB). 출력 Dataset이 없어 선반에는 로그만 남는다.',
+      n:'버킷을 만들어 주지 않는다. 미리 만들어 둬야 한다.'},
+
+    {id:'artifactstore',c:'store',t:'아티팩트 저장소',sub:'pipeline root',core:true,d:'단계 사이 Dataset과 로그를 쌓는 저장소. 작업대 사이 선반.'},
+    {id:'pipelineroot',c:'store',t:'pipeline root',sub:'defaultPipelineRoot',
+      d:'단계 사이 아티팩트를 쌓는 기본 위치.',
+      l:'ken-0913님은 `minio://mlpipeline/v2/artifacts`. run ID 아래 단계별로 `data_output`과 `executor-logs-0`이 생긴다.',p:'ch04'},
+    {id:'buckets',c:'store',t:'버킷 구성 (5장)',sub:'bucket',
+      d:'inference-datasets(입력과 결과), feature-registry(Feast 설정과 레지스트리), feature-data-sets(피처 원천), mlpipeline(단계 사이 상자).',
+      a:'용도별로 나눈 창고 구역.',p:'ch04'},
+    {id:'rustfs',c:'store',t:'RustFS',sub:'S3 호환 저장소',
+      d:'책의 MinIO 자리에 ken-0913님이 쓴 S3 호환 저장소.',
+      a:'같은 규격의 다른 회사 창고.',
+      l:'`rustfs.mlflow.svc:9000`. 입력, 결과, 단계 사이 상자와 로그까지 한곳에 모았다.'},
+    {id:'seaweedfs',c:'store',t:'SeaweedFS',sub:'S3 호환 저장소',
+      d:'S3 방식으로 쓸 수 있는 저장소. KFP 2.17.3이 아티팩트 저장소로 함께 설치한다.',
+      l:'ken-0913님은 replicas 0으로 끄고 RustFS를 썼다. kurtyoon님은 KFP에 딸린 것은 빼고, MinIO 대신 공용 SeaweedFS 하나를 여러 앱이 같이 쓴다.',
+      n:'kurtyoon님은 `anonymous` 계정 때문에 S3 Tables API가 서명 없이 열리는 걸 찾아 막았다.',p:'ch04'},
+    {id:'minio',c:'store',t:'MinIO',sub:'책의 저장소',
+      d:'책이 쓰는 S3 호환 저장소. 5장 코드는 `minio-service.kubeflow:9000`을 부른다.',
+      n:'공개 기본 계정(minio / minio123)은 실습용이다.',p:'ch04'},
+    {id:'launcher',c:'store',t:'kfp-launcher ConfigMap',sub:'선반 위치 안내문',
+      d:'단계 Pod가 어느 저장소에 어떤 키로 아티팩트를 쓸지 정하는 설정.',
+      a:'작업자에게 주는 선반 위치 안내문.',
+      l:'endpoint를 `rustfs.mlflow.svc:9000`으로, 키는 Secret `rustfs-credentials`로 지정했다.'},
+    {id:'fourplaces',c:'store',t:'저장소를 바꿀 네 곳',sub:'KFP 2.17.3',
+      d:'KFP 2.17.3은 SeaweedFS 주소를 여러 곳의 기본값으로 쓴다.',
+      l:'단계 Pod(kfp-launcher), API 서버(OBJECTSTORECONFIG_HOST), UI(MINIO_HOST와 MINIO_NAMESPACE), Argo 로그 보관(artifact-repositories) 네 곳을 모두 바꿨다.',
+      n:'한 곳만 바꾸면 어떤 기록은 새 창고에, 어떤 건 옛 창고를 찾게 된다.'},
+    {id:'executorlogs',c:'store',t:'executor-logs',sub:'단계 로그',
+      d:'단계 실행 로그 파일. UI의 Logs 탭이 저장소에서 읽어 보여 준다.',
+      a:'작업자 업무 일지.',
+      l:'retrieve-features 로그에는 엔티티 표와 피처 8개가 붙은 결과가 그대로 남아 있다.'},
+    {id:'kustomize',c:'store',t:'kustomize 패치',sub:'덧씌우기',
+      d:'원본 매니페스트는 그대로 두고 바꿀 부분만 덧씌우는 방식.',
+      a:'원본 설계도 위에 붙이는 수정 메모지.',
+      x:'원본 시트는 건드리지 않고 변경 시트로 덮어쓰기.',
+      l:'두 분 모두 KFP 설정 변경을 kustomize로 관리했다.'},
+    {id:'valkey',c:'store',t:'Valkey',sub:'Redis 호환 저장소',
+      d:'Redis와 같은 프로토콜을 쓰는 오픈소스 키-값 저장소.',
+      a:'Redis와 같은 말을 알아듣는 냉장고.',
+      l:'kurtyoon님은 Valkey 9.1.2를 Feast 온라인 저장소로 썼다. Feast 0.40.1의 Redis 클라이언트를 고치지 않고 쓴다. 3만 명의 피처 묶음 3개가 12MB였다.',p:'ch04'},
+    {id:'noeviction',c:'store',t:'noeviction · AOF',sub:'Valkey 설정',
+      d:'noeviction은 메모리가 차면 키를 지우는 대신 쓰기를 실패시키는 정책. AOF는 쓰기 기록을 파일로 남기는 방식.',
+      a:'냉장고가 차면 옛 재료를 몰래 버리지 않고 "더 못 넣음"을 알리기. 입출고 일지는 1초마다 기록.',
+      w:'피처가 조용히 사라지는 것보다 materialize가 오류를 내는 편이 낫다.',
+      l:'`maxmemory 96mb`, `appendfsync everysec`, RDB 스냅샷은 끔.'},
+    {id:'sshtunnel',c:'store',t:'SSH 터널',sub:'노트북 → Valkey',
+      d:'노트북의 포트를 SSH 연결을 통해 클러스터 안 주소로 이어 주는 통로.',
+      a:'노트북에서 공장 안 냉장고까지 이어진 개인 통로.',
+      l:'노트북 `127.0.0.1:6379` → 노드 → Valkey ClusterIP. 노트북의 feature_store.yaml은 `localhost:6379`를 가리킨다.',
+      n:'NodePort나 LoadBalancer는 출발 주소가 바뀌어 NetworkPolicy를 우회하므로 쓰지 않았다. 이 길에서 Valkey를 지키는 건 비밀번호뿐이다.',p:'ch04'},
+    {id:'feastapplyjob',c:'store',t:'feast-apply Job',sub:'5장용 레지스트리',
+      d:'클러스터 안에서 `feast apply`를 다시 돌려 Pod가 쓸 레지스트리를 만드는 단발 작업.',
+      a:'현장용 재료 목록 대장을 현장에서 다시 만드는 단기 아르바이트.',
+      l:'설치 → 원천 파일 3개 확인 → apply로 `registry.db` 작성 → feature_store.yaml 업로드. 원천이 없으면 빈 레지스트리가 써지므로 먼저 확인한다.',
+      n:'노트북 키로는 5장 레지스트리를 바꿀 수 없게 했다. 레지스트리를 읽는 Pod에서 그 안의 함수가 실행될 수 있기 때문이다.',p:'ch04'},
+    {id:'teardown',c:'store',t:'feast teardown 금지',sub:'공용 냉장고',
+      d:'teardown은 온라인 저장소의 행을 모두 지운다.',
+      a:'공용 냉장고를 한 팀이 통째로 비우는 것.',
+      l:'4장과 5장 레지스트리가 같은 Valkey와 프로젝트 이름(my_feature_repo)을 함께 써서 한쪽 정리가 양쪽에 영향을 준다. 그래서 이 환경에서는 쓰지 않는다.'},
+
+    {id:'dockerhub',c:'ship',t:'Docker Hub',sub:'이미지 레지스트리',
+      d:'이미지를 올려 두고 내려받는 공용 창고.',
+      a:'밀키트 물류 창고.',
+      l:'책은 `varunmallya/*:latest`, ken-0913님은 본인 계정 이미지를 쓴다.',p:'ch03'},
+    {id:'fourimages',c:'ship',t:'이미지 이름 넷, 내용은 하나',sub:'같은 레이어',
+      d:'Dockerfile이 저장소 전체를 복사해서 컴포넌트별 이미지 네 개의 내용이 같다.',
+      a:'포장지만 다른 같은 밀키트.',
+      l:'첫 단계는 이미지 받기에 29초(압축 360MB), 두 번째 단계부터는 같은 층이라 2~4초.'},
+    {id:'makefile',c:'ship',t:'Makefile',sub:'명령 모음',
+      d:'자주 쓰는 명령을 이름 붙여 모아 둔 파일.',
+      a:'단축 버튼 모음.',
+      l:'책 저장소는 같은 Dockerfile을 이름만 바꿔 네 번 빌드한다.'},
+    {id:'gha',c:'ship',t:'GitHub Actions',sub:'자동 포장 라인',
+      d:'저장소에 변화가 생기면 정해 둔 작업을 자동으로 돌리는 GitHub 기능.',
+      a:'자동 포장 라인.',
+      l:'ken-0913님 저장소는 main에 코드가 올라가면 이미지를 빌드해 이름 네 개로 푸시하고, component.yaml 태그를 커밋 SHA로 바꾸는 커밋을 봇이 넣는다.',p:'ch03'},
+    {id:'shatag',c:'ship',t:'커밋 SHA 태그',sub:'이미지 태그',
+      d:'이미지 태그에 커밋 번호를 써서 커밋마다 다른 이름을 붙이는 방식.',
+      a:'제조 일련번호가 찍힌 라벨.',
+      w:'태그가 같으면 노드가 새 이미지를 받지 않을 수 있어서다.',
+      l:'예: `hyeonjae0913/run-inference:31bd38a`.',p:'ch03'},
+    {id:'ifnotpresent',c:'ship',t:'IfNotPresent',sub:'imagePullPolicy',
+      d:'노드에 같은 이름의 이미지가 있으면 새로 받지 않는 정책.',
+      a:'작업장에 같은 이름 밀키트가 있으면 새로 주문하지 않기.',
+      n:'`latest`를 덮어써도 노드는 옛 이미지를 계속 쓸 수 있다.'},
+    {id:'skipci',c:'ship',t:'[skip ci]',sub:'봇 커밋 표시',
+      d:'워크플로가 스스로 커밋할 때 붙여, 그 커밋으로 워크플로가 다시 돌지 않게 하는 표시.',
+      a:'"이 수정은 자동 라인에 다시 넣지 말 것" 메모.'},
+    {id:'arch',c:'ship',t:'amd64 · arm64',sub:'CPU 아키텍처',
+      d:'이미지는 CPU 종류마다 따로 빌드된다. 일반 PC와 서버는 amd64, 애플 M 시리즈나 일부 클라우드 VM은 arm64.',
+      a:'220V용 기계와 110V용 기계.',
+      l:'ken-0913님은 KFP Pod를 amd64 노드에 고정했다. kurtyoon님 노드는 arm64라 MLMD와 Feast 서버의 amd64 전용 이미지를 쓸 수 없었다.',
+      n:'amd64 전용 이미지를 arm64에서 돌리려면 에뮬레이션(qemu)이 필요하고 느리다.'},
+    {id:'digestpin',c:'ship',t:'digest 고정',sub:'sha256',
+      d:'이미지를 내용 지문으로 지정하는 것.',
+      l:'kurtyoon님은 deployKF의 MLMD arm64 이미지를 다이제스트로 고정했다.',p:'ch03'},
+
+    {id:'k3s',c:'site',t:'k3s',sub:'가벼운 쿠버네티스',
+      d:'작은 서버에서도 돌도록 가볍게 만든 쿠버네티스 배포판.',
+      l:'책은 k3s v1.24에 Kubeflow 1.7 전체를 올린다. kurtyoon님은 블로그가 돌던 단일 노드 k3s(arm64)에 필요한 것만 올렸다.',
+      n:'Kubeflow 1.7은 Kubernetes 1.25까지만 지원해 최신 클러스터에 그대로 올릴 수 없다.',p:'ch04'},
+    {id:'singlenode',c:'site',t:'단일 노드',sub:'컴퓨터 한 대',
+      d:'클러스터에 컴퓨터가 한 대뿐인 구성.',
+      a:'건물 하나짜리 공장.',
+      w:'자원이 빠듯해 무엇을 올릴지 고르는 게 중요하다.',
+      n:'노드를 늘리거나 재부팅하면 그 위의 모든 서비스가 잠시 멈춘다.'},
+    {id:'requestsum',c:'site',t:'requests 합계',sub:'자원 예약',
+      d:'각 앱이 "최소 이만큼 필요"라고 예약한 CPU와 메모리를 모두 더한 값.',
+      a:'부서별 자리 예약 합계와 건물 수용 인원 비교.',
+      x:'예약표를 SUM해서 정원과 비교하기.',
+      l:'기존 운영 1.02코어 + 실습 1.02코어 = 2.04코어, 메모리 7.56Gi. 파이프라인이 돌 때는 driver와 step Pod가 약 0.25코어를 더 쓴다.',p:'ch03'},
+    {id:'kfslim',c:'site',t:'필요한 것만 올리기',sub:'Kubeflow 전체 대신',
+      d:'4·5장이 실제로 쓰는 MLflow, 객체 저장소, Redis, KFP만 골라 올리는 방식.',
+      a:'종합 공장 대신 필요한 설비만 들이기.',
+      l:'Istio의 역할(라우팅, 인증 헤더 보호, 프로필 권한)은 Gateway API, authentik, 단일 사용자 KFP, NetworkPolicy로 대신했다.',
+      n:'사용자 간 격리가 없고 클러스터 안 통신이 암호화되지 않는 한계가 남는다.'},
+    {id:'appofapps',c:'site',t:'app-of-apps',sub:'Argo CD 방식',
+      d:'Argo CD 앱 목록 자체를 앱 하나로 관리하는 방식.',
+      a:'설계도 목록을 담은 설계도.',
+      l:'kurtyoon님 클러스터는 원래 이 방식으로 GitHub 저장소를 읽어 앱을 배포하고 있었다.'},
+    {id:'gitea',c:'site',t:'Gitea · runner',sub:'사내 Git과 CI',
+      d:'직접 운영하는 Git 서버와 자동 작업 일꾼.',
+      a:'사내 GitHub.',
+      l:'책의 GitLab 대신 arm64 지원과 레지스트리 때문에 골랐다.',
+      n:'privileged dind는 노드 root 권한 위험이 있어, 제한 사용자의 PR 작업은 승인 뒤에만 돌게 했다.'},
+    {id:'kps',c:'site',t:'kube-prometheus-stack',sub:'계기판 세트',
+      d:'Prometheus, Grafana, Alertmanager를 묶어 설치하는 꾸러미.',
+      a:'계기판 세트.',
+      n:'k3s 내장 구성 요소 때문에 가짜 `*Down` 알림이 떠서 해당 수집과 규칙을 껐다. Grafana 차트의 권한이 모든 Secret을 읽을 수 있어 줄였다.',p:'ch03'},
+    {id:'cnpg',c:'site',t:'CNPG',sub:'CloudNativePG',
+      d:'쿠버네티스 안에서 PostgreSQL을 운영해 주는 관리 도구.',
+      a:'장부 관리 전담 직원.',
+      l:'MLflow 백엔드 DB(Postgres 17, 5Gi)를 CNPG로 만들고, 접속 Secret의 `uri`를 MLflow에 넘겼다.'},
+    {id:'svcartifacts',c:'site',t:'MLflow 아티팩트 프록시',sub:'--serve-artifacts',
+      d:'클라이언트가 S3에 직접 쓰지 않고 MLflow 서버에 올리면, 서버가 자기 키로 버킷에 저장하는 방식.',
+      a:'연구실 창구가 대신 창고에 넣어 주는 대리 보관.',
+      w:'노트북과 파이프라인 Pod가 MLflow 때문에 S3 키를 가질 필요가 없다.',
+      l:'아티팩트 위치가 `mlflow-artifacts:/<실험 ID>`가 된다. kurtyoon님 환경의 추론 단계는 키 없이 모델을 받는다.',
+      n:'실험을 만들 때 `artifact_location`에 `s3://`를 직접 주면 다시 S3 키가 필요해진다.'},
+    {id:'allowedhosts',c:'site',t:'ALLOWED_HOSTS · CORS',sub:'MLflow 서버 설정',
+      d:'MLflow가 받아 줄 요청 주소 목록과, 화면에서 오는 쓰기 요청을 허용할 출처.',
+      a:'연구실이 받는 주소 명단과 방문객 허용 목록.',
+      l:'내부 주소 셋과 공개 주소를 ALLOWED_HOSTS에 넣었다. CORS가 없으면 화면에서 실험을 만들 때 403이 난다.',
+      n:'목록을 주면 기본값(localhost, 사설 IP)은 빠진다.'},
+    {id:'recreate',c:'site',t:'Recreate 배포 · db upgrade',sub:'MLflow 배포',
+      d:'새 버전을 띄우기 전에 옛 Pod를 모두 내리는 배포 방식과, 시작 전에 DB 스키마를 올리는 init 컨테이너.',
+      a:'리모델링 때 문을 닫고 장부 양식부터 바꾼 뒤 재개장.',
+      w:'롤링 업데이트를 쓰면 옛 서버와 새 스키마가 잠시 함께 돈다.',p:'ch03'},
+    {id:'mlflowmem',c:'site',t:'MLflow 메모리 줄이기',sub:'workers · job execution',
+      d:'작은 노드에 맞게 MLflow가 쓰는 메모리를 줄이는 설정.',
+      a:'작은 연구실에 맞게 책상 수 줄이기.',
+      l:'worker를 4개에서 2개로, GenAI 작업 실행기는 꺼서 유휴 메모리를 약 1.9GiB에서 약 0.6GiB로 줄였다.'},
+    {id:'prerender',c:'site',t:'미리 렌더링해 커밋',sub:'KFP 매니페스트',
+      d:'업스트림 kustomize 결과를 한 번 만들어 Git에 그대로 넣는 방식.',
+      a:'설계도를 인쇄해 보관.',
+      w:'Argo CD가 동기화하는 중에 외부(GitHub)에서 받아 오는 게 없어진다.'},
+
+    {id:'gateway',c:'gate',t:'Gateway API · HTTPRoute',sub:'정문과 길 안내',
+      d:'외부 요청을 어느 서비스로 보낼지 정하는 쿠버네티스 표준 규칙. Gateway는 정문, HTTPRoute는 정문 안 길 안내.',
+      a:'공장 정문과 부서별 안내 표지판.',
+      w:'앱마다 Traefik IngressRoute를 열면 다른 네임스페이스가 더 긴 규칙으로 남의 주소를 가로챌 수 있다.',
+      l:'공유 Gateway `public` 하나가 호스트마다 리스너를 두고 TLS를 끝낸다.'},
+    {id:'listener',c:'gate',t:'리스너 · allowedRoutes',sub:'호스트별 창구',
+      d:'리스너는 Gateway의 호스트별 창구, allowedRoutes는 그 창구에 붙을 수 있는 네임스페이스 제한.',
+      a:'창구마다 받을 수 있는 부서 명단.',
+      l:'블로그 리스너는 `blog`, `analytics` 네임스페이스만 받는다.',
+      n:'이 제한은 HTTPRoute에만 걸린다.'},
+    {id:'traefik',c:'gate',t:'Traefik',sub:'정문 프록시',
+      d:'k3s에 기본으로 들어 있는 정문 프록시.',
+      a:'정문 경비 업체.',
+      l:'k3s의 Traefik 3.6은 Gateway API 프로바이더가 기본으로 꺼져 있어 켰다.'},
+    {id:'authentik',c:'gate',t:'authentik',sub:'로그인 서비스',
+      d:'여러 앱의 로그인을 한곳에서 처리하는 인증 서버.',
+      a:'출입증 발급소.',
+      l:'Argo CD, Grafana, Gitea는 OIDC로, MLflow, KFP, SeaweedFS 관리 화면은 forward auth로 붙였다.',
+      n:'머지 뒤 MLflow 주소가 404를 냈다. outpost의 provider 목록에 mlflow가 빠져 있었고, 블루프린트 적용 순서 문제였다.'},
+    {id:'forwardauth',c:'gate',t:'forward auth',sub:'정문에서 대신 확인',
+      d:'앱 앞의 정문이 요청마다 로그인 서버에 "들여보내도 되나" 물어보고 통과시키는 방식.',
+      a:'정문 경비가 출입증을 대신 확인.',
+      w:'로그인 기능이 없는 앱(MLflow, KFP)에도 로그인을 붙일 수 있다.',
+      n:'공개 주소에만 걸린다. 클러스터 안 Service 주소로 오는 요청은 로그인 없이 들어간다.'},
+    {id:'oidc',c:'gate',t:'OIDC',sub:'표준 로그인 연동',
+      d:'앱이 로그인 서버에 직접 사용자를 확인받는 표준 방식.',
+      a:'앱이 출입증 발급소에 직접 전화해 확인.',
+      l:'Argo CD, Grafana, Gitea가 이 방식을 쓴다.'},
+    {id:'apppw',c:'gate',t:'app password',sub:'앱 비밀번호',
+      d:'SDK처럼 사람이 아닌 프로그램이 로그인할 때 쓰는 별도 비밀번호. 요청마다 HTTP Basic으로 보낸다.',
+      a:'사람용 출입증과 따로 발급한 기계용 출입 카드.',
+      l:'용도를 "앱 비밀번호"로 만든 토큰만 통과했다. 기본 수명 1일을 실습 그룹 속성으로 30일로 늘렸다.',
+      n:'인증에 실패하면 SDK는 401 대신 "JSON이 아닌 응답" 오류를 낸다. 로그인 화면 HTML을 받았기 때문이다.'},
+    {id:'cloudflare',c:'gate',t:'Cloudflare 100MB 제한',sub:'공개 주소의 짐 크기',
+      d:'공개 주소 앞의 Cloudflare 무료 플랜은 요청 하나에 100MB까지만 받는다.',
+      a:'정문으로는 100MB 넘는 짐을 못 들임.',
+      l:'노트북에서 큰 아티팩트를 MLflow 공개 주소로 올릴 수 없어, 큰 모델은 클러스터 안 KFP 컴포넌트에서 기록한다.'},
+    {id:'headerstrip',c:'gate',t:'인증 헤더 제거',sub:'Authorization · Cookie',
+      d:'정문 로그인을 통과한 뒤 `Authorization`과 `Cookie` 헤더를 지우고 안으로 보내는 설정.',
+      a:'정문에서 출입증을 확인하고 회수해 안으로 들고 가지 못하게.',
+      w:'파이프라인 코드가 UI나 API 서버 Pod 안에서 돌게 되면, 그 Pod에 들어온 비밀번호나 쿠키가 새어 나갈 수 있다.'},
+    {id:'argoproj',c:'gate',t:'Argo CD 프로젝트',sub:'ops · mlops-lab · default',
+      d:'Argo CD 앱이 배포할 수 있는 저장소와 네임스페이스를 제한하는 단위.',
+      a:'감독마다 맡을 수 있는 구역 지정.',
+      l:'`ops`는 운영과 실습 서비스 전체, `mlops-lab`은 `lab-*`와 `argocd-lab` 네임스페이스만, `default`는 root 앱만.',
+      n:'실습 앱도 라우팅, 인증서, ServiceMonitor는 만들 수 있어 공개 주소는 `ops`에서만 연다.',p:'ch04'},
+
+    {id:'secret',c:'guard',t:'Secret으로 키 넘기기',sub:'use_secret_as_env',
+      d:'S3 키를 파이프라인 파라미터 대신 Secret에서 Pod 환경 변수로 넣는 방식.',
+      a:'열쇠를 주문서에 적지 않고 잠긴 서랍에 넣어 두기.',
+      w:'KFP는 파라미터를 실행 기록(UI와 DB)에 평문으로 남긴다.',
+      l:'ken-0913님은 `rustfs-credentials`, kurtyoon님은 `kfp-pipeline-s3`를 `kfp-kubernetes`의 `use_secret_as_env`로 붙였다. 컴파일된 YAML에는 Secret 이름만 들어간다.',
+      n:'파이프라인을 올릴 수 있는 사람은 그 Secret도 읽을 수 있다. 막는 건 실행 기록에 키가 남는 일이다.',p:'ch03'},
+    {id:'shc',c:'guard',t:'sh -c 감싸기',sub:'키를 인자로 넘기기',
+      d:'component.yaml 명령을 셸로 감싸, 환경 변수의 키를 책 코드의 `--access_key` 인자로 넘기는 방법.',
+      a:'작업자가 잠긴 서랍에서 열쇠를 꺼내 지시서 빈칸에 직접 적고 일을 시작.',
+      w:'책 코드(`src/*.py`)를 고치지 않고 키 전달 방식만 바꿀 수 있다.',
+      l:'`exec python3 ... "$@" --access_key "$AWS_ACCESS_KEY_ID" ...`'},
+    {id:'keysplit',c:'guard',t:'용도별 키',sub:'버킷 권한 나누기',
+      d:'저장소 키를 용도마다 따로 만들어 필요한 버킷 권한만 주는 것.',
+      a:'부서별 창고 열쇠.',
+      l:'kurtyoon님은 데이터셋용 `mlops-lab`, Feast용 `feast-lab`, KFP 선반용 `kfp`, 컴포넌트용 `kfp-pipeline`으로 나눴다. 노트북 키로는 5장 레지스트리를 바꿀 수 없다.',
+      n:'KFP UI는 요청에서 버킷 이름을 받아서, `kfp` 키에 다른 버킷 권한이 있으면 UI로 그 버킷을 읽을 수 있다. 그래서 `mlpipeline`만 줬다.'},
+    {id:'sealed',c:'guard',t:'SealedSecret',sub:'Git에 넣는 Secret',
+      d:'암호화된 상태로 Git에 넣을 수 있는 Secret.',
+      a:'봉인된 봉투에 넣은 열쇠.',
+      l:'업스트림의 `minio / minio123` Secret을 지우고 같은 이름의 SealedSecret으로 바꿨다.',p:'ch03'},
+    {id:'netpol',c:'guard',t:'NetworkPolicy',sub:'출입 명단',
+      d:'Pod가 어디와 통신할 수 있는지 정하는 규칙.',
+      a:'부서 간 출입 명단.',
+      l:'파이프라인 Pod는 DNS, KFP API와 MLMD, Kubernetes API, S3, MLflow, Valkey, 공개 80/443만 나갈 수 있다. 사설 대역과 클라우드 메타데이터 주소는 막았다.',
+      n:'적용에 몇 초 걸려서, 확인용 Pod는 Ready 뒤 잠시 기다렸다 시험했다.',p:'ch03'},
+    {id:'podsec',c:'guard',t:'Pod Security',sub:'baseline · restricted',
+      d:'네임스페이스에 들어올 수 있는 Pod의 보안 수준 규정.',
+      a:'공장 입장 복장 규정의 기본 단계와 엄격 단계.',
+      l:'baseline으로 privileged Pod, 호스트 네임스페이스, hostPath를 막았다.',
+      n:'책의 컴포넌트 이미지가 root로 돌아 restricted는 걸 수 없었다.'},
+    {id:'limitrange',c:'guard',t:'LimitRange · ResourceQuota',sub:'개인 기본값과 부서 상한',
+      d:'LimitRange는 자원을 적지 않은 컨테이너에 기본값을, ResourceQuota는 네임스페이스 전체 합계 상한을 건다.',
+      a:'작업자 기본 책상 크기와 부서 전체 예산 한도.',
+      w:'학습 step 하나가 노드 CPU를 독차지하는 걸 막는다.',
+      l:'기본 CPU limit 1코어(최대 2), kubeflow 네임스페이스 requests 합계 2 CPU와 6Gi.',p:'ch03'},
+    {id:'runnerrole',c:'guard',t:'pipeline-runner 권한 줄이기',sub:'실행 계정',
+      d:'파이프라인 실행 계정의 권한을 v2 실행에 필요한 만큼만 남기는 것.',
+      a:'작업자 출입증 등급 낮추기.',
+      l:'업스트림은 v1용으로 Pod와 Deployment 생성 권한까지 준다. 빼고 나면 kubeflow에서 Pod를 만드는 건 컨트롤러뿐이다.',p:'ch03'},
+    {id:'vap',c:'guard',t:'ValidatingAdmissionPolicy',sub:'입장 심사 규칙',
+      d:'쿠버네티스가 객체를 받아들이기 전에 조건을 검사해 거부하는 규칙.',
+      a:'입장 심사대.',
+      l:'파이프라인 Pod가 `pipeline-runner`가 아닌 계정으로 오면 거부해, SDK에서 더 강한 계정을 지정하는 우회를 막았다.'},
+    {id:'svcenv',c:'guard',t:'Service 환경 변수 자동 주입',sub:'_SERVICE_HOST',
+      d:'쿠버네티스는 같은 네임스페이스의 Service마다 `<이름>_SERVICE_HOST`, `_SERVICE_PORT` 환경 변수를 Pod에 자동으로 넣는다.',
+      a:'부서 내선 번호표를 모든 작업자 책상에 자동으로 붙여 주기.',
+      l:'시각화 Service를 지우자 변수가 사라져 KFP API 서버가 종료됐다. 두 변수를 Deployment에 직접 넣어 해결했다.',
+      n:'안 쓰는 Service를 지웠는데 다른 Pod가 죽는다면 의심해 볼 만하다.'},
+    {id:'externalname',c:'guard',t:'ExternalName Service',sub:'이름 착신 전환',
+      d:'이름만 다른 주소로 돌려주는 Service. DNS 이름 바꿔 주기만 하고 프록시나 포트 변환은 없다.',
+      a:'번호를 그대로 둔 착신 전환.',
+      x:'이름 정의가 다른 시트 범위를 가리키게 바꾸기.',
+      l:'`minio-service`와 `seaweedfs` 두 이름을 모두 공용 SeaweedFS로 돌려, 책 코드를 고치지 않았다.',p:'ch03'},
+    {id:'priorityclass',c:'guard',t:'PriorityClass',sub:'우선순위',
+      d:'Pod의 우선순위. 높으면 자원이 모자랄 때 다른 Pod를 밀어낼 수 있다.',
+      a:'작업자 우선순위표.',
+      l:'Argo 컨트롤러의 높은 PriorityClass를 뺐다. 노드가 하나라 블로그 Pod를 밀어낼 수 있어서다.'},
+    {id:'presigned',c:'guard',t:'presigned URL',sub:'임시 출입권',
+      d:'기한이 붙은 임시 저장소 접근 주소.',
+      a:'유효 기간이 찍힌 임시 창고 출입권.',
+      l:'MLflow가 큰 파일 업로드용으로 클러스터 안 주소의 URL을 줘서 노트북에서는 닿지 않는다.'}
+  ];
+
+  /* glossary */
+  var byId = {};
+  TERMS.forEach(function(t){ byId[t.id] = t; });
+  var state = {cat:'all', q:'', expanded:false};
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var qEl = document.getElementById('q');
+  var toggleEl = document.getElementById('toggleAll');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'); }
+  function renderChips(){
+    var html = '<button type="button" class="chip" data-cat="all" aria-pressed="'+(state.cat==='all')+'">전체</button>';
+    Object.keys(CATS).forEach(function(k){
+      html += '<button type="button" class="chip" data-cat="'+k+'" style="--cat:var(--c-'+k+')" aria-pressed="'+(state.cat===k)+'"><i class="dot"></i>'+CATS[k].name+' <span style="opacity:.7">'+CATS[k].hint+'</span></button>';
+    });
+    chipsEl.innerHTML = html;
+  }
+  function matches(t){
+    if(state.cat!=='all' && t.c!==state.cat) return false;
+    if(!state.q) return true;
+    return [t.t,t.sub,t.d,t.a,t.w,t.x,t.l,t.n].join(' ').toLowerCase().indexOf(state.q) !== -1;
+  }
+  function row(label, val, cls){
+    if(!val) return '';
+    return '<div'+(cls?' class="'+cls+'"':'')+'><dt>'+label+'</dt><dd>'+fmt(val)+'</dd></div>';
+  }
+  function renderList(){
+    var items = TERMS.filter(matches);
+    var openAll = state.expanded || (state.q && items.length <= 4);
+    var html = items.map(function(t){
+      var more = t.p ? '<div class="go"><a href="'+PAGES[t.p].url+'" target="_blank" rel="noopener">'+PAGES[t.p].name+' 용어 풀이에서 더 보기 →</a></div>' : '';
+      var body = t.core
+        ? '<dl>'+row('한 줄로', t.d)+'</dl><div class="go"><button type="button" class="textbtn" data-term="'+t.id+'">핵심 카드에서 자세히 보기 →</button></div>'
+        : '<dl>'+row('비유', t.a)+row('왜 필요해', t.w)+row('엑셀로 치면', t.x, 'excel')+row('두 글에서', t.l)+row('주의', t.n, 'warn')+'</dl>'+more;
+      return '<details class="term" id="t-'+t.id+'" style="--cat:var(--c-'+t.c+')"'+(openAll?' open':'')+'>'+
+        '<summary><span class="t-head"><span class="t-name">'+esc(t.t)+'</span><span class="t-sub">'+esc(t.sub||'')+'</span></span>'+
+        '<span class="t-right"><span class="cat-tag">'+(t.core?'핵심 · ':'')+CATS[t.c].name+'</span><i class="chev" aria-hidden="true"></i></span>'+
+        '<span class="t-d">'+fmt(t.core?CATS[t.c].hint+' 구역의 핵심 용어':t.d)+'</span></summary>'+
+        '<div class="t-body">'+body+'</div></details>';
+    }).join('');
+    if(!items.length){ html = '<p class="empty">"'+esc(qEl.value)+'"와 맞는 용어가 없어요. 영어 이름이나 다른 말로 찾아보세요.</p>'; }
+    listEl.innerHTML = html;
+    countEl.textContent = (state.cat==='all' && !state.q) ? '용어 '+TERMS.length+'개' : items.length+'개 / 전체 '+TERMS.length+'개';
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  }
+  function flash(el){
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 1900);
+  }
+  function openTerm(id){
+    var t = byId[id]; if(!t) return;
+    var el;
+    if(t.core){ el = document.getElementById('core-'+id); }
+    else {
+      el = document.getElementById('t-'+id);
+      if(!el){ state.cat='all'; state.q=''; qEl.value=''; renderChips(); renderList(); el = document.getElementById('t-'+id); }
+      if(el) el.open = true;
+    }
+    if(!el) return;
+    el.scrollIntoView({behavior: reduced?'auto':'smooth', block:'start'});
+    flash(el);
+  }
+
+  /* component.yaml view */
+  var CMD = {
+    write:
+      '<span class="cm"># 1단계 read_data / component.yaml (키 인자 생략)</span>\n'+
+      'python3 /app/src/read_data/read_data.py\n'+
+      '  --minio_host        <span class="v">{inputValue: minio_host}</span>\n'+
+      '  --bucket_name       <span class="v">{inputValue: bucket_name}</span>\n'+
+      '  --file_name         <span class="v">{inputValue: file_name}</span>\n'+
+      '  --data_output_path  <span class="p1">{outputPath: data_output}</span>\n\n'+
+      '<span class="cm"># 2단계 retrieve_features / component.yaml (키 인자 생략)</span>\n'+
+      'python3 /app/src/retrieve_features/retrieve_features.py\n'+
+      '  --bucket_name       <span class="v">{inputValue: bucket_name}</span>\n'+
+      '  --file_name         <span class="v">{inputValue: file_name}</span>\n'+
+      '  --entity_df         <span class="p1">{inputPath: entity_df}</span>\n'+
+      '  --feature_list      <span class="v">{inputValue: feature_list}</span>\n'+
+      '  --data_output       <span class="p2">{outputPath: data_output}</span>',
+    run:
+      '<span class="cm"># 1단계 read_data 실행 (ken-0913님 홈랩 값)</span>\n'+
+      'python3 /app/src/read_data/read_data.py\n'+
+      '  --minio_host        <span class="v">rustfs.mlflow.svc:9000</span>\n'+
+      '  --bucket_name       <span class="v">inference-datasets</span>\n'+
+      '  --file_name         <span class="v">entity_df.parquet</span>\n'+
+      '  --data_output_path  <span class="p1">/minio/mlpipeline/v2/artifacts/…/read-data-from-minio/…/data_output</span>\n\n'+
+      '<span class="cm"># 2단계 retrieve_features 실행</span>\n'+
+      'python3 /app/src/retrieve_features/retrieve_features.py\n'+
+      '  --bucket_name       <span class="v">feature-registry</span>\n'+
+      '  --file_name         <span class="v">feature_store.yaml</span>\n'+
+      '  --entity_df         <span class="p1">/minio/mlpipeline/v2/artifacts/…/read-data-from-minio/…/data_output</span>\n'+
+      '  --feature_list      <span class="v">demographic:Sex,demographic:Race,…</span>\n'+
+      '  --data_output       <span class="p2">/minio/mlpipeline/v2/artifacts/…/retrieve-features-from-feast/…/data_output</span>'
+  };
+  var segW = document.getElementById('segWrite'), segR = document.getElementById('segRun'), cmdView = document.getElementById('cmdView');
+  function setCmd(mode){
+    cmdView.innerHTML = CMD[mode];
+    segW.setAttribute('aria-pressed', String(mode==='write'));
+    segR.setAttribute('aria-pressed', String(mode==='run'));
+  }
+  segW.addEventListener('click', function(){ setCmd('write'); });
+  segR.addEventListener('click', function(){ setCmd('run'); });
+
+  /* drop_first demo */
+  var WC = ['Federal-gov','Local-gov','Private','State-gov'];
+  var TRAIN_COLS = ['Local-gov','Private','State-gov'];
+  var present = {'Federal-gov':true,'Local-gov':true,'Private':true,'State-gov':true};
+  var togEl = document.getElementById('wcToggles'), tblEl = document.getElementById('wcTable'), verEl = document.getElementById('wcVerdict');
+  function trainVec(c){ return TRAIN_COLS.map(function(col){ return col===c ? 1 : 0; }); }
+  function readAs(vec){
+    for(var i=0;i<WC.length;i++){ if(trainVec(WC[i]).join('')===vec.join('')) return WC[i]; }
+    return '?';
+  }
+  function renderWC(){
+    togEl.innerHTML = WC.map(function(c){
+      return '<button type="button" class="tog" data-wc="'+c+'" aria-pressed="'+present[c]+'">'+c+'</button>';
+    }).join('');
+    var inBatch = WC.filter(function(c){ return present[c]; });
+    if(!inBatch.length){
+      tblEl.innerHTML = '';
+      verEl.className = 'verdict';
+      verEl.textContent = '배치에 직업군을 하나 이상 켜 주세요.';
+      return;
+    }
+    var dropped = inBatch[0];
+    var batchCols = inBatch.slice(1);
+    var wrong = [];
+    var rows = inBatch.map(function(c){
+      var bv = TRAIN_COLS.map(function(col){ return (col===c && batchCols.indexOf(col)!==-1) ? 1 : 0; });
+      var r = readAs(bv), ok = r===c;
+      if(!ok) wrong.push(c+' → '+r);
+      return '<tr><td>'+c+(c===dropped?' <small style="color:var(--muted)">(이번에 지워진 열)</small>':'')+'</td>'+
+        '<td class="mono">'+trainVec(c).join(' ')+'</td><td class="mono">'+bv.join(' ')+'</td>'+
+        '<td>'+r+'</td><td class="'+(ok?'ok':'no')+'">'+(ok?'맞음':'틀림')+'</td></tr>';
+    }).join('');
+    tblEl.innerHTML = '<thead><tr><th>직업군</th><th>학습 때</th><th>이번 배치</th><th>모델이 읽은 값</th><th>판정</th></tr></thead><tbody>'+rows+'</tbody>';
+    if(wrong.length){
+      verEl.className = 'verdict no';
+      verEl.textContent = '이번 배치에서는 '+dropped+' 열이 지워졌어요. '+wrong.join(', ')+'로 읽히는데 오류 메시지는 하나도 나지 않습니다.';
+    } else {
+      verEl.className = 'verdict ok';
+      verEl.textContent = '이번 배치에서도 '+dropped+' 열이 지워져 학습 때와 같아요. 모든 행이 제대로 읽힙니다.';
+    }
+  }
+  var BATCH = {
+    all:{'Federal-gov':true,'Local-gov':true,'Private':true,'State-gov':true},
+    nofed:{'Federal-gov':false,'Local-gov':true,'Private':true,'State-gov':true},
+    'private':{'Federal-gov':false,'Local-gov':false,'Private':true,'State-gov':false}
+  };
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-term]');
+    if(b){ e.preventDefault(); openTerm(b.getAttribute('data-term')); return; }
+    var c = e.target.closest('.chip');
+    if(c){ state.cat = c.getAttribute('data-cat'); renderChips(); renderList(); return; }
+    var w = e.target.closest('[data-wc]');
+    if(w){ var k = w.getAttribute('data-wc'); present[k] = !present[k]; renderWC(); return; }
+    var p = e.target.closest('[data-batch]');
+    if(p){ var s = BATCH[p.getAttribute('data-batch')]; Object.keys(s).forEach(function(k){ present[k] = s[k]; }); renderWC(); }
+  });
+  qEl.addEventListener('input', function(){ state.q = qEl.value.trim().toLowerCase(); renderList(); });
+  toggleEl.addEventListener('click', function(){
+    state.expanded = !state.expanded;
+    listEl.querySelectorAll('details.term').forEach(function(d){ d.open = state.expanded; });
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  });
+  renderChips(); renderList(); setCmd('write'); renderWC();
+})();
+</script>
+</body>
+</html>
