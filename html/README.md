@@ -1,6 +1,6 @@
 # 용어 풀이 HTML
 
-『Machine Learning Platform Engineering』 00~04장의 용어를 공장 비유와 엑셀 예시로 풀어 쓴 페이지입니다. 원문은 [johklo님의 스터디 정리](https://johklo.github.io/docs/tech/machine-learning-platform-engineering/)입니다.
+『Machine Learning Platform Engineering』 00~04장의 용어를 공장 비유와 엑셀 예시로 풀어 쓴 페이지입니다.
 
 | 파일 | 내용 |
 | --- | --- |
