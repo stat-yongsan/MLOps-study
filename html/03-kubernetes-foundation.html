@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>MLOps 03장 용어 풀이</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 모바일 한 열. 배포 흐름 지도 → 핵심 6 → 요청 경로와 고장 실험 → 헷갈리는 짝 → 용어 사전 → 실습 순서 */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --ink:#15201E; --muted:#56635F; --line:#D3DBD8;
+  --accent:#0B6E69; --soft:#E2EEEB; --mark:rgba(232,178,27,.40); --warn:#8F6200;
+  --c-pack:#8C6A2E; --c-hq:#2F6DB5; --c-floor:#0B6E69; --c-link:#2C8A57; --c-deliver:#7A4FB8; --c-gauge:#B9512A;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --nav-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+    --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+    --c-pack:#D2B06E; --c-hq:#7EA9E6; --c-floor:#4CC2B9; --c-link:#6CCB95; --c-deliver:#B595E6; --c-gauge:#EE8F64;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+  --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+  --c-pack:#D2B06E; --c-hq:#7EA9E6; --c-floor:#4CC2B9; --c-link:#6CCB95; --c-deliver:#B595E6; --c-gauge:#EE8F64;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.68;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:5px;word-break:break-all}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + var(--nav-h) + 12px)}
+h1,h2{font-family:var(--f-display);font-weight:400;text-wrap:balance;letter-spacing:-.01em}
+.mark{background:linear-gradient(transparent 55%,var(--mark) 55%);padding:0 .1em}
+
+header.wrap{padding-block:28px 18px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:0 0 8px}
+h1{font-size:clamp(31px,8.4vw,46px);line-height:1.14;margin:0 0 14px}
+.lede{font-size:17px;margin:0 0 10px;max-width:60ch}
+.how{font-size:14.5px;color:var(--muted);margin:0}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{flex:none;font-size:14px;font-weight:500;padding:6px 13px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink);text-decoration:none;background:var(--surface);white-space:nowrap}
+.nav a:active{background:var(--soft)}
+
+section.wrap{padding-block:34px 6px}
+h2{font-size:clamp(25px,6.6vw,32px);line-height:1.2;margin:0 0 6px}
+.sec-lead{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:62ch}
+h3.sub{font-size:18px;margin:26px 0 10px}
+
+/* flow map */
+.map{display:grid;gap:4px}
+.zone{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);min-width:0}
+.zone-label{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.zone-label .hint{font-weight:400;color:var(--muted);font-size:13px}
+.zone.cluster{border:1.5px dashed var(--accent);background:var(--soft);display:grid;gap:10px}
+.zone.cluster>.zone-label{margin-bottom:0}
+.zone.book{border-style:dashed}
+.zone-note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.arrow{text-align:center;font-size:13px;color:var(--muted);padding-block:4px}
+.arrow::before{content:"↓";display:block;font-size:18px;line-height:1;color:var(--accent)}
+.nodes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{display:inline-flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left}
+.node .k{font-size:12.5px;font-weight:400;color:var(--muted)}
+.node:active{background:var(--soft)}
+.node.big{font-size:15px;border-color:var(--accent);color:var(--accent)}
+.to{color:var(--muted);font-size:14px}
+.dept{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px;min-width:0}
+.dept-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-weight:700;font-size:14.5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cat);flex:none}
+
+/* core cards */
+.core-grid{display:grid;gap:14px}
+.core{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;min-width:0}
+.core-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:6px}
+.core-name{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.core-full{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.core-top .cat-tag{margin-left:auto}
+.core-one{font-size:17px;font-weight:600;margin:0 0 14px}
+dl{margin:0;display:grid;gap:12px}
+dl>div{min-width:0}
+dt{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.03em;margin-bottom:2px}
+dd{margin:0}
+.excel dd{background:var(--soft);padding:8px 11px;border-radius:8px}
+.warn dt{color:var(--warn)}
+.cat-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--cat);
+  background:color-mix(in srgb,var(--cat) 13%,transparent)}
+
+/* request routes */
+.route{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px;margin-bottom:10px}
+.route-title{font-size:14px;font-weight:700}
+.route-title span{font-weight:400;color:var(--muted);font-size:13px;margin-left:4px}
+.hops{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.hop{display:grid;gap:0;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);min-width:0}
+.hop b{font-family:var(--f-mono);font-weight:500;font-size:15px}
+.hop small{font-size:12px;color:var(--muted)}
+.via{font-size:12px;color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:2px}
+.via::after{content:"→";font-size:15px}
+.metaphor{font-size:15px;margin:4px 0 0}
+.breaks{display:grid;gap:10px}
+.brk{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface)}
+.brk h4{margin:0 0 6px;font-size:15.5px}
+.brk dl{gap:6px}
+.brk dt{display:inline;margin-right:6px}
+.brk dd{display:inline;font-size:15px}
+
+/* pairs */
+.pair{padding-block:16px;border-top:1px solid var(--line)}
+.pair:last-child{border-bottom:1px solid var(--line)}
+.pair h3{font-size:17.5px;margin:0 0 10px;line-height:1.35}
+.vs{color:var(--muted);font-weight:400;padding-inline:4px}
+.pair-grid{display:grid;gap:8px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.side p{margin:2px 0 0;font-size:15px}
+.side-name{font-weight:700;font-size:14.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.side-name.static{color:var(--ink);text-decoration:none;cursor:default}
+.pair-key{margin:10px 0 0;font-size:15px}
+.pair-key b{font-weight:700;margin-right:6px}
+@media (min-width:520px){.pair-grid{grid-template-columns:1fr 1fr}}
+
+/* glossary */
+.tools{display:grid;gap:10px;margin-bottom:6px}
+.search{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:7px;height:7px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list-bar{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);padding-block:6px}
+.textbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 0}
+.term-list{border-top:1px solid var(--line)}
+details.term{border-bottom:1px solid var(--line)}
+details.term>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding-block:13px}
+details.term>summary::-webkit-details-marker{display:none}
+.t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.t-name{font-weight:700;font-size:17px}
+.t-sub{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.t-d{grid-column:1/-1;color:var(--muted);font-size:15px}
+.t-right{display:flex;align-items:center;gap:8px;align-self:start}
+.chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+details[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.t-body{padding:2px 0 16px}
+.t-body dl{gap:10px}
+.go{margin-top:2px;font-size:14px}
+.empty{padding:22px 0;color:var(--muted)}
+
+/* flow */
+.flow{list-style:none;margin:0;padding:0}
+.flow li{position:relative;padding:0 0 22px 46px}
+.flow li::before{content:attr(data-step);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:14px;background:var(--accent);color:var(--surface)}
+.flow li::after{content:"";position:absolute;left:15px;top:36px;bottom:4px;border-left:2px dotted var(--line)}
+.flow li:last-child::after{display:none}
+.flow h3{margin:3px 0 4px;font-size:17.5px}
+.flow p{margin:0 0 6px;font-size:15px}
+.flow .left{font-size:14px;color:var(--muted)}
+.flow .left b{color:var(--ink);font-weight:600}
+.flow .nodes{margin-top:8px}
+.flow .node{font-size:13px;padding:4px 9px;font-weight:500}
+
+footer.wrap{padding-block:30px 40px;color:var(--muted);font-size:13.5px}
+footer a{color:var(--accent)}
+footer p{margin:0 0 8px}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,30%{background:var(--mark)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){
+  .flash{animation:none;outline:2px solid var(--accent);outline-offset:4px}
+  .chev{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">머신러닝 플랫폼 엔지니어링 · 03장 Kubernetes 기반</p>
+  <h1>03장 용어를 공장으로 풀어 보기</h1>
+  <p class="lede">03장은 예측 공장을 짓기 전에 <span class="mark">공장의 기본 설비</span>를 갖추는 장입니다. 앱을 밀키트처럼 포장하고(Docker), 본부가 작업자를 배치하고(Kubernetes), 창구를 연결하고(Service), 바뀐 설계도를 자동으로 반영하고(CI/CD), 계기판으로 지켜보는(Prometheus) 흐름이에요.</p>
+  <p class="how">지도나 카드에서 용어 이름을 누르면 설명으로 바로 이동합니다.</p>
+</header>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap nav-inner">
+    <a href="#map">흐름 지도</a>
+    <a href="#core">핵심 6</a>
+    <a href="#route">요청 경로</a>
+    <a href="#pairs">헷갈리는 짝</a>
+    <a href="#dict">용어 사전</a>
+    <a href="#flow">실습 순서</a>
+  </div>
+</nav>
+
+<main>
+<section class="wrap" id="map">
+  <h2>배포 흐름 지도</h2>
+  <p class="sec-lead">코드 한 줄이 운영 중인 API가 되기까지 거치는 곳들입니다. 위에서 아래로 순서대로 흘러가요.</p>
+
+  <div class="map">
+    <div class="zone">
+      <div class="zone-label">내 PC <span class="hint">만들고 포장하기</span></div>
+      <div class="nodes">
+        <button class="node" data-term="fastapi">app.py <span class="k">FastAPI 앱</span></button>
+        <button class="node" data-term="dockerfile">Dockerfile <span class="k">조립 설명서</span></button>
+        <button class="node" data-term="image">이미지 <span class="k">포장된 밀키트</span></button>
+        <button class="node" data-term="container">컨테이너 <span class="k">조리 중인 한 그릇</span></button>
+      </div>
+    </div>
+    <div class="arrow">코드를 커밋하면</div>
+
+    <div class="zone book">
+      <div class="zone-label">자동 배송 <span class="hint">책 방식 · 이 글의 실습은 생략</span></div>
+      <div class="nodes">
+        <button class="node" data-term="gitlabci">CI 검사·빌드 <span class="k">GitLab CI</span></button>
+        <span class="to">→</span>
+        <button class="node" data-term="registry">레지스트리 <span class="k">이미지 물류 창고</span></button>
+        <button class="node" data-term="gitops">Git 배포 설정 <span class="k">설계도</span></button>
+        <span class="to">→</span>
+        <button class="node" data-term="argocd">Argo CD <span class="k">설계도대로 동기화</span></button>
+      </div>
+      <p class="zone-note">실습은 이 구간 없이 <code>minikube image load</code>로 이미지를 클러스터에 직접 넣고 <code>kubectl apply</code>로 배포합니다.</p>
+    </div>
+    <div class="arrow">선언 제출 · 이미지 가져오기</div>
+
+    <div class="zone cluster">
+      <div class="zone-label">
+        <button class="node big" data-term="k8s">Kubernetes 클러스터</button>
+        <span class="hint">실습에서는 <button class="node" data-term="minikube" style="padding:2px 7px;font-size:13px">Minikube</button></span>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-hq)">
+        <div class="dept-head"><i class="dot"></i>관리 본부 <button class="node" data-term="controlplane">컨트롤 플레인</button></div>
+        <div class="nodes">
+          <button class="node" data-term="apiserver">접수 창구 <span class="k">API server</span></button>
+          <button class="node" data-term="etcd">장부 <span class="k">etcd</span></button>
+          <button class="node" data-term="scheduler">배치 담당 <span class="k">Scheduler</span></button>
+          <button class="node" data-term="controller">온도조절기 <span class="k">Controller</span></button>
+        </div>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-floor)">
+        <div class="dept-head"><i class="dot"></i>작업장 <button class="node" data-term="node">워커 노드</button></div>
+        <div class="nodes">
+          <button class="node" data-term="kubelet">현장 반장 <span class="k">kubelet</span></button>
+          <button class="node" data-term="runtime">기계 <span class="k">컨테이너 런타임</span></button>
+        </div>
+        <div class="nodes">
+          <button class="node" data-term="deployment">Deployment</button><span class="to">→</span>
+          <button class="node" data-term="replicaset">ReplicaSet</button><span class="to">→</span>
+          <button class="node" data-term="pod">Pod ×2</button>
+        </div>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-link)">
+        <div class="dept-head"><i class="dot"></i>연결과 설정</div>
+        <div class="nodes">
+          <button class="node" data-term="service">안내 창구 <span class="k">Service</span></button>
+          <button class="node" data-term="endpointslice">근무자 명단 <span class="k">EndpointSlice</span></button>
+          <button class="node" data-term="namespace">부서 <span class="k">Namespace</span></button>
+          <button class="node" data-term="configmap">안내문 <span class="k">ConfigMap</span></button>
+          <button class="node" data-term="secret">잠긴 서랍 <span class="k">Secret</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="arrow">숫자를 주기적으로 수집(scrape)</div>
+
+    <div class="zone">
+      <div class="zone-label">계기판 <span class="hint">관측</span></div>
+      <div class="nodes">
+        <button class="node" data-term="promgraf">Prometheus <span class="k">검침원</span></button>
+        <button class="node" data-term="promgraf">Grafana <span class="k">상황판</span></button>
+        <button class="node" data-term="alertmanager">Alertmanager <span class="k">경보 담당</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="core">
+  <h2>핵심 6</h2>
+  <p class="sec-lead">03장의 뼈대입니다. 포장(Docker), 관리(Kubernetes), 배치(Deployment), 연결(Service), 자동 배포(CI/CD), 관측(Prometheus·Grafana) 순서예요.</p>
+
+  <div class="core-grid">
+    <article class="core" id="core-docker" style="--cat:var(--c-pack)">
+      <div class="core-top"><span class="core-name">Docker</span><span class="core-full">이미지 · 컨테이너</span><span class="cat-tag">포장</span></div>
+      <p class="core-one">앱과 실행에 필요한 모든 것을 이미지로 포장하고, 어디서든 같은 방식으로 실행하게 하는 도구.</p>
+      <dl>
+        <div><dt>비유</dt><dd>밀키트. Dockerfile은 조립 설명서, 이미지는 포장이 끝난 밀키트, 컨테이너는 뜯어서 조리 중인 한 그릇, 레지스트리는 물류 창고입니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>"내 PC에서는 되는데요" 문제를 줄입니다. 파이썬 버전과 패키지까지 상자째 보내기 때문이에요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>매크로 파일을 보냈더니 받는 사람 PC에 애드인이 없어 안 돌아가는 일. 엑셀, 애드인, 설정까지 한 상자에 담아 보내는 셈입니다.</dd></div>
+        <div><dt>이번 실습에서</dt><dd><code>docker build -t income-api:study-v1 .</code>로 포장하고 <code>docker run -p 127.0.0.1:18000:8000</code>으로 실행합니다. PC의 18000번으로 들어가면 컨테이너 안 8000번 앱에 닿아요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>빌드 성공은 포장이 끝났다는 뜻이지 API가 잘 뜬다는 뜻이 아닙니다. 실제로 띄워 요청을 보내 봐야 해요. CPU 종류나 GPU 드라이버 같은 환경 차이도 다 사라지지는 않습니다.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-k8s" style="--cat:var(--c-hq)">
+      <div class="core-top"><span class="core-name">Kubernetes</span><span class="core-full">k8s · 쿠버네티스</span><span class="cat-tag">관리 본부</span></div>
+      <p class="core-one">컨테이너를 어느 컴퓨터에 몇 개 띄울지 정하고, 선언한 상태를 계속 유지하는 관리 체계.</p>
+      <dl>
+        <div><dt>비유</dt><dd>공장 관리 본부. 접수 창구(API server)가 주문을 받아 장부(etcd)에 적고, 배치 담당(Scheduler)이 작업장을 고르고, 현장 반장(kubelet)이 기계(런타임)로 작업자를 세웁니다. 조정 담당(Controller)은 온도조절기처럼 목표와 현재를 계속 비교해요.</dd></div>
+        <div><dt>왜 필요해</dt><dd><code>docker run</code>을 손으로 반복하면 서버가 늘수록 관리가 무너집니다. "2개 유지"라고 적어 두면 하나가 죽어도 알아서 채워요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>목표값 찾기. 목표를 정해 두면 맞을 때까지 값을 조정하죠. 쿠버네티스는 이 조정을 멈추지 않고 계속합니다.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>Minikube 클러스터의 <code>ml-book-study</code> 구역에 앱을 2개 띄웁니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>쿠버네티스는 지정한 이미지를 실행하고 선언한 상태를 유지할 뿐, 모델이 맞는지는 판단하지 않습니다. 잘못된 모델을 선언해도 배포는 정상으로 보여요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-deployment" style="--cat:var(--c-floor)">
+      <div class="core-top"><span class="core-name">Deployment</span><span class="core-full">→ ReplicaSet → Pod</span><span class="cat-tag">작업장</span></div>
+      <p class="core-one">"이 이미지로 Pod를 몇 개 띄워라"를 선언하고 버전 교체까지 관리하는 객체.</p>
+      <dl>
+        <div><dt>비유</dt><dd>작업 지시서. Deployment(지시서) → ReplicaSet(인원 유지 담당 조장) → Pod(작업자) → 컨테이너(작업자가 돌리는 기계) 순서로 관리합니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>Pod를 직접 만들면 죽었을 때 아무도 다시 만들지 않습니다. Deployment로 선언하면 지워도 다시 생기고, 이미지를 바꾸면 새 버전 Pod로 차례로 교체돼요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>서식 파일(.xltx)로 새 문서를 찍어 내는 것. 서식을 고치면 기존 파일을 고치는 게 아니라 새 서식으로 새 파일을 만들죠. Pod도 고쳐 쓰지 않고 새로 만듭니다.</dd></div>
+        <div><dt>이번 실습에서</dt><dd><code>replicas: 2</code>, 이미지 <code>income-api:study-v1</code>, readiness는 <code>/ready</code>, liveness는 <code>/health</code>, CPU·메모리 requests와 limits를 지정합니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>Deployment의 selector와 Pod template의 label이 같아야 합니다. 선언 자체가 틀렸다면 재시작을 반복해도 해결되지 않아요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-service" style="--cat:var(--c-link)">
+      <div class="core-top"><span class="core-name">Service</span><span class="core-full">port → targetPort</span><span class="cat-tag">연결</span></div>
+      <p class="core-one">계속 바뀌는 Pod 앞에 고정된 이름과 포트를 세워, 요청을 준비된 Pod로 보내 주는 창구.</p>
+      <dl>
+        <div><dt>비유</dt><dd>담당자가 바뀌어도 그대로인 안내 창구. 창구 번호(port)로 받은 요청을 작업실 문(targetPort)으로 넘깁니다. 원문 표현대로 호스트 포트는 건물 출입구, Service 포트는 안내 창구, targetPort는 작업실 문이에요.</dd></div>
+        <div><dt>왜 필요해</dt><dd>Pod는 새로 만들어질 때마다 주소가 바뀝니다. 특정 Pod 주소를 적어 두면 교체되는 순간 끊겨요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>이름 관리자의 "이름 정의". 셀 주소 대신 이름으로 참조하면 범위가 옮겨져도 수식이 따라가죠. selector는 그 이름이 가리킬 행을 고르는 필터 조건입니다.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>selector <code>app: income-api</code>, <code>port: 80</code> → <code>targetPort: 8000</code>. <code>kubectl port-forward service/income-api 18080:80</code>으로 점검합니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>Service가 만들어졌다고 요청 경로가 정상인 건 아닙니다. selector와 label 일치, EndpointSlice에 대상이 있는지, targetPort와 앱 포트가 맞는지 차례로 확인해요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-cicd" style="--cat:var(--c-deliver)">
+      <div class="core-top"><span class="core-name">CI/CD</span><span class="core-full">Continuous Integration / Delivery</span><span class="cat-tag">자동 배송</span></div>
+      <p class="core-one">코드를 바꾸면 자동으로 검사하고 이미지를 만들고(CI), 검증된 버전을 운영 환경에 반영하는(CD) 흐름.</p>
+      <dl>
+        <div><dt>비유</dt><dd>출고 라인. 신제품 설계가 들어오면 품질 검사와 포장(CI)을 거쳐 물류 창고(레지스트리)에 넣고, 매장 진열 설계도(Git 배포 설정)를 고치면 감독(Argo CD)이 매장을 설계도대로 맞춥니다(CD).</dd></div>
+        <div><dt>왜 필요해</dt><dd>사람이 손으로 배포하면 실수와 권한 문제가 남고 "지금 운영에 뭐가 떠 있지?"에 답하기 어렵습니다. 커밋 → 이미지 → 배포 설정이 이어지면 운영 중인 서비스에서 원래 코드까지 거슬러 갈 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>파일을 저장할 때마다 검사 매크로가 자동으로 돌고, 통과하면 공유 폴더의 배포본이 갱신되는 구조.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>책은 GitLab CI(검사·빌드)와 Argo CD(GitOps 배포)를 씁니다. 이 글의 실습은 CI/CD 없이 손으로 배포하는 데까지만 해요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>Argo CD의 Synced와 Healthy는 선언과 자원 상태가 맞다는 신호일 뿐 모델 품질 승인이 아닙니다. <code>latest</code> 태그만 덮어쓰면 Git은 그대로인데 실제 이미지가 바뀌는 일도 생겨요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-promgraf" style="--cat:var(--c-gauge)">
+      <div class="core-top"><span class="core-name">Prometheus · Grafana</span><span class="core-full">수집 · 시각화</span><span class="cat-tag">계기판</span></div>
+      <p class="core-one">Prometheus는 앱이 내보이는 숫자를 주기적으로 모아 저장하고, Grafana는 그 숫자로 대시보드를 그립니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>Prometheus는 계량기를 돌며 숫자를 적어 가는 검침원, Grafana는 그 기록으로 만든 상황판, Alertmanager는 이상할 때 담당자에게 연락하는 경보 담당입니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>요청이 몇 개 오는지, 얼마나 느린지, 오류가 얼마나 나는지 알아야 사용자보다 먼저 문제를 발견합니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>일정 간격마다 값이 한 줄씩 쌓이는 기록 시트(Prometheus)와, 그 시트로 만든 피벗 차트 대시보드(Grafana). p95는 <code>PERCENTILE.INC(응답시간, 0.95)</code>와 같은 뜻이에요.</dd></div>
+        <div><dt>이번 실습에서</dt><dd><code>sum(rate(http_requests_total{job="income-api"}[5m]))</code>로 최근 5분 평균 초당 요청 수를, 5xx 증가율을 전체 증가율로 나눠 오류율을 봅니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>요청 수, 오류율, 응답 시간이 정상이어도 예측이 맞는지는 모릅니다. 대시보드가 비었다고 요청이 없었다고 단정하지 마세요. 수집이 실패했을 수도 있어요.</dd></div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="route">
+  <h2>요청이 앱까지 가는 길</h2>
+  <p class="sec-lead">03장에서 가장 많이 막히는 곳이 포트입니다. 번호가 세 군데에 나오고, 하나만 어긋나도 요청이 도착하지 않아요.</p>
+
+  <div class="route">
+    <div class="route-title">경로 1 <span>Docker로만 실행할 때</span></div>
+    <div class="hops">
+      <div class="hop"><b>18000</b><small>내 PC 출입구</small></div>
+      <span class="via">docker -p</span>
+      <div class="hop"><b>8000</b><small>컨테이너 안 앱</small></div>
+    </div>
+  </div>
+  <div class="route">
+    <div class="route-title">경로 2 <span>쿠버네티스에서 점검할 때</span></div>
+    <div class="hops">
+      <div class="hop"><b>18080</b><small>내 PC 출입구</small></div>
+      <span class="via">port-forward</span>
+      <div class="hop"><b>80</b><small>Service 안내 창구</small></div>
+      <span class="via">targetPort</span>
+      <div class="hop"><b>8000</b><small>Pod 안 작업실 문</small></div>
+    </div>
+  </div>
+  <p class="metaphor">창구가 있다고 작업실이 자동으로 생기지는 않습니다. 앱이 8000번 문에서 기다리는데 창구가 8001번으로 안내하면 요청은 길을 잃어요. 그리고 앱은 <code>0.0.0.0</code>(모든 문)에 바인딩해야 바깥에서 들어온 요청을 받을 수 있습니다.</p>
+
+  <h3 class="sub">일부러 고장 내 보기</h3>
+  <p class="sec-lead">원문 실습 3단계입니다. 한 번에 한 곳만 바꾸고, 확인한 뒤 원래대로 돌려놓아요.</p>
+  <div class="breaks">
+    <div class="brk"><h4>이미지 태그를 없는 값으로</h4><dl>
+      <div><dt>증상</dt><dd>새 Pod가 이미지를 못 가져옴(ImagePullBackOff). 없는 밀키트를 주문한 셈.</dd></div>
+      <div><dt>확인</dt><dd><code>kubectl describe pod</code>의 Events</dd></div></dl></div>
+    <div class="brk"><h4>Service selector를 <code>app: missing</code>으로</h4><dl>
+      <div><dt>증상</dt><dd>앱은 멀쩡한데 창구 뒤 근무자 명단이 비어 요청이 갈 곳이 없음.</dd></div>
+      <div><dt>확인</dt><dd>Service와 EndpointSlice의 대상</dd></div></dl></div>
+    <div class="brk"><h4>readiness 경로를 <code>/not-found</code>로</h4><dl>
+      <div><dt>증상</dt><dd>프로세스는 살아 있지만 Ready가 아니라 트래픽에서 빠짐.</dd></div>
+      <div><dt>확인</dt><dd>Pod의 Ready 조건과 probe 실패 이벤트</dd></div></dl></div>
+    <div class="brk"><h4>targetPort를 8001로</h4><dl>
+      <div><dt>증상</dt><dd>창구가 없는 문으로 안내해서 앱에 닿지 못함.</dd></div>
+      <div><dt>확인</dt><dd>앱이 실제로 듣는 포트와 Service 설정 비교</dd></div></dl></div>
+  </div>
+</section>
+
+<section class="wrap" id="pairs">
+  <h2>헷갈리는 짝</h2>
+  <p class="sec-lead">원문이 "둘은 다르다"고 짚은 것들입니다. 03장의 핵심 메시지는 결국 <span class="mark">성공의 종류가 여러 개</span>라는 거예요.</p>
+  <div>
+    <article class="pair">
+      <h3>이미지 <span class="vs">↔</span> 컨테이너</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="image">이미지</button><p>포장이 끝난 밀키트. 읽기 전용 배포 단위.</p></div>
+        <div class="side"><button class="side-name" data-term="container">컨테이너</button><p>밀키트를 뜯어 조리 중인 한 그릇. 실행 중인 인스턴스.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">이미지 하나로 컨테이너를 여러 개 띄워도 메모리와 상태는 서로 별개입니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>RUN <span class="vs">↔</span> CMD · ENTRYPOINT</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="instr">RUN</button><p>이미지를 만드는 동안 실행. 패키지 설치 같은 일.</p></div>
+        <div class="side"><button class="side-name" data-term="instr">CMD · ENTRYPOINT</button><p>컨테이너가 시작될 때 실행. 앱 서버 기동 같은 일.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">빌드가 성공해도 API가 정상 기동한다는 보장은 없습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>tag <span class="vs">↔</span> digest</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="tag">tag</button><p>상자에 붙인 포스트잇. 다른 상자로 옮겨 붙일 수 있음. 예: <code>latest</code></p></div>
+        <div class="side"><button class="side-name" data-term="digest">digest</button><p>상자 내용물의 지문. 내용이 바뀌면 반드시 달라짐.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">"latest를 배포했다"는 기록으로는 실제로 무엇이 떴는지 알 수 없습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>호스트 포트 <span class="vs">↔</span> 컨테이너 포트</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="portmap">호스트 포트 18000</button><p>내 PC의 출입구. 브라우저는 여기로 요청.</p></div>
+        <div class="side"><button class="side-name" data-term="portmap">컨테이너 포트 8000</button><p>컨테이너 안에서 앱이 기다리는 문.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">이미지에 포트를 선언, 앱이 그 포트로 실행, 바깥 포트 연결은 서로 다른 설정입니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>Service port <span class="vs">↔</span> targetPort</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="ports">port 80</button><p>Service 안내 창구 번호. 클러스터 안에서 부르는 번호.</p></div>
+        <div class="side"><button class="side-name" data-term="ports">targetPort 8000</button><p>Pod 안 앱이 실제로 듣는 문 번호.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">containerPort 선언만으로 포트가 열리지 않습니다. targetPort가 앱의 실제 포트와 맞아야 해요.</span></p>
+    </article>
+    <article class="pair">
+      <h3>0.0.0.0 <span class="vs">↔</span> 127.0.0.1</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="bind">0.0.0.0</button><p>앱이 "모든 문에서 받겠다"는 바인딩 설정. 목적지 주소가 아님.</p></div>
+        <div class="side"><button class="side-name" data-term="bind">127.0.0.1</button><p>"나 자신". 내 PC에서 접속할 때 브라우저에 쓰는 주소.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">앱이 127.0.0.1에만 바인딩돼 있으면 포트를 연결해도 바깥 요청이 못 들어옵니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>Running <span class="vs">↔</span> Ready</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="status">Running</button><p>프로세스가 떠 있다. 작업자가 출근했다.</p></div>
+        <div class="side"><button class="side-name" data-term="probe">Ready</button><p>요청을 받을 준비가 됐다. 업무를 시작했다.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Running이어도 Ready가 아니면 Service가 요청을 보내지 않습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>readiness <span class="vs">↔</span> liveness</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="probe">readiness 실패</button><p>트래픽 대상에서 잠시 빠짐. 재시작은 안 함.</p></div>
+        <div class="side"><button class="side-name" data-term="probe">liveness 실패</button><p>컨테이너를 재시작함.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">외부 시스템이 느리다고 liveness를 실패시키면 재시작이 부하를 더 키울 수 있습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>Docker로 빌드 <span class="vs">↔</span> 런타임으로 실행</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="dockerfile">빌드 도구</button><p>Docker로 이미지를 만듦.</p></div>
+        <div class="side"><button class="side-name" data-term="runtime">컨테이너 런타임</button><p>노드에서는 containerd나 CRI-O가 실행하는 경우가 많음.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Docker로 빌드했다고 노드도 Docker Engine으로 실행한다는 뜻은 아닙니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>CI <span class="vs">↔</span> CD</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="ci">CI</button><p>변경을 검사하고 이미지를 만드는 통합 과정.</p></div>
+        <div class="side"><button class="side-name" data-term="cd">CD</button><p>검증된 변경을 운영 환경에 전달하고 배포하는 과정.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">책임을 나눠야 "어떤 검사를 통과한 버전이 운영에 있나"를 설명할 수 있습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>Synced <span class="vs">↔</span> Healthy</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="synced">Synced</button><p>클러스터 명세가 Git 선언과 일치.</p></div>
+        <div class="side"><button class="side-name" data-term="synced">Healthy</button><p>자원 종류별 상태 판단이 정상.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">틀린 모델 버전을 Git에 적어도 둘 다 초록불일 수 있습니다.</span></p>
+    </article>
+    <article class="pair">
+      <h3>ConfigMap <span class="vs">↔</span> Secret</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="configmap">ConfigMap</button><p>일반 설정. 벽에 붙인 안내문.</p></div>
+        <div class="side"><button class="side-name" data-term="secret">Secret</button><p>비밀번호, 토큰 같은 민감한 설정. 잠긴 서랍.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Secret의 기본 인코딩은 암호화가 아닙니다. 접근 권한과 저장 보호가 따로 필요해요.</span></p>
+    </article>
+    <article class="pair">
+      <h3>Counter <span class="vs">↔</span> Gauge</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="counter">Counter</button><p>누적만 되는 값. 요청 수, 오류 수. 엑셀의 누적 합계 열.</p></div>
+        <div class="side"><button class="side-name" data-term="gauge">Gauge</button><p>오르내리는 현재 값. 메모리, 대기 작업. 지금 잔액 셀.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Counter가 10,000이어도 지금 바쁘다는 뜻이 아닙니다. 구간 증가율(rate)을 봐야 해요.</span></p>
+    </article>
+    <article class="pair">
+      <h3>배포 성공 <span class="vs">↔</span> 예측 품질</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">배포 성공</span><p>이미지 생성, Pod 실행, 요청 연결, 메트릭 정상.</p></div>
+        <div class="side"><span class="side-name static">예측 품질</span><p>모델이 맞는 답을 내는지. 데이터 변화와 실제 정답으로만 확인.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">이게 04장에서 MLflow와 Feast를 붙이는 이유입니다.</span></p>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="dict">
+  <h2>용어 사전</h2>
+  <p class="sec-lead">원문에 나오는 용어를 구역별로 모았습니다. 항목을 누르면 비유, 필요한 이유, 실습에서 쓰이는 곳이 펼쳐져요.</p>
+  <div class="tools">
+    <input id="q" class="search" type="search" aria-label="용어 검색" placeholder="용어 찾기 (예: Pod, 포트, p95)" autocomplete="off" enterkeyhint="search">
+    <div class="chips" id="chips" role="group" aria-label="구역 고르기"></div>
+  </div>
+  <div class="list-bar"><span id="count"></span><button class="textbtn" id="toggleAll" type="button">모두 펼치기</button></div>
+  <div class="term-list" id="list"></div>
+</section>
+
+<section class="wrap" id="flow">
+  <h2>실습 순서와 등장 용어</h2>
+  <p class="sec-lead">모델 없는 작은 API로 이미지와 네트워크 문제를 먼저 분리해 보는 실습입니다. 칩을 누르면 해당 용어로 이동해요.</p>
+  <ol class="flow">
+    <li data-step="1">
+      <h3>앱 만들고 단독 실행</h3>
+      <p><code>/</code>, <code>/health</code>, <code>/ready</code> 세 경로가 있는 FastAPI 앱을 만들고, Docker 없이 <code>uvicorn</code>으로 띄워 <code>/docs</code>에서 Execute를 눌러 봅니다.</p>
+      <p class="left"><b>확인</b> Server response 200, <code>"status": "ready"</code></p>
+      <div class="nodes"><button class="node" data-term="fastapi">FastAPI · Swagger</button><button class="node" data-term="probe">readiness</button></div>
+    </li>
+    <li data-step="2">
+      <h3>이미지로 포장하고 로컬 실행</h3>
+      <p>필요한 두 파일만 COPY하는 Dockerfile을 쓰고, <code>docker build</code> 후 <code>docker run -p 127.0.0.1:18000:8000</code>으로 띄웁니다.</p>
+      <p class="left"><b>확인</b> <code>curl.exe http://127.0.0.1:18000/</code>에 v1 응답</p>
+      <div class="nodes"><button class="node" data-term="dockerfile">Dockerfile</button><button class="node" data-term="layer">계층 캐시</button><button class="node" data-term="image">이미지</button><button class="node" data-term="tag">tag</button><button class="node" data-term="portmap">포트 매핑</button><button class="node" data-term="bind">0.0.0.0</button></div>
+    </li>
+    <li data-step="3">
+      <h3>Deployment와 Service 적용</h3>
+      <p>context를 확인하고, <code>minikube image load</code>로 이미지를 넣은 뒤 Namespace를 만들고 <code>kubectl apply</code>. rollout 상태와 EndpointSlice를 보고 port-forward로 점검합니다.</p>
+      <p class="left"><b>확인</b> <code>curl.exe http://127.0.0.1:18080/</code>에 v1 응답</p>
+      <div class="nodes"><button class="node" data-term="kubectl">kubectl · context</button><button class="node" data-term="minikube">Minikube</button><button class="node" data-term="deployment">Deployment</button><button class="node" data-term="label">label · selector</button><button class="node" data-term="ports">port · targetPort</button><button class="node" data-term="endpointslice">EndpointSlice</button><button class="node" data-term="portforward">port-forward</button></div>
+    </li>
+    <li data-step="4">
+      <h3>일부러 고장 내 보기</h3>
+      <p>이미지 태그, selector, readiness 경로, targetPort를 하나씩 바꿔 증상과 증거가 어디에 나타나는지 봅니다.</p>
+      <p class="left"><b>확인</b> 증상마다 다른 곳(Events, EndpointSlice, Ready 조건)에 단서가 남음</p>
+      <div class="nodes"><button class="node" data-term="status">Pod 상태</button><button class="node" data-term="describe">describe · logs</button><button class="node" data-term="rollout">롤아웃</button></div>
+    </li>
+    <li data-step="5">
+      <h3>메트릭 읽고 정리</h3>
+      <p>PromQL로 초당 요청 수와 오류율을 읽고, 끝나면 <code>kubectl delete -f deployment.yaml</code>로 이 예제만 지웁니다.</p>
+      <p class="left"><b>확인</b> 트래픽 없음과 수집 실패를 "오류율 0%"와 구별</p>
+      <div class="nodes"><button class="node" data-term="promql">PromQL · rate</button><button class="node" data-term="counter">Counter</button><button class="node" data-term="p95">p95</button><button class="node" data-term="cardinality">카디널리티</button></div>
+    </li>
+  </ol>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>이전 장: <a href="02-what-is-mlops.html" target="_blank" rel="noopener">MLOps 02장 용어 풀이</a></p>
+  <p>다음 장: <a href="04-experiments-features-pipelines.html" target="_blank" rel="noopener">MLOps 04장 용어 풀이</a></p>
+  <p>원문: <a href="https://johklo.github.io/docs/tech/machine-learning-platform-engineering/03-kubernetes-foundation/" target="_blank" rel="noopener">03. Kubernetes 위에 ML 애플리케이션의 기반 놓기</a>. 숫자와 명령은 원문 기준이고, 공장 비유와 엑셀 예시는 이해를 돕기 위해 단순화한 것입니다.</p>
+</footer>
+
+<script>
+(function(){
+  var CATS = {
+    pack:{name:'포장', hint:'Docker'},
+    hq:{name:'관리 본부', hint:'클러스터 구조'},
+    floor:{name:'작업장', hint:'Pod와 배치'},
+    link:{name:'연결과 설정', hint:'Service 등'},
+    deliver:{name:'자동 배송', hint:'CI/CD'},
+    gauge:{name:'계기판', hint:'관측'}
+  };
+  var TERMS = [
+    {id:'docker',c:'pack',t:'Docker',sub:'이미지 · 컨테이너',core:true,
+      d:'앱과 실행 환경을 이미지로 포장해 어디서든 같은 방식으로 실행하게 하는 도구. 밀키트.'},
+    {id:'dockerfile',c:'pack',t:'Dockerfile',sub:'이미지 레시피',
+      d:'이미지를 만드는 순서를 적은 파일.',
+      a:'밀키트 조립 설명서.',
+      w:'누가 언제 만들어도 같은 이미지가 나오게 한다.',
+      l:'`FROM python:3.12-slim-bookworm`부터 `CMD`까지 6줄. 이미지는 Docker로 만들지만 클러스터에서 실행하는 건 다른 런타임일 수 있다.'},
+    {id:'image',c:'pack',t:'이미지',sub:'image',
+      d:'Dockerfile로 만든 읽기 전용 배포 단위.',
+      a:'포장이 끝난 밀키트.',
+      w:'어디로 보내도 같은 내용이 실행된다.',
+      l:'`income-api:study-v1`. 모델을 이미지 밖 저장소에서 읽는다면 이미지 버전만으로는 어떤 모델을 썼는지 알 수 없어 모델 버전을 따로 남겨야 한다.'},
+    {id:'container',c:'pack',t:'컨테이너',sub:'container',
+      d:'이미지를 실행한 것. 실행 중인 인스턴스.',
+      a:'밀키트를 뜯어 조리 중인 한 그릇. 같은 밀키트로 여러 그릇을 만들어도 그릇마다 따로다.',
+      w:'한 이미지로 여러 개를 띄워도 메모리와 상태가 서로 섞이지 않는다.',
+      l:'`docker run --rm --name ml-book-api ...`. `--rm`은 멈추면 컨테이너를 지우라는 뜻.'},
+    {id:'registry',c:'pack',t:'레지스트리',sub:'container registry',
+      d:'이미지를 보관하고 배포 환경에 내주는 저장소.',
+      a:'밀키트 물류 창고.',
+      w:'클러스터 노드가 이미지를 가져갈(pull) 곳이 필요하다.',
+      l:'실습은 레지스트리 대신 `minikube image load`로 직접 넣는다. 다른 클러스터라면 레지스트리에 push하고 인증을 설정해야 한다.'},
+    {id:'instr',c:'pack',t:'Dockerfile 지시어',sub:'FROM · WORKDIR · COPY · RUN · ENV · CMD',
+      d:'FROM 기반 이미지, WORKDIR 작업 폴더, COPY 파일 복사, RUN 빌드 중 명령, ARG/ENV 빌드 인자와 환경 변수, ENTRYPOINT/CMD 시작 명령.',
+      a:'조립 설명서의 단계별 동사.',
+      w:'지시어마다 점검할 게 다르다. COPY는 비밀 파일 제외, ENV에는 자격 증명을 넣지 않기.',
+      l:'`COPY . .` 대신 필요한 두 파일만 복사해 토큰 파일이 실수로 들어가지 않게 했다.',
+      n:'RUN은 이미지를 만들 때, CMD와 ENTRYPOINT는 컨테이너가 시작될 때 실행된다.'},
+    {id:'layer',c:'pack',t:'계층 캐시',sub:'layer cache',
+      d:'이미지는 지시어 단위의 층으로 쌓이고, 바뀌지 않은 층은 다시 쓴다.',
+      a:'바뀐 층만 다시 굽는 케이크.',
+      x:'통합 문서에서 바뀐 시트만 다시 계산하는 것.',
+      w:'빌드 시간이 크게 줄어든다.',
+      l:'requirements.txt를 먼저 COPY하고 설치한 뒤 app.py를 COPY한다. 코드만 바꾸면 설치 층을 그대로 쓴다.'},
+    {id:'tag',c:'pack',t:'tag',sub:'이미지 이름표',
+      d:'이미지에 붙이는 이름표. 다른 이미지로 옮겨 붙일 수 있다.',
+      a:'상자에 붙인 포스트잇.',
+      w:'사람이 읽기 쉬운 이름으로 이미지를 부를 수 있다.',
+      l:'`study-v1`, `latest`.',
+      n:'같은 `latest`를 덮어쓰면 Git 설정은 그대로인데 실제 이미지 내용이 바뀔 수 있다.'},
+    {id:'digest',c:'pack',t:'digest',sub:'sha256 해시',
+      d:'이미지 내용으로 계산한 고유 지문. 내용이 조금이라도 바뀌면 달라진다.',
+      a:'상자 내용물의 지문.',
+      w:'실제로 무엇을 배포했는지 확정할 수 있다.',
+      l:'출시할 때는 기반 이미지까지 검증한 digest로 고정하고, 빌드한 커밋과 연결해 기록하는 게 좋다.'},
+    {id:'portmap',c:'pack',t:'포트 매핑',sub:'docker run -p',
+      d:'내 PC의 포트를 컨테이너 안 포트에 연결하는 설정.',
+      a:'건물 출입구 번호와 안쪽 사무실 번호를 잇는 안내.',
+      w:'컨테이너는 격리돼 있어서 연결해 주지 않으면 밖에서 닿지 않는다.',
+      l:'`-p 127.0.0.1:18000:8000`은 PC 18000 → 컨테이너 8000. 브라우저는 18000으로 요청한다.'},
+    {id:'bind',c:'pack',t:'바인딩 0.0.0.0',sub:'--host',
+      d:'앱이 어느 네트워크 문에서 요청을 받을지 정하는 설정. 0.0.0.0은 모든 문에서 받겠다는 뜻.',
+      a:'가게 정문을 열어 두기. 127.0.0.1에만 바인딩하면 뒷방 인터폰만 받는 셈.',
+      w:'컨테이너 안 앱이 127.0.0.1(루프백)에만 묶이면 포트를 연결해도 바깥 요청이 못 들어온다.',
+      l:'Dockerfile의 `--host 0.0.0.0`. 접속할 때 브라우저에는 0.0.0.0이 아니라 127.0.0.1을 쓴다.'},
+    {id:'fastapi',c:'pack',t:'FastAPI · uvicorn · Swagger UI',sub:'API 앱',
+      d:'FastAPI는 파이썬 API를 만드는 도구, uvicorn은 그 앱을 띄우는 서버, Swagger UI는 `/docs`에서 API를 눌러 보는 화면.',
+      a:'주문 창구(FastAPI), 창구 직원(uvicorn), 메뉴판 겸 시험 주문 화면(Swagger).',
+      w:'모델 없이도 포장, 배치, 연결 문제를 먼저 확인할 수 있는 작은 앱이 필요하다.',
+      l:'Execute를 눌러야 실제 요청이 간다. 아래의 Example Value는 문서 예시일 뿐 실제 응답이 아니다.'},
+
+    {id:'k8s',c:'hq',t:'Kubernetes',sub:'k8s',core:true,
+      d:'컨테이너 배치와 선언한 상태 유지를 맡는 관리 체계. 공장 관리 본부.'},
+    {id:'controlplane',c:'hq',t:'컨트롤 플레인',sub:'control plane',
+      d:'클러스터 전체를 결정하고 기록하는 관리 영역. 그림의 Master node.',
+      a:'공장 관리 본부.',
+      w:'배치, 상태 저장, 조정을 한곳에서 관리한다.',
+      l:'API server, etcd, Scheduler, Controller로 이뤄진다. 각 구성 요소는 API server를 거쳐 상태를 읽고 쓴다.'},
+    {id:'apiserver',c:'hq',t:'API server',sub:'kube-apiserver',
+      d:'클러스터의 모든 요청을 받는 접수 창구.',
+      a:'본부 접수 데스크. kubectl도, 다른 구성 요소도 모두 여기를 거친다.',
+      w:'요청을 한 창구로 모아야 권한 확인과 기록이 일관된다.',
+      n:'앱의 추론 요청을 대신 처리하지는 않는다.'},
+    {id:'etcd',c:'hq',t:'etcd',sub:'엣시디',
+      d:'클러스터의 선언과 현재 상태를 저장하는 저장소.',
+      a:'본부 금고 속 장부.',
+      w:'무엇을 원했고 지금 어떤지가 한곳에 남아야 조정할 수 있다.',
+      n:'이미지나 모델 가중치 보관소가 아니다.'},
+    {id:'scheduler',c:'hq',t:'Scheduler',sub:'스케줄러',
+      d:'아직 자리가 없는 Pod에 알맞은 노드를 고르는 배치 담당.',
+      a:'작업자를 어느 작업장에 보낼지 정하는 인사 담당.',
+      w:'자원 여유와 조건을 따져 노드를 골라야 한다.',
+      n:'직접 실행은 하지 않는다. Pod가 Pending에 머물면 자원 부족 같은 배치 문제부터 의심한다.'},
+    {id:'controller',c:'hq',t:'Controller · 조정 루프',sub:'reconciliation',
+      d:'원하는 상태와 현재 상태를 계속 비교해 차이를 줄이는 반복 작업.',
+      a:'온도조절기. 설정 온도와 실제 온도를 계속 비교한다.',
+      x:'목표값 찾기를 쉬지 않고 계속 돌리는 것.',
+      w:'사람이 지켜보지 않아도 선언한 상태로 돌아간다.',
+      l:'복제본 3개를 원하는데 2개가 보이면 API에 1개를 더 요청한다. 그래서 Pod를 손으로 지워도 다시 생긴다.'},
+    {id:'node',c:'hq',t:'워커 노드',sub:'worker node',
+      d:'실제 컨테이너가 돌아가는 컴퓨터.',
+      a:'작업장 건물.',
+      w:'일을 여러 컴퓨터에 나눠 맡길 수 있다.',
+      l:'Minikube는 노드 하나짜리 연습용 클러스터를 만든다.'},
+    {id:'kubelet',c:'hq',t:'kubelet',sub:'큐블릿',
+      d:'각 노드에서 Pod 실행을 책임지는 관리자.',
+      a:'작업장 반장. 본부 지시대로 작업자를 세우고 상태를 보고한다.',
+      w:'본부의 결정이 실제 프로세스가 되려면 현장 담당이 있어야 한다.',
+      n:'클러스터 전체 배치는 결정하지 않는다.'},
+    {id:'runtime',c:'hq',t:'컨테이너 런타임',sub:'containerd · CRI-O · CRI',
+      d:'이미지에서 컨테이너를 실제로 띄우는 프로그램. kubelet과는 CRI라는 약속된 방식으로 연결된다.',
+      a:'작업장의 기계.',
+      w:'kubelet은 어떤 런타임이든 같은 방식으로 부릴 수 있다.',
+      n:'Docker로 빌드했다고 노드도 Docker Engine으로 실행한다는 뜻은 아니다. GPU 드라이버와 런타임 호환도 따로 확인한다.'},
+    {id:'kubectl',c:'hq',t:'kubectl · context',sub:'큐브컨트롤',
+      d:'kubectl은 API server에 명령하는 도구, context는 어느 클러스터·계정·기본 Namespace로 접속할지 묶은 설정.',
+      a:'본부로 거는 전화기와, 단축번호 중 지금 선택된 번호.',
+      w:'엉뚱한 클러스터(특히 운영)에 명령하지 않으려면 접속 대상부터 확인해야 한다.',
+      l:'`kubectl config current-context`로 먼저 확인. 이후 상태(get) → 이벤트(describe) → 로그(logs) 순서로 본다.'},
+    {id:'minikube',c:'hq',t:'Minikube',sub:'미니큐브',
+      d:'개인 PC에 연습용 쿠버네티스 클러스터를 만드는 도구. 04장의 kind와 같은 용도.',
+      a:'방 안의 미니어처 공장.',
+      w:'운영 클러스터를 건드리지 않고 연습할 수 있다.',
+      l:'`minikube image load income-api:study-v1`로 로컬 이미지를 클러스터에 넣는다. 04장의 `bookenv.py load`와 같은 역할.'},
+
+    {id:'pod',c:'floor',t:'Pod',sub:'파드',
+      d:'함께 실행되는 컨테이너들의 최소 배치 단위. 안의 컨테이너끼리 네트워크를 공유한다.',
+      a:'작업자 한 명. 필요하면 2인 1조.',
+      w:'쿠버네티스는 컨테이너를 Pod 단위로 배치하고 관리한다.',
+      l:'Deployment가 Pod 2개를 만든다.',
+      n:'영구적인 주소나 데이터 보관함이 아니다. 실패하면 다른 노드로 옮겨지는 게 아니라 새 UID의 Pod로 대체될 수 있다. 복제본 3개를 한 Pod에 넣는 식으로 가용성을 얻지 않는다.'},
+    {id:'replicaset',c:'floor',t:'ReplicaSet',sub:'레플리카셋',
+      d:'정해진 수의 Pod 복제본을 유지하는 객체.',
+      a:'"작업자 2명 유지" 담당 조장.',
+      w:'하나가 사라지면 바로 채워 넣는다.',
+      l:'보통 직접 만들지 않고 Deployment가 버전마다 만들고 관리한다.'},
+    {id:'deployment',c:'floor',t:'Deployment',sub:'디플로이먼트',core:true,
+      d:'이미지와 복제본 수를 선언하고 버전 교체까지 관리하는 객체. 작업 지시서.'},
+    {id:'label',c:'floor',t:'label · selector',sub:'app: income-api',
+      d:'label은 객체에 붙이는 이름표, selector는 그 이름표로 대상을 고르는 조건.',
+      a:'작업복 명찰과, "명찰에 income-api라고 적힌 사람 모두"라는 호출.',
+      x:'표에 필터 조건을 걸어 해당 행만 고르는 것.',
+      w:'Pod는 계속 바뀌므로 이름이 아니라 조건으로 대상을 찾아야 한다.',
+      l:'Deployment의 selector, Pod template의 label, Service의 selector 세 곳이 맞아야 한다.'},
+    {id:'replicas',c:'floor',t:'복제본 수',sub:'replicas',
+      d:'같은 Pod를 몇 개 띄울지 정하는 값.',
+      a:'같은 일을 하는 작업자 인원.',
+      w:'하나가 쓰러져도 나머지가 요청을 받는다.',
+      l:'`replicas: 2`.',
+      n:'복제본이 여러 개여도 같은 노드, 저장소, 외부 서비스에 의존하면 함께 쓰러진다. 개수와 장애 격리는 다르다.'},
+    {id:'rollout',c:'floor',t:'롤아웃 · 롤링 업데이트',sub:'rollout',
+      d:'새 버전 Pod를 조금씩 띄우고 이전 Pod를 줄여 가는 교체 방식.',
+      a:'근무 교대를 한 명씩 하기.',
+      w:'교체 중에도 서비스가 끊기지 않는다.',
+      l:'`kubectl rollout status deployment/income-api`로 완료를 확인한다.',
+      n:'교체 중에는 이전 버전 Pod가 계속 응답해 새 버전의 실패를 가릴 수 있다. 실행 중인 이미지도 확인한다.'},
+    {id:'resources',c:'floor',t:'requests · limits',sub:'CPU · 메모리',
+      d:'requests는 "이만큼은 확보해 달라", limits는 "이 이상은 쓰지 마라".',
+      a:'작업자 책상 크기 예약과 최대 한도.',
+      w:'Scheduler가 자리를 고르는 기준이 되고, 한 Pod가 노드 자원을 독차지하지 못하게 막는다.',
+      l:'cpu 100m~500m, memory 128Mi~256Mi. 100m은 CPU 0.1개.'},
+    {id:'oom',c:'floor',t:'OOM',sub:'Out Of Memory',
+      d:'메모리 한도를 넘어 실행이 강제로 중단되는 것.',
+      a:'짐이 넘쳐 작업장에서 퇴장당함.',
+      w:'모델이 크면 limits를 넘기 쉽다. 대표 부하에서 실제 사용량을 확인해야 한다.'},
+    {id:'probe',c:'floor',t:'Probe',sub:'startup · readiness · liveness',
+      d:'컨테이너 상태를 주기적으로 묻는 검사. startup은 초기화 완료, readiness는 요청 받을 준비, liveness는 살아 있는지.',
+      a:'출근 확인, 업무 개시 확인, 생존 확인 전화.',
+      w:'readiness가 실패하면 트래픽에서 빠지고, liveness·startup이 실패하면 재시작된다.',
+      l:'`/ready`를 5초마다, `/health`를 10초마다 확인한다. 실제 모델 서비스라면 readiness는 모델 로딩을 마쳤을 때 성공하게 바꿔야 한다.'},
+    {id:'status',c:'floor',t:'Pod 상태',sub:'Pending · ImagePullBackOff · 반복 재시작',
+      d:'Pending은 아직 배치 못 함, ImagePullBackOff는 이미지를 못 가져옴, 반복 재시작(CrashLoopBackOff)은 뜨자마자 죽음.',
+      a:'자리 대기, 도시락 배달 실패, 출근하자마자 쓰러짐.',
+      w:'증상마다 조사할 곳이 다르다. Pending은 자원·볼륨, ImagePullBackOff는 이미지 주소·권한, 반복 재시작은 프로세스·설정·probe.',
+      n:'Running이어도 Ready가 아닐 수 있다.'},
+    {id:'describe',c:'floor',t:'describe · logs · Events',sub:'조사 명령',
+      d:'describe는 객체 상세와 최근 사건(Events)을, logs는 앱이 출력한 로그를 보여 준다.',
+      a:'사건 일지와 작업자 본인의 메모.',
+      w:'배치 문제는 Events에, 앱 문제는 logs에 단서가 남는다.',
+      l:'`--previous`는 이전에 죽은 컨테이너의 로그를 볼 때 쓴다. 이미지 pull 실패는 describe의 Events에서 보인다.'},
+
+    {id:'service',c:'link',t:'Service',sub:'서비스',core:true,
+      d:'바뀌는 Pod 앞에 고정된 이름과 포트를 세운 창구. 이름 정의 같은 것.'},
+    {id:'servicetype',c:'link',t:'ClusterIP · NodePort · LoadBalancer',sub:'Service 유형',
+      d:'ClusterIP는 클러스터 내부 전용, NodePort는 노드의 포트로 노출, LoadBalancer는 외부 로드밸런서와 연결.',
+      a:'내선번호, 건물 옆문, 대표번호와 교환대.',
+      w:'누구에게 얼마나 열어 둘지 정해야 한다.',
+      n:'Service가 있다고 인증, TLS, 외부 접근 정책까지 자동으로 생기지는 않는다.'},
+    {id:'ports',c:'link',t:'port · targetPort · containerPort',sub:'세 가지 포트',
+      d:'port는 Service가 받는 번호, targetPort는 Pod 안 앱이 실제 듣는 번호, containerPort는 "이 포트를 쓴다"는 선언.',
+      a:'안내 창구 번호, 작업실 문 번호, 문에 붙인 문패.',
+      w:'창구에서 받은 요청을 맞는 문으로 넘겨야 앱에 닿는다.',
+      l:'`port: 80` → `targetPort: 8000`.',
+      n:'containerPort 선언 자체가 포트를 열어 주지는 않는다.'},
+    {id:'endpointslice',c:'link',t:'EndpointSlice',sub:'엔드포인트슬라이스',
+      d:'Service 뒤에 실제로 연결된 Pod 목록과 준비 상태.',
+      a:'창구 뒤 지금 근무 중인 담당자 명단.',
+      w:'Service가 있어도 명단이 비면 요청이 갈 곳이 없다.',
+      l:'`kubectl get endpointslices -n ml-book-study`. selector가 틀리면 여기가 빈다.'},
+    {id:'portforward',c:'link',t:'port-forward',sub:'포트포워딩',
+      d:'클러스터 안 Service나 Pod를 내 PC 포트로 잇는 점검용 터널.',
+      a:'점검용 직통선.',
+      w:'외부에 열지 않고도 안을 확인할 수 있다.',
+      l:'`kubectl port-forward service/income-api 18080:80`.',
+      n:'일반 사용자의 접속 경로가 아니고, 부하 분산이나 외부 경로를 검증하는 것도 아니다.'},
+    {id:'namespace',c:'link',t:'Namespace',sub:'네임스페이스',
+      d:'이름과 자원의 관리 범위.',
+      a:'공장 안의 부서.',
+      w:'이름 충돌을 막고 자원을 묶어 관리한다.',
+      l:'`ml-book-study`. 정리할 때 Namespace나 클러스터를 지울 필요 없이 이 예제만 지운다.',
+      n:'권한(RBAC), 통신 제한(네트워크 정책), 사용량 제한(쿼터)은 따로 설정해야 한다.'},
+    {id:'configmap',c:'link',t:'ConfigMap',sub:'설정 맵',
+      d:'일반 설정을 코드와 분리해 담는 객체.',
+      a:'벽에 붙인 작업 안내문.',
+      w:'이미지를 다시 만들지 않고 환경마다 설정을 바꿀 수 있다.',
+      n:'바꿔도 실행 중인 프로세스에 바로 반영되지 않을 수 있다. 환경 변수로 넣은 값은 재시작해야 바뀐다.'},
+    {id:'secret',c:'link',t:'Secret',sub:'시크릿',
+      d:'비밀번호나 토큰 같은 민감한 설정을 전달하는 객체.',
+      a:'잠긴 서랍의 열쇠.',
+      w:'비밀을 이미지나 코드에 넣지 않고 실행할 때만 전달한다.',
+      n:'기본 인코딩(base64)은 암호화가 아니다. 접근 권한과 저장 암호화가 따로 필요하다.'},
+    {id:'rbac',c:'link',t:'RBAC · ServiceAccount',sub:'권한 관리',
+      d:'RBAC는 역할별로 API 접근을 허용하는 방식, ServiceAccount는 Pod나 자동화가 쓰는 계정.',
+      a:'출입증 등급.',
+      w:'모든 계정에 관리자 권한을 주지 않고 필요한 만큼만 준다.',
+      l:'CI 계정에 클러스터 관리자 권한을 주는 것과 Git의 배포 선언만 고치게 하는 것은 권한 범위가 전혀 다르다.'},
+    {id:'netpol',c:'link',t:'네트워크 정책 · 쿼터',sub:'NetworkPolicy · ResourceQuota',
+      d:'네트워크 정책은 워크로드끼리의 통신을 제한하고, 쿼터는 자원 사용 상한을 정한다.',
+      a:'부서 간 출입 통제와 부서 예산 한도.',
+      w:'Namespace만으로는 통신과 자원 사용이 막히지 않는다.'},
+    {id:'tls',c:'link',t:'TLS',sub:'전송 구간 암호화',
+      d:'통신 구간을 암호화해 엿보기와 변조를 막는 계층.',
+      a:'봉인된 택배 상자.',
+      w:'요청 내용이 오가는 길에서 새지 않게 한다.',
+      n:'누가 무엇을 할 수 있는지 정하는 권한 판정과는 별개다.'},
+    {id:'helm',c:'link',t:'Helm · values',sub:'Helm chart',
+      d:'여러 객체를 템플릿과 values로 묶은 설치 꾸러미. 템플릿은 공통 구조, values는 환경별 값.',
+      a:'조립 가구 키트와 옵션표.',
+      x:'메일 머지. 서식(템플릿)은 하나, 받는 사람별 값(values)만 바꿔 끼운다.',
+      w:'개발과 운영에 같은 앱을 올리면서 복제본 수나 자원만 바꿀 수 있다.',
+      n:'문법상 유효해도 selector 오타나 과한 자원 요구는 남는다. 렌더링된 결과를 확인한다. values에 모델 참조가 섞이면 차트 버전이 같아도 동작이 달라질 수 있다.'},
+
+    {id:'cicd',c:'deliver',t:'CI/CD',sub:'지속적 통합과 배포',core:true,
+      d:'변경을 자동으로 검사·빌드하고(CI), 검증된 버전을 운영에 반영하는(CD) 흐름. 출고 라인.'},
+    {id:'ci',c:'deliver',t:'CI',sub:'Continuous Integration',
+      d:'변경된 코드를 검사하고 이미지를 만드는 통합 과정.',
+      a:'출고 전 품질 검사와 포장 라인.',
+      w:'문제가 있는 변경이 운영까지 가기 전에 걸러낸다.',
+      n:'테스트가 실패하면 운영 참조 갱신이 멈추는지, 빌드한 것과 배포하는 것이 같은지 확인한다.'},
+    {id:'cd',c:'deliver',t:'CD',sub:'Continuous Delivery · Deployment',
+      d:'검증한 변경을 운영 환경에 전달하고 배포하는 과정.',
+      a:'검사 통과품을 매장에 배송하기.',
+      w:'사람의 손을 덜 타서 실수와 권한 문제가 줄어든다.',
+      n:'자동으로 출시까지 할지는 별도 정책이다.'},
+    {id:'gitlabci',c:'deliver',t:'GitLab CI',sub:'책의 CI 도구',
+      d:'Git 저장소에 파일로 작업을 정의해 변경마다 검사와 빌드를 돌리는 도구.',
+      a:'출고 라인의 자동 검사기.',
+      w:'핵심은 화면이 아니라 커밋 → 검사 → 이미지 식별자 → 배포 설정 변경의 연결이다.',
+      l:'커밋 A로 만든 이미지의 digest를 배포 설정에 기록하고 그 설정도 커밋하면, 운영 서비스에서 원래 코드까지 거슬러 갈 수 있다.',
+      n:'레지스트리 인증과 배포 권한은 CI의 비밀 저장소에 최소 권한 계정으로 둔다.'},
+    {id:'gitops',c:'deliver',t:'GitOps',sub:'Git + Operations',
+      d:'Git에 버전 관리한 선언을 기준으로 실제 운영 상태를 맞추는 방식.',
+      a:'본사 설계도가 정답이고, 매장은 설계도를 따라가는 운영.',
+      x:'공유 폴더의 원본 서식 파일만 고치면 각 부서 파일이 따라 바뀌는 규칙.',
+      w:'"누가 서버에서 무엇을 바꿨나" 대신 "어떤 변경이 배포됐나"를 추적할 수 있다.',
+      l:'책은 Argo CD로 이 방식을 쓴다.'},
+    {id:'argocd',c:'deliver',t:'Argo CD',sub:'GitOps 도구',
+      d:'Git의 선언과 클러스터 상태를 비교하고 동기화하는 도구.',
+      a:'설계도를 들고 현장을 순찰하는 건설 감독.',
+      w:'선언과 실제가 어긋난 곳을 찾아 맞출 수 있다.',
+      n:'긴급하게 손으로 고친 것이 다음 동기화에서 덮어써질 수 있다. 긴급 변경을 Git에 어떻게 반영할지 정해 둔다.'},
+    {id:'syncopts',c:'deliver',t:'auto-sync · self-heal · prune',sub:'Argo CD 동기화 설정',
+      d:'서로 다른 세 설정. auto-sync는 Git의 새 선언을 자동 반영, self-heal은 클러스터에서 손으로 바꾼 것을 되돌림, prune은 Git에서 사라진 자원을 삭제.',
+      a:'새 설계도 자동 시공, 무단 개조 원상복구, 설계도에서 지운 시설 철거.',
+      w:'"차이가 있으면 무조건 덮어쓴다"가 아니라 동작마다 켜고 끌 수 있다.'},
+    {id:'synced',c:'deliver',t:'Synced · Healthy',sub:'Argo CD 상태',
+      d:'Synced는 클러스터 명세가 Git 선언과 일치, Healthy는 자원 종류별 상태 판단이 정상이라는 뜻.',
+      a:'설계도와 일치, 시설 가동 정상.',
+      w:'배포가 선언대로 됐는지 한눈에 볼 수 있다.',
+      n:'틀린 모델 버전을 Git에 적어도 둘 다 정상일 수 있다. ML 품질 승인이 아니다.'},
+
+    {id:'promgraf',c:'gauge',t:'Prometheus · Grafana',sub:'수집 · 시각화',core:true,
+      d:'Prometheus는 숫자를 주기적으로 모아 저장하고 Grafana는 대시보드로 그린다. 검침원과 상황판.'},
+    {id:'scrape',c:'gauge',t:'scrape · 메트릭 엔드포인트',sub:'/metrics',
+      d:'앱이 숫자를 내보이는 주소(엔드포인트)를 Prometheus가 주기적으로 읽어 가는 것.',
+      a:'검침원이 계량기를 돌며 숫자를 적어 감.',
+      w:'앱이 직접 보내지 않아도 중앙에서 모을 수 있다.',
+      n:'대시보드가 비었다면 메트릭 노출 → 수집 대상 발견 → scrape 성공 → 질의 결과 순서로 확인한다.'},
+    {id:'alertmanager',c:'gauge',t:'Alertmanager',sub:'알림 관리',
+      d:'Prometheus의 경보를 묶고 담당자에게 보내는 도구.',
+      a:'경보 배분 담당.',
+      w:'같은 문제로 알림이 수백 개 오지 않게 묶고, 맞는 사람에게 보낸다.',
+      l:'알림에는 담당자와 대응 절차를 연결해 두는 게 좋다.'},
+    {id:'counter',c:'gauge',t:'Counter',sub:'누적 카운터',
+      d:'누적만 되는 값. 요청 수, 오류 수. 프로세스가 재시작하면 0부터 다시.',
+      a:'자동차 누적 주행거리계.',
+      x:'누적 합계 열.',
+      w:'구간 증가율을 계산하면 현재 부하를 알 수 있다.',
+      n:'10,000이라는 숫자만으로는 지금 바쁜지 알 수 없다. 언제부터의 누적인지에 따라 다르다.'},
+    {id:'gauge',c:'gauge',t:'Gauge',sub:'현재 값',
+      d:'오르내리는 현재 값. 메모리 사용량, 대기 작업 수.',
+      a:'속도계나 연료계.',
+      x:'지금 시점의 잔액 셀.',
+      w:'지금 상태를 바로 보여 준다.',
+      n:'한 시점 값과 장기 추세를 구분해서 본다.'},
+    {id:'histogram',c:'gauge',t:'Histogram · Summary',sub:'분포 메트릭',
+      d:'응답 시간 같은 값의 분포. Histogram은 구간(버킷)별 개수, Summary는 개수·합·지정한 분위수.',
+      a:'"1초 이하 몇 명, 2초 이하 몇 명" 식의 도착 시간 기록.',
+      x:'히스토그램 차트의 구간별 빈도.',
+      w:'평균 하나로는 보이지 않는 느린 요청을 볼 수 있다.',
+      n:'Histogram의 분위수는 버킷 경계와 표본 수에 영향을 받는다. 인스턴스별 Summary 분위수는 단순히 더할 수 없다.'},
+    {id:'promql',c:'gauge',t:'PromQL · rate()',sub:'Prometheus 질의',
+      d:'PromQL은 Prometheus 질의 언어, rate()는 Counter의 구간 평균 초당 증가율.',
+      a:'주행거리계 두 번 읽고 걸린 시간으로 나누면 평균 속도.',
+      x:'(지금 누적 − 5분 전 누적) ÷ 300초.',
+      w:'누적 숫자를 지금의 초당 요청 수로 바꿔 읽는다.',
+      l:'`sum(rate(http_requests_total{job="income-api"}[5m]))`. 오류율은 5xx 증가율을 전체 증가율로 나눈다. 요청이 없는 구간을 "오류율 0%"로 단정하지 않는다.'},
+    {id:'p95',c:'gauge',t:'p95',sub:'95번째 백분위수',
+      d:'관측한 요청의 약 95%가 이 시간 이하였다는 뜻.',
+      a:'반 학생 95%가 이 시간 안에 하교했다.',
+      x:'`PERCENTILE.INC(응답시간, 0.95)`.',
+      w:'평균만 보면 일부 사용자가 겪는 느린 요청을 놓친다.',
+      n:'"p95가 낮다"는 결론에는 어떤 구간과 트래픽을 집계했는지가 함께 있어야 한다.'},
+    {id:'cardinality',c:'gauge',t:'label · 카디널리티',sub:'cardinality',
+      d:'메트릭 label 조합이 만드는 시계열의 수.',
+      a:'계량기에 고객 번호까지 붙이면 계량기가 고객 수만큼 늘어난다.',
+      x:'피벗 테이블 행 필드에 사용자 ID를 넣으면 행이 폭증하는 것.',
+      w:'시계열이 폭증하면 저장과 질의가 무거워진다.',
+      n:'사용자 ID나 요청 ID는 label에 넣지 말고 로그와 트레이스로 남긴다.'},
+    {id:'logtrace',c:'gauge',t:'로그 · 트레이스',sub:'logs · traces',
+      d:'로그는 개별 사건 기록, 트레이스는 한 요청이 여러 서비스를 거친 경로. 메트릭은 숫자 추세.',
+      a:'사건 일지와 택배 배송 조회.',
+      w:'메트릭은 "무언가 이상하다", 로그와 트레이스는 "어느 요청이 어디서"를 알려 준다.'}
+  ];
+
+  var byId = {};
+  TERMS.forEach(function(t){ byId[t.id] = t; });
+  var state = {cat:'all', q:'', expanded:false};
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var qEl = document.getElementById('q');
+  var toggleEl = document.getElementById('toggleAll');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'); }
+
+  function renderChips(){
+    var html = '<button type="button" class="chip" data-cat="all" aria-pressed="'+(state.cat==='all')+'">전체</button>';
+    Object.keys(CATS).forEach(function(k){
+      html += '<button type="button" class="chip" data-cat="'+k+'" style="--cat:var(--c-'+k+')" aria-pressed="'+(state.cat===k)+'"><i class="dot"></i>'+CATS[k].name+' <span style="opacity:.7">'+CATS[k].hint+'</span></button>';
+    });
+    chipsEl.innerHTML = html;
+  }
+  function matches(t){
+    if(state.cat!=='all' && t.c!==state.cat) return false;
+    if(!state.q) return true;
+    return [t.t,t.sub,t.d,t.a,t.w,t.x,t.l,t.n].join(' ').toLowerCase().indexOf(state.q) !== -1;
+  }
+  function row(label, val, cls){
+    if(!val) return '';
+    return '<div'+(cls?' class="'+cls+'"':'')+'><dt>'+label+'</dt><dd>'+fmt(val)+'</dd></div>';
+  }
+  function renderList(){
+    var items = TERMS.filter(matches);
+    var openAll = state.expanded || (state.q && items.length <= 4);
+    var html = items.map(function(t){
+      var body = t.core
+        ? '<dl>'+row('한 줄로', t.d)+'</dl><div class="go"><button type="button" class="textbtn" data-term="'+t.id+'">핵심 카드에서 자세히 보기 →</button></div>'
+        : '<dl>'+row('비유', t.a)+row('왜 필요해', t.w)+row('엑셀로 치면', t.x, 'excel')+row('이번 실습에서', t.l)+row('주의', t.n, 'warn')+'</dl>';
+      return '<details class="term" id="t-'+t.id+'" style="--cat:var(--c-'+t.c+')"'+(openAll?' open':'')+'>'+
+        '<summary><span class="t-head"><span class="t-name">'+esc(t.t)+'</span><span class="t-sub">'+esc(t.sub||'')+'</span></span>'+
+        '<span class="t-right"><span class="cat-tag">'+(t.core?'핵심 · ':'')+CATS[t.c].name+'</span><i class="chev" aria-hidden="true"></i></span>'+
+        '<span class="t-d">'+fmt(t.core?CATS[t.c].hint+' 구역의 핵심 용어':t.d)+'</span></summary>'+
+        '<div class="t-body">'+body+'</div></details>';
+    }).join('');
+    if(!items.length){ html = '<p class="empty">"'+esc(qEl.value)+'"와 맞는 용어가 없어요. 영어 이름이나 다른 말로 찾아보세요.</p>'; }
+    listEl.innerHTML = html;
+    countEl.textContent = (state.cat==='all' && !state.q) ? '용어 '+TERMS.length+'개' : items.length+'개 / 전체 '+TERMS.length+'개';
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  }
+  function flash(el){
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 1900);
+  }
+  function openTerm(id){
+    var t = byId[id]; if(!t) return;
+    var el;
+    if(t.core){ el = document.getElementById('core-'+id); }
+    else {
+      el = document.getElementById('t-'+id);
+      if(!el){ state.cat='all'; state.q=''; qEl.value=''; renderChips(); renderList(); el = document.getElementById('t-'+id); }
+      if(el) el.open = true;
+    }
+    if(!el) return;
+    el.scrollIntoView({behavior: reduced?'auto':'smooth', block:'start'});
+    flash(el);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-term]');
+    if(b){ e.preventDefault(); openTerm(b.getAttribute('data-term')); return; }
+    var c = e.target.closest('.chip');
+    if(c){ state.cat = c.getAttribute('data-cat'); renderChips(); renderList(); }
+  });
+  qEl.addEventListener('input', function(){ state.q = qEl.value.trim().toLowerCase(); renderList(); });
+  toggleEl.addEventListener('click', function(){
+    state.expanded = !state.expanded;
+    listEl.querySelectorAll('details.term').forEach(function(d){ d.open = state.expanded; });
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  });
+  renderChips();
+  renderList();
+})();
+</script>
+</body>
+</html>

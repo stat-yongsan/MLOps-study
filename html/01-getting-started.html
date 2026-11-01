@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>MLOps 01장 용어 풀이</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 모바일 한 열. 플랫폼 지도 → 핵심 6 → 카드 요청 따라가기(좌표 변환기) → 헷갈리는 짝 → 용어 사전 → 실습(해시 실험) */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --ink:#15201E; --muted:#56635F; --line:#D3DBD8;
+  --accent:#0B6E69; --soft:#E2EEEB; --mark:rgba(232,178,27,.40); --warn:#8F6200;
+  --good:#2C7A4F; --bad:#B4462A;
+  --c-life:#0B6E69; --c-data:#2F6DB5; --c-platform:#7A4FB8; --c-release:#8C6A2E; --c-llm:#B9512A; --c-role:#5B6770;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --nav-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+    --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+    --good:#6CCB95; --bad:#EE8F64;
+    --c-life:#4CC2B9; --c-data:#7EA9E6; --c-platform:#B595E6; --c-release:#D2B06E; --c-llm:#EE8F64; --c-role:#A7B3BB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+  --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+  --good:#6CCB95; --bad:#EE8F64;
+  --c-life:#4CC2B9; --c-data:#7EA9E6; --c-platform:#B595E6; --c-release:#D2B06E; --c-llm:#EE8F64; --c-role:#A7B3BB;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.68;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:5px;word-break:break-all}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + var(--nav-h) + 12px)}
+h1,h2{font-family:var(--f-display);font-weight:400;text-wrap:balance;letter-spacing:-.01em}
+.mark{background:linear-gradient(transparent 55%,var(--mark) 55%);padding:0 .1em}
+
+header.wrap{padding-block:28px 18px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:0 0 8px}
+h1{font-size:clamp(31px,8.4vw,46px);line-height:1.14;margin:0 0 14px}
+.lede{font-size:17px;margin:0 0 10px;max-width:60ch}
+.how{font-size:14.5px;color:var(--muted);margin:0}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{flex:none;font-size:14px;font-weight:500;padding:6px 13px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink);text-decoration:none;background:var(--surface);white-space:nowrap}
+.nav a:active{background:var(--soft)}
+
+section.wrap{padding-block:34px 6px}
+h2{font-size:clamp(25px,6.6vw,32px);line-height:1.2;margin:0 0 6px}
+.sec-lead{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:62ch}
+h3.sub{font-size:18px;margin:26px 0 10px}
+
+/* map */
+.map{display:grid;gap:4px}
+.zone{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);min-width:0}
+.zone-label{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.zone-label .hint{font-weight:400;color:var(--muted);font-size:13px}
+.zone.cluster{border:1.5px dashed var(--accent);background:var(--soft);display:grid;gap:10px}
+.zone.cluster>.zone-label{margin-bottom:0}
+.zone-note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.arrow{text-align:center;font-size:13px;color:var(--muted);padding-block:4px}
+.arrow::before{content:"↓";display:block;font-size:18px;line-height:1;color:var(--accent)}
+.nodes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{display:inline-flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left}
+.node .k{font-size:12.5px;font-weight:400;color:var(--muted)}
+.node:active{background:var(--soft)}
+.to{color:var(--muted);font-size:14px}
+.dept{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px;min-width:0}
+.dept .node{background:var(--bg)}
+.dept-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-weight:700;font-size:14.5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cat);flex:none}
+.loop{text-align:center;font-size:14px;color:var(--accent);font-weight:600;padding-block:6px}
+
+/* core */
+.core-grid{display:grid;gap:14px}
+.core{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;min-width:0}
+.core-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:6px}
+.core-name{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.core-full{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.core-top .cat-tag{margin-left:auto}
+.core-one{font-size:17px;font-weight:600;margin:0 0 14px}
+dl{margin:0;display:grid;gap:12px}
+dl>div{min-width:0}
+dt{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.03em;margin-bottom:2px}
+dd{margin:0}
+.excel dd{background:var(--soft);padding:8px 11px;border-radius:8px}
+.warn dt{color:var(--warn)}
+.cat-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--cat);
+  background:color-mix(in srgb,var(--cat) 13%,transparent)}
+
+/* tools panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:grid;gap:4px;min-width:0}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input{width:100%;font-size:16px;font-family:var(--f-mono);padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)}
+.field input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.box{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);min-width:0}
+.box small{display:block;font-size:12px;color:var(--muted)}
+.box b{font-family:var(--f-mono);font-weight:500;font-size:15px;font-variant-numeric:tabular-nums;word-break:break-all}
+.note{font-size:14.5px;margin:12px 0 0}
+.breaks{display:grid;gap:10px}
+.brk{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface)}
+.brk h4{margin:0 0 6px;font-size:15.5px}
+.brk dl{gap:6px}
+.brk dt{display:inline;margin-right:6px}
+.brk dd{display:inline;font-size:15px}
+textarea{width:100%;min-height:96px;font-family:var(--f-mono);font-size:14px;padding:10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);resize:vertical}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btn{font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.btn:active{background:var(--soft)}
+.hashrow{display:grid;gap:6px;margin-top:12px;font-size:14px}
+.hashrow code{font-size:12.5px}
+.verdict{font-weight:700;font-size:16px;margin-top:8px}
+.verdict.ok{color:var(--good)}
+.verdict.no{color:var(--bad)}
+pre.json{background:var(--soft);border-radius:10px;padding:12px;overflow-x:auto;font-family:var(--f-mono);font-size:12.5px;line-height:1.55;margin:8px 0 0}
+
+/* pairs */
+.pair{padding-block:16px;border-top:1px solid var(--line)}
+.pair:last-child{border-bottom:1px solid var(--line)}
+.pair h3{font-size:17.5px;margin:0 0 10px;line-height:1.35}
+.vs{color:var(--muted);font-weight:400;padding-inline:4px}
+.pair-grid{display:grid;gap:8px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.side p{margin:2px 0 0;font-size:15px}
+.side-name{font-weight:700;font-size:14.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.side-name.static{color:var(--ink);text-decoration:none;cursor:default}
+.pair-key{margin:10px 0 0;font-size:15px}
+.pair-key b{font-weight:700;margin-right:6px}
+@media (min-width:520px){.pair-grid{grid-template-columns:1fr 1fr}}
+
+/* glossary */
+.tools{display:grid;gap:10px;margin-bottom:6px}
+.search{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:7px;height:7px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list-bar{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);padding-block:6px}
+.textbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 0}
+.term-list{border-top:1px solid var(--line)}
+details.term{border-bottom:1px solid var(--line)}
+details.term>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding-block:13px}
+details.term>summary::-webkit-details-marker{display:none}
+.t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.t-name{font-weight:700;font-size:17px}
+.t-sub{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.t-d{grid-column:1/-1;color:var(--muted);font-size:15px}
+.t-right{display:flex;align-items:center;gap:8px;align-self:start}
+.chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+details[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.t-body{padding:2px 0 16px}
+.t-body dl{gap:10px}
+.go{margin-top:2px;font-size:14px}
+.empty{padding:22px 0;color:var(--muted)}
+
+/* flow */
+.flow{list-style:none;margin:0;padding:0}
+.flow li{position:relative;padding:0 0 22px 46px}
+.flow li::before{content:attr(data-step);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:14px;background:var(--accent);color:var(--surface)}
+.flow li::after{content:"";position:absolute;left:15px;top:36px;bottom:4px;border-left:2px dotted var(--line)}
+.flow li:last-child::after{display:none}
+.flow h3{margin:3px 0 4px;font-size:17.5px}
+.flow p{margin:0 0 6px;font-size:15px}
+.flow .left{font-size:14px;color:var(--muted)}
+.flow .left b{color:var(--ink);font-weight:600}
+.flow .nodes{margin-top:8px}
+.flow .node{font-size:13px;padding:4px 9px;font-weight:500}
+
+footer.wrap{padding-block:30px 40px;color:var(--muted);font-size:13.5px}
+footer a{color:var(--accent)}
+footer p{margin:0 0 8px}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,30%{background:var(--mark)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){
+  .flash{animation:none;outline:2px solid var(--accent);outline-offset:4px}
+  .chev{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">머신러닝 플랫폼 엔지니어링 · 01장 MLOps와 ML 엔지니어링 시작하기</p>
+  <h1>01장 용어를 공장으로 풀어 보기</h1>
+  <p class="lede">01장은 <span class="mark">시제품 한 번 잘 만들기</span>와 <span class="mark">공장을 계속 돌리기</span>가 왜 다른지 보여 주는 장입니다. 핵심은 완성품(모델)에서 재료(데이터)와 제조 이력(코드, 설정)까지 거슬러 올라갈 수 있어야 한다는 것이에요.</p>
+  <p class="how">용어 이름을 누르면 설명으로 이동하고, 좌표 변환기와 해시 실험은 값을 바꿔 직접 해 볼 수 있습니다.</p>
+</header>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap nav-inner">
+    <a href="#map">플랫폼 지도</a>
+    <a href="#core">핵심 6</a>
+    <a href="#card">카드 요청</a>
+    <a href="#pairs">헷갈리는 짝</a>
+    <a href="#dict">용어 사전</a>
+    <a href="#flow">실습</a>
+  </div>
+</nav>
+
+<main>
+<section class="wrap" id="map">
+  <h2>플랫폼 지도</h2>
+  <p class="sec-lead">원문 그림 1.4를 공장 지도로 옮겼습니다. 업무 요구에서 시작해 모니터링 결과가 다시 개선의 근거로 돌아오는 구조예요.</p>
+  <div class="map">
+    <div class="zone">
+      <div class="zone-label">업무 요구 <span class="hint">플랫폼이 대신 정해 주지 않는 것</span></div>
+      <div class="nodes">
+        <button class="node" data-term="problemdef">문제 정의 <span class="k">ML이 필요한가?</span></button>
+        <button class="node" data-term="baseline">기준선 <span class="k">규칙으로 충분한가?</span></button>
+      </div>
+    </div>
+    <div class="arrow">문제와 평가 기준</div>
+
+    <div class="zone cluster">
+      <div class="zone-label"><button class="node" data-term="platform" style="border-color:var(--accent);color:var(--accent)">ML 플랫폼</button><span class="hint">여러 팀이 함께 쓰는 공용 주방</span></div>
+      <div class="dept" style="--cat:var(--c-platform)">
+        <div class="dept-head"><i class="dot"></i>작업 흐름 <button class="node" data-term="orchestration">오케스트레이션 <span class="k">순서표</span></button></div>
+        <div class="nodes">
+          <button class="node" data-term="label">데이터 준비</button><span class="to">→</span>
+          <button class="node" data-term="train">학습</button><span class="to">→</span>
+          <button class="node" data-term="evaluation">평가</button><span class="to">→</span>
+          <button class="node" data-term="manifest">배포</button>
+        </div>
+      </div>
+      <div class="dept" style="--cat:var(--c-platform)">
+        <div class="dept-head"><i class="dot"></i>기록과 연결</div>
+        <div class="nodes">
+          <button class="node" data-term="featurestore">피처 스토어 <span class="k">학습과 API 양쪽에 재료 공급</span></button>
+          <button class="node" data-term="tracking">실험 추적 <span class="k">실험 노트</span></button>
+          <button class="node" data-term="registry">모델 레지스트리 <span class="k">레시피 금고</span></button>
+        </div>
+      </div>
+      <div class="dept" style="--cat:var(--c-platform)">
+        <div class="dept-head"><i class="dot"></i>서비스와 관측</div>
+        <div class="nodes">
+          <button class="node" data-term="modelapi">Model API <span class="k">주문 창구</span></button>
+          <button class="node" data-term="monitoring">모니터링 <span class="k">손님 반응 관찰</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="loop">↺ 관측 결과가 다음 실험과 재학습의 근거로</div>
+    <p class="zone-note">그림의 부품을 전부 설치해야 한다는 뜻은 아닙니다. 이미지 모델처럼 전처리가 서비스 안에서 끝나는 경우와 여러 팀이 공통 특성을 쓰는 표 데이터 모델은 필요한 구성이 달라요.</p>
+  </div>
+</section>
+
+<section class="wrap" id="core">
+  <h2>핵심 6</h2>
+  <p class="sec-lead">01장의 뼈대입니다. 고리(생애주기), 이력(계보), 공용 주방(플랫폼), 어긋남(학습·서빙 불일치), 나누기(분할), 출고 확인서(출시 명세).</p>
+  <div class="core-grid">
+    <article class="core" id="core-mllifecycle" style="--cat:var(--c-life)">
+      <div class="core-top"><span class="core-name">ML 생애주기</span><span class="core-full">실험 → 운영</span><span class="cat-tag">생애주기</span></div>
+      <p class="core-one">문제 정의부터 데이터, 학습, 평가, 배포, 개선까지 잇는 지도. 직선으로 그려도 실제로는 앞 단계로 자주 돌아갑니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>시제품 공방과 양산 공장. 공방은 "어떤 레시피가 좋은가"를, 공장은 "그 레시피로 매일 안전하게 만들고 바꿀 수 있는가"를 묻습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>모델을 한 번 잘 학습시키는 것과 서비스로 계속 운영하는 것은 다른 문제입니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>한 번 만든 분석 파일과 매달 돌아가는 보고 체계의 차이. 후자는 누가 언제 돌려도 같은 절차로 나와야 하죠.</dd></div>
+        <div><dt>이번 장에서</dt><dd>실험의 "평가 점수가 충분한가?"가 운영에서는 "실제 입력에서도 품질과 응답 시간이 유지되는가?"로 바뀝니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>지표가 나쁘면 모델뿐 아니라 데이터와 문제 정의도 다시 봅니다.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-lineage" style="--cat:var(--c-data)">
+      <div class="core-top"><span class="core-name">계보</span><span class="core-full">lineage</span><span class="cat-tag">데이터</span></div>
+      <p class="core-one">완성품(모델)에서 재료(데이터)와 제조 이력(코드, 설정, 실행)까지 거슬러 올라가는 연결.</p>
+      <dl>
+        <div><dt>비유</dt><dd>식품의 이력 추적 번호. 문제가 생긴 제품의 번호로 어느 농장, 어느 공장, 어느 날 생산했는지 찾습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>결과가 나쁘면 가중치 파일만으로는 이유를 알 수 없습니다. 어떤 이미지와 라벨, 분할, 전처리, 설정이었는지 함께 찾아야 해요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>수식 탭의 "참조되는 셀 추적". 결과 셀에서 어떤 원본 셀을 거쳐 왔는지 화살표로 따라가는 것.</dd></div>
+        <div><dt>이번 장에서</dt><dd>해시 실험으로 파일 이름이 같아도 내용이 바뀌면 지문이 달라지는 걸 확인합니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>기록이 있다고 비트 단위로 같은 결과가 보장되지는 않습니다. 모델 파일 보관과 재현 가능한 상태 유지는 달라요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-platform" style="--cat:var(--c-platform)">
+      <div class="core-top"><span class="core-name">ML 플랫폼</span><span class="core-full">ML platform</span><span class="cat-tag">플랫폼</span></div>
+      <p class="core-one">실험, 학습, 배포, 관측을 반복하게 해 주는 공통 기반. 도구를 모아 놓은 화면이 아닙니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>여러 팀이 함께 쓰는 공용 주방. 재료 창고(피처 스토어), 실험 노트(실험 추적), 레시피 금고(모델 레지스트리), 순서표(오케스트레이션), 주문 창구(Model API), 손님 반응 관찰(모니터링).</dd></div>
+        <div><dt>왜 필요해</dt><dd>팀마다 배포와 기록 방식을 새로 만들면 반복 작업과 실수가 쌓입니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>부서마다 따로 만들던 보고서를 공용 템플릿, 공용 데이터 연결, 공용 매크로로 묶는 것.</dd></div>
+        <div><dt>이번 장에서</dt><dd>책은 Kubeflow Pipelines, Feast, MLflow, 컨테이너와 CI/CD를 씁니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>MLflow를 설치했다고 데이터 품질이 보장되지 않고, 원천 수집과 데이터 웨어하우스 전체를 플랫폼 책임으로 넣을 필요도 없습니다. 무엇을 받아 무엇을 주는지, 누가 운영하는지부터 정해요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-skew" style="--cat:var(--c-release)">
+      <div class="core-top"><span class="core-name">학습·서빙 불일치</span><span class="core-full">training-serving skew</span><span class="cat-tag">출시</span></div>
+      <p class="core-one">학습 때와 서비스 때 입력을 다르게 처리해서 같은 모델이 다른 입력을 받게 되는 문제.</p>
+      <dl>
+        <div><dt>비유</dt><dd>시험 주방에서는 재료를 깍둑썰기했는데 매장 주방에서는 통째로 넣는 것. 레시피는 같아도 맛이 다릅니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>배포에는 가중치뿐 아니라 입력을 바꾸는 전처리와 결과를 응답으로 만드는 코드가 함께 들어갑니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>기준 시트는 날짜를 텍스트로, 새 시트는 날짜 형식으로 넣어서 VLOOKUP이 오류도 없이 조용히 틀리는 것.</dd></div>
+        <div><dt>이번 장에서</dt><dd>학습 때는 이미지를 일정 크기로 바꾸고 픽셀값을 정규화했는데 API는 원본을 그대로 넣는 경우.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>되돌릴 때도 모델만이 아니라 호환되는 전처리와 서비스 코드까지 함께 되돌려야 합니다.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-split" style="--cat:var(--c-data)">
+      <div class="core-top"><span class="core-name">데이터 분할</span><span class="core-full">train · validation · test</span><span class="cat-tag">데이터</span></div>
+      <p class="core-one">학습셋은 가중치 학습, 검증셋은 모델과 설정 선택, 테스트셋은 마지막 확인. 어떻게 나누느냐도 모델의 일부입니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>연습 문제, 모의고사, 수능.</dd></div>
+        <div><dt>왜 필요해</dt><dd>같은 영상에서 뽑은 거의 같은 프레임이 학습과 테스트에 섞이면, 새 상황을 이해하는 실력보다 본 장면을 기억하는 능력을 높게 평가합니다.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>같은 고객의 행이 학습 시트와 평가 시트로 갈라지지 않게 고객 ID 단위로 나누는 것. RAND()로 섞어 행 단위로 자르면 위험할 수 있어요.</dd></div>
+        <div><dt>이번 장에서</dt><dd>동영상 A, B에서 100프레임씩 뽑았다면 촬영 세션 단위로 묶어 나눕니다. 시간 변화가 문제라면 과거로 학습하고 이후 기간으로 검증해요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>묶어서 나눴다고 모든 문서 유형이 평가셋에 충분히 들어가는 건 아닙니다. 분할 후 표본 수와 유형 분포를 확인해요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-manifest" style="--cat:var(--c-release)">
+      <div class="core-top"><span class="core-name">출시 명세</span><span class="core-full">release manifest</span><span class="cat-tag">출시</span></div>
+      <p class="core-one">하나의 출시가 어떤 코드, 데이터, 분할, 전처리, 모델, 서버 이미지, 평가, 롤백 대상의 조합인지 적은 한 장.</p>
+      <dl>
+        <div><dt>비유</dt><dd>제품 출고 확인서. 어느 레시피 버전과 재료 묶음, 공정으로 만들었고, 문제가 생기면 어느 제품으로 교체할지 적혀 있습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>모델만 되돌리면 호환되지 않는 전처리나 API 규격이 남을 수 있습니다. 조합 단위로 적어야 제대로 되돌릴 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>보고서 맨 앞의 "버전 정보" 시트. 원본 데이터 기준일, 쿼리 버전, 검토자, 이전 버전 파일 위치를 적어 두는 것.</dd></div>
+        <div><dt>이번 장에서</dt><dd><code>release_id</code>, <code>code_revision</code>, <code>dataset_snapshot</code>, <code>split_policy</code>, <code>preprocessing</code>, <code>model_uri</code>, <code>image_digest</code>, <code>evaluation_report</code>, <code>rollback_release</code>.</dd></div>
+        <div class="warn"><dt>주의</dt><dd><code>release_id</code>는 모델 버전과 다릅니다. 모델이 그대로여도 좌표 복원 코드를 바꾸면 새 출시예요.</dd></div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="card">
+  <h2>카드 탐지 요청 하나 따라가기</h2>
+  <p class="sec-lead">휴대전화 사진에서 신분증 카드 위치를 찾아 자르는 서비스입니다. 글자를 읽거나 진위를 판단하지는 않아요. 범위를 이렇게 좁혀야 라벨과 평가 기준도 정할 수 있습니다.</p>
+
+  <h3 class="sub">같은 상자, 다른 표현</h3>
+  <div class="panel">
+    <div class="fields">
+      <div class="field"><label for="imgW">사진 폭</label><input id="imgW" type="number" min="1" value="1000" inputmode="decimal"></div>
+      <div class="field"><label for="imgH">사진 높이</label><input id="imgH" type="number" min="1" value="800" inputmode="decimal"></div>
+      <div class="field"><label for="bx1">왼쪽 위 x1</label><input id="bx1" type="number" min="0" value="100" inputmode="decimal"></div>
+      <div class="field"><label for="by1">왼쪽 위 y1</label><input id="by1" type="number" min="0" value="160" inputmode="decimal"></div>
+      <div class="field"><label for="bx2">오른쪽 아래 x2</label><input id="bx2" type="number" min="0" value="900" inputmode="decimal"></div>
+      <div class="field"><label for="by2">오른쪽 아래 y2</label><input id="by2" type="number" min="0" value="640" inputmode="decimal"></div>
+    </div>
+    <div class="boxes">
+      <div class="box"><small>API 응답 (x1, y1, x2, y2)</small><b id="outXY">(100, 160, 900, 640)</b></div>
+      <div class="box"><small>YOLO 라벨 (중심x, 중심y, 폭, 높이)</small><b id="outYolo">(0.5, 0.5, 0.8, 0.6)</b></div>
+    </div>
+    <p class="note" id="boxNote">YOLO 라벨의 앞 두 값 (0.5, 0.5)을 왼쪽 위 좌표로 잘못 읽으면 사진 한가운데부터 잘라 냅니다. 모델을 바꾸지 않고도 틀린 크롭이 나오는 거예요.</p>
+    <p class="note">그래서 <button class="node" data-term="apicontract" style="font-size:13px;padding:2px 8px">API 계약</button>에는 좌표 기준, 원본과 리사이즈 중 어느 크기인지, 카드가 없을 때의 응답까지 적어야 합니다.</p>
+  </div>
+
+  <h3 class="sub">구간마다 빠지면 생기는 일</h3>
+  <div class="breaks">
+    <div class="brk"><h4>데이터 준비</h4><dl><div><dt>하는 일</dt><dd>이미지와 상자의 짝, 좌표 범위, 촬영 단위 분할 확인</dd></div><div><dt>빠지면</dt><dd>정답이 틀리거나 비슷한 이미지가 평가에 섞임</dd></div></dl></div>
+    <div class="brk"><h4>학습</h4><dl><div><dt>하는 일</dt><dd>리사이즈, 정규화 후 가중치 조정</dd></div><div><dt>빠지면</dt><dd>다른 입력 표현으로 학습</dd></div></dl></div>
+    <div class="brk"><h4>평가</h4><dl><div><dt>하는 일</dt><dd>쓰지 않은 사진에서 탐지와 크롭 실패 확인</dd></div><div><dt>빠지면</dt><dd>점수는 좋은데 잘려 나간 카드 모서리를 놓침</dd></div></dl></div>
+    <div class="brk"><h4>API</h4><dl><div><dt>하는 일</dt><dd>같은 전처리 후 추론, 원본 좌표로 복원</dd></div><div><dt>빠지면</dt><dd>입력 크기에 따라 다른 위치를 반환</dd></div></dl></div>
+    <div class="brk"><h4>운영</h4><dl><div><dt>하는 일</dt><dd>버전별 오류, 지연, 재촬영 비율 관측</dd></div><div><dt>빠지면</dt><dd>API는 정상인데 사용자 작업은 실패</dd></div></dl></div>
+  </div>
+  <p class="note">모델 지표와 업무 결과도 따로 봐야 합니다. 사진 1,000장 중 재촬영 요청이 120장에서 70장으로 줄었어도, 잘못 잘라 낸 사진 40장을 다음 단계로 넘겼다면 <span class="mark">재촬영 비율 하나로 성공이라 할 수 없어요.</span></p>
+</section>
+
+<section class="wrap" id="pairs">
+  <h2>헷갈리는 짝</h2>
+  <p class="sec-lead">원문이 "둘은 다르다"고 짚은 것들입니다.</p>
+  <div>
+    <article class="pair"><h3>학습 <span class="vs">↔</span> 추론</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="train">학습</button><p>데이터와 정답으로 가중치를 구하는 과정. 공부.</p></div>
+        <div class="side"><button class="side-name" data-term="infer">추론</button><p>학습한 모델에 새 입력을 넣어 예측. 시험.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">사진 한 장 요청이 올 때마다 모델을 다시 학습하지 않습니다.</span></p></article>
+    <article class="pair"><h3>평가 <span class="vs">↔</span> 사용 목적 검증</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="evaluation">평가 (evaluation)</button><p>학습에 쓰지 않은 데이터로 성능을 잰다.</p></div>
+        <div class="side"><button class="side-name" data-term="purposeval">검증 (validation)</button><p>업무 요구를 만족하는지 확인하고 승인하거나 보류한다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">조직마다 용어가 다르니 이름보다 절차와 책임을 합의합니다.</span></p></article>
+    <article class="pair"><h3>검증셋 <span class="vs">↔</span> 모델 검증</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="sets">validation dataset</button><p>모델과 설정을 고르는 데 쓰는 데이터.</p></div>
+        <div class="side"><button class="side-name" data-term="purposeval">model validation</button><p>업무 관계자가 사용 목적에 맞는지 확인하는 절차.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">같은 단어라도 "누가 무엇을 확인하는가"를 붙여 읽어야 합니다.</span></p></article>
+    <article class="pair"><h3>실험 <span class="vs">↔</span> 운영</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="mllifecycle">실험</button><p>어떤 데이터와 모델이 효과적인가? 이번 결과가 좋은가?</p></div>
+        <div class="side"><button class="side-name" data-term="stages">운영</button><p>다시 찾을 수 있는가? 실패를 감지하고 되돌릴 수 있는가? 다음 변경도 같은 기준으로 검증할 수 있는가?</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">운영에서는 반복해서 안전하게 실행하고 바꾸는 능력이 중요해집니다.</span></p></article>
+    <article class="pair"><h3>재학습 <span class="vs">↔</span> 출시</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="retrain">재학습</button><p>새 후보를 만드는 과정.</p></div>
+        <div class="side"><button class="side-name" data-term="manifest">출시</button><p>그 후보를 사용자에게 연결하는 결정.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">점수가 좋아도 특정 문서 유형에서 실패하거나 응답이 느려졌다면 출시를 보류할 수 있습니다.</span></p></article>
+    <article class="pair"><h3>모델 파일 보관 <span class="vs">↔</span> 재현 가능한 상태</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">모델 파일 보관</span><p>가중치 파일이 어딘가에 있다.</p></div>
+        <div class="side"><button class="side-name" data-term="lineage">재현 가능한 상태</button><p>그 파일을 만든 데이터, 분할, 전처리, 설정까지 다시 찾을 수 있다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">가중치 파일만으로는 결과가 나쁜 이유를 알 수 없습니다.</span></p></article>
+    <article class="pair"><h3>파일 경로 <span class="vs">↔</span> 내용 해시</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="dataversion">파일 경로</button><p>냉장고의 주소. 안의 내용은 바뀔 수 있다.</p></div>
+        <div class="side"><button class="side-name" data-term="hash">내용 해시</button><p>그때 들어 있던 내용의 지문.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">데이터 위치를 아는 것과 그때의 내용을 아는 것은 다릅니다.</span></p></article>
+    <article class="pair"><h3>release_id <span class="vs">↔</span> 모델 버전</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="releaseid">release_id</button><p>서비스 출시 조합 전체의 이름.</p></div>
+        <div class="side"><button class="side-name" data-term="modeluri">모델 버전</button><p>레지스트리에 등록된 가중치 하나. 예: <code>models:/card-detector/3</code></p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">서버 이미지는 그대로 두고 외부 모델 참조만 바꿔도 예측 결과가 달라집니다.</span></p></article>
+    <article class="pair"><h3>실험 추적 <span class="vs">↔</span> 모델 레지스트리</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="tracking">실험 추적</button><p>어떤 조건에서 어떤 결과가 나왔는지 기록.</p></div>
+        <div class="side"><button class="side-name" data-term="registry">모델 레지스트리</button><p>그중 어떤 모델을 관리하고 서비스할지 등록.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">둘을 이어야 배포한 모델이 어느 실험에서 나왔는지 찾을 수 있습니다.</span></p></article>
+    <article class="pair"><h3>오케스트레이터 <span class="vs">↔</span> 학습 알고리즘</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="orchestration">오케스트레이터</button><p>작업을 실행하고 순서대로 연결한다.</p></div>
+        <div class="side"><button class="side-name" data-term="train">학습 알고리즘</button><p>데이터에서 가중치를 찾는다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">역할이 겹쳐 보이는 도구를 비교할 때 이 차이부터 봅니다.</span></p></article>
+    <article class="pair"><h3>자체 구축 <span class="vs">↔</span> 관리형 서비스</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="buildbuy">자체 구축</button><p>조정의 자유가 큰 대신 업그레이드, 장애, 사용자 지원을 감당.</p></div>
+        <div class="side"><button class="side-name" data-term="buildbuy">관리형 서비스</button><p>구축 부담은 줄지만 통합, 권한, 비용 관리는 남음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">오픈소스의 무료 사용과 무료 운영은 다릅니다.</span></p></article>
+    <article class="pair"><h3>MLOps <span class="vs">↔</span> LLMOps</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">MLOps</span><p>데이터, 코드, 설정, 가중치를 추적.</p></div>
+        <div class="side"><button class="side-name" data-term="llmops">LLMOps</button><p>여기에 문서, 인덱스, 프롬프트, 모델 API, 답변 평가, 토큰 비용이 더해짐.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">어떤 문서와 프롬프트, 모델 API 조합으로 답했는지까지 추적해야 합니다.</span></p></article>
+    <article class="pair"><h3>객체 탐지 <span class="vs">↔</span> OCR</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="objdet">객체 탐지</button><p>사진에서 카드가 어디 있는지 찾는다.</p></div>
+        <div class="side"><button class="side-name" data-term="objdet">OCR</button><p>카드 안의 글자를 읽는다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">책의 첫 프로젝트는 OCR 맥락 안에 있지만 학습 대상은 카드 위치 찾기입니다.</span></p></article>
+  </div>
+</section>
+
+<section class="wrap" id="dict">
+  <h2>용어 사전</h2>
+  <p class="sec-lead">원문에 나오는 용어를 구역별로 모았습니다. 항목을 누르면 비유, 필요한 이유, 주의할 점이 펼쳐져요.</p>
+  <div class="tools">
+    <input id="q" class="search" type="search" aria-label="용어 검색" placeholder="용어 찾기 (예: 계보, 해시, 임베딩)" autocomplete="off" enterkeyhint="search">
+    <div class="chips" id="chips" role="group" aria-label="구역 고르기"></div>
+  </div>
+  <div class="list-bar"><span id="count"></span><button class="textbtn" id="toggleAll" type="button">모두 펼치기</button></div>
+  <div class="term-list" id="list"></div>
+</section>
+
+<section class="wrap" id="flow">
+  <h2>실습: 출시 조합 기록</h2>
+  <p class="sec-lead">도구를 설치하기 전에 종이 한 장으로 해 보는 실습입니다. 아래 값은 형식을 보여 주는 예시 식별자예요.</p>
+  <ol class="flow">
+    <li data-step="1">
+      <h3>출시 명세 한 장 쓰기</h3>
+      <p>출시 하나를 이루는 조합을 JSON으로 적습니다.</p>
+<pre class="json">{
+  "release_id": "card-study-001",
+  "code_revision": "git-commit-of-training-code",
+  "dataset_snapshot": "cards-synthetic-v1",
+  "split_policy": "capture-session-grouped-v1",
+  "preprocessing": "resize-and-coordinate-transform-v1",
+  "model_uri": "models:/card-detector/3",
+  "image_digest": "digest-of-serving-image",
+  "evaluation_report": "reports/card-study-001.json",
+  "rollback_release": "card-study-000"
+}</pre>
+      <div class="nodes"><button class="node" data-term="manifest">출시 명세</button><button class="node" data-term="releaseid">release_id</button><button class="node" data-term="modeluri">model_uri</button><button class="node" data-term="imagedigest">image_digest</button></div>
+    </li>
+    <li data-step="2">
+      <h3>상황별로 어디를 먼저 볼지 정하기</h3>
+      <div class="breaks">
+        <div class="brk"><h4>어제와 같은 사진의 좌표가 달라짐</h4><dl><div><dt>먼저</dt><dd>출시 → 모델, 전처리, 이미지</dd></div><div><dt>이유</dt><dd>가중치 외의 변경도 출력에 영향</dd></div></dl></div>
+        <div class="brk"><h4>평가 점수를 다시 계산할 수 없음</h4><dl><div><dt>먼저</dt><dd>실행 → 평가셋, 분할, 지표 정의</dd></div><div><dt>이유</dt><dd>점수만 저장하면 계산 조건을 잃음</dd></div></dl></div>
+        <div class="brk"><h4>이전 모델로 돌렸는데 오류가 계속됨</h4><dl><div><dt>먼저</dt><dd>이전 출시의 전처리와 API 규격</dd></div><div><dt>이유</dt><dd>모델만 되돌리면 호환되지 않는 조합이 남을 수 있음</dd></div></dl></div>
+      </div>
+    </li>
+    <li data-step="3">
+      <h3>해시로 출처가 바뀌는 순간 확인하기</h3>
+      <p>원문의 <code>lineage_study.py</code>와 같은 실험입니다. 파일 이름은 그대로 두고 내용에 한 줄을 더하면 지문이 어떻게 되는지 보세요.</p>
+      <div class="panel">
+        <label for="csv" style="font-size:13px;font-weight:600;color:var(--muted)">lineage_snapshot.csv 내용</label>
+        <textarea id="csv" spellcheck="false">image,label
+card-001,card
+</textarea>
+        <div class="btns">
+          <button type="button" class="btn" id="addRow">한 줄 추가 (card-002,no-card)</button>
+          <button type="button" class="btn" id="resetCsv">원래대로</button>
+        </div>
+        <div class="hashrow">
+          <div>기록한 SHA-256 <code id="hOrig">계산 중</code></div>
+          <div>지금 SHA-256 <code id="hNow">계산 중</code></div>
+        </div>
+        <div class="verdict" id="hVerdict" aria-live="polite">Matches: True</div>
+      </div>
+      <p class="left"><b>확인</b> 처음엔 <code>True</code>, 한 줄 추가 뒤엔 <code>False</code></p>
+      <div class="nodes"><button class="node" data-term="hash">해시</button><button class="node" data-term="dataversion">데이터 스냅샷</button><button class="node" data-term="lineage">계보</button></div>
+    </li>
+    <li data-step="4">
+      <h3>결과 해석</h3>
+      <p>긴 해시 문자열을 외울 필요는 없습니다. <span class="mark">파일의 위치와 내용의 버전은 다르다</span>는 것만 보면 돼요. 불일치가 나면 원본을 복구하거나 새 데이터 버전으로 실험해야지, 명세의 해시만 바꿔 맞추면 안 됩니다.</p>
+      <p class="left"><b>주의</b> 해시는 내용을 복구해 주지 않습니다. 원본 스냅샷도 보존해요. 같은 숫자까지 재현하려면 난수, 라이브러리, 하드웨어 영향을 따로 검증합니다.</p>
+      <div class="nodes"><button class="node" data-term="reproducible">재현성</button><button class="node" data-term="boundary">플랫폼 경계</button></div>
+    </li>
+  </ol>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>이전: <a href="00-book-map.html" target="_blank" rel="noopener">MLOps 00장 책 지도</a></p>
+  <p>다음 장: <a href="02-what-is-mlops.html" target="_blank" rel="noopener">MLOps 02장 용어 풀이</a></p>
+  <p>원문: <a href="https://johklo.github.io/docs/tech/machine-learning-platform-engineering/01-getting-started/" target="_blank" rel="noopener">01. MLOps와 ML 엔지니어링 시작하기</a>. 숫자와 코드는 원문 기준의 학습용 예시이고, 공장 비유와 엑셀 예시는 이해를 돕기 위해 단순화한 것입니다.</p>
+</footer>
+
+<script>
+(function(){
+  var CATS = {
+    life:{name:'생애주기', hint:'실험→운영'},
+    data:{name:'데이터', hint:'분할·계보'},
+    platform:{name:'플랫폼', hint:'구성 요소'},
+    release:{name:'출시', hint:'명세·계약'},
+    llm:{name:'LLM·프로젝트', hint:'LLMOps'},
+    role:{name:'역량과 경계', hint:'사람과 비용'}
+  };
+  var TERMS = [
+    {id:'mllifecycle',c:'life',t:'ML 생애주기',sub:'실험 → 운영',core:true,
+      d:'문제 정의부터 개선까지 잇는 지도. 앞 단계로 자주 돌아간다.'},
+    {id:'problemdef',c:'life',t:'문제 정의',sub:'problem definition',
+      d:'사용자, 업무 목표, 오판의 비용을 확인하는 첫 단계.',
+      a:'무엇을 만들지 정하는 신제품 기획 회의.',
+      w:'"이 문제에 ML이 필요한가?"부터 묻는다. 어떤 의사결정을 개선할지와 성공 기준이 있어야 데이터와 평가가 같은 목표를 본다.',
+      l:'남길 근거는 기준선, 기대 효과, 평가 기준.'},
+    {id:'baseline',c:'life',t:'기준선',sub:'baseline',
+      d:'새 모델과 비교할 출발점. 단순 규칙이나 기존 수동 처리.',
+      a:'지금 팔고 있는 제품.',
+      x:'작년 같은 달 실적.',
+      w:'단순한 규칙으로 충분하다면 더 싸고 설명하기 쉽다. 학습 전에 기준선과 실패 유형을 적어 두면 나중에 목표를 슬쩍 바꾸는 일을 줄인다.'},
+    {id:'train',c:'life',t:'학습',sub:'training',
+      d:'데이터와 정답으로 모델의 가중치를 구하는 과정.',
+      a:'연습 문제를 풀며 공부하기.',
+      w:'같은 코드라도 데이터가 바뀌면 다른 모델이 나온다.',
+      l:'남길 근거는 실행 조건, 가중치, 로그.'},
+    {id:'infer',c:'life',t:'추론',sub:'inference',
+      d:'이미 학습한 모델에 새 입력을 넣어 예측을 얻는 과정.',
+      a:'공부를 마치고 시험 보기.',
+      w:'서비스에서 실제로 일어나는 일이다.',
+      n:'새 사진 한 장 요청이 올 때마다 모델을 다시 학습하지 않는다.'},
+    {id:'weights',c:'life',t:'가중치',sub:'weights',
+      d:'학습 결과로 정해진 모델 내부의 숫자들.',
+      a:'공부해서 몸에 밴 감각.',
+      x:'해 찾기가 찾아낸 변수 값.',
+      w:'입력과 정답의 대응 관계가 여기에 담긴다.',
+      n:'가중치 파일만으로는 어떤 데이터와 설정에서 나왔는지 알 수 없다.'},
+    {id:'evaluation',c:'life',t:'평가',sub:'evaluation',
+      d:'학습에 쓰지 않은 데이터로 성능을 재는 일.',
+      a:'시험 채점.',
+      w:'학습에 쓴 데이터로 재면 실력이 부풀려진다.',
+      l:'남길 근거는 평가셋 버전, 지표, 오류 사례.'},
+    {id:'purposeval',c:'life',t:'사용 목적 검증',sub:'model validation',
+      d:'모델이 의도한 업무 용도에 맞는지 확인하는 절차.',
+      a:'출시 전 현장 담당자의 시식 승인.',
+      w:'점수가 좋아도 업무 요구를 못 채울 수 있다.',
+      l:'남길 근거는 승인·보류 기준과 판단 이유.',
+      n:'학습·검증·테스트 분할의 "검증셋"과 같은 단어지만 뜻이 다르다.'},
+    {id:'stages',c:'life',t:'개발 · 스테이징 · 프로덕션',sub:'dev · staging · prod',
+      d:'개발은 만드는 곳, 스테이징은 출시 직전 조합을 확인하는 곳, 프로덕션은 실제 사용자가 쓰는 곳.',
+      a:'연구실, 시범 매장, 실제 매장.',
+      w:'스테이징에서 확인한 모델, 전처리, 환경 조합이 프로덕션에도 똑같아야 한다.'},
+    {id:'retrain',c:'life',t:'재학습',sub:'retraining',
+      d:'새 데이터나 관측 결과를 계기로 새 후보 모델을 만드는 과정.',
+      a:'새 재료로 시제품 다시 굽기.',
+      w:'세상이 바뀌면 모델도 다시 만들어야 할 수 있다.',
+      n:'재학습 자동화와 무조건적인 자동 출시는 구분한다.'},
+    {id:'rollback',c:'life',t:'롤백',sub:'rollback',
+      d:'문제가 생겼을 때 이전 출시 조합으로 되돌리는 것.',
+      a:'리콜 후 이전 제품으로 교체.',
+      w:'배포 전에 되돌릴 모델, 코드, 설정 조합과 복구를 맡을 사람을 정해 둔다.',
+      n:'모델만 되돌리면 호환되지 않는 전처리와 API 규격이 남을 수 있다.'},
+
+    {id:'label',c:'data',t:'라벨 · 경계 상자',sub:'label · bounding box',
+      d:'정답 정보. 카드 탐지에서는 사진 속 카드 위치를 표시한 상자와 클래스.',
+      a:'시험 문제의 정답지.',
+      w:'사진은 입력이고 상자와 클래스가 정답이다. 학습 결과는 이 대응 관계를 반영한 가중치다.',
+      l:'남길 근거는 원천, 라벨 기준, 분할 규칙.'},
+    {id:'split',c:'data',t:'데이터 분할',sub:'train · validation · test',core:true,
+      d:'학습, 선택, 마지막 확인용으로 데이터를 나누는 것.'},
+    {id:'sets',c:'data',t:'학습셋 · 검증셋 · 테스트셋',sub:'datasets',
+      d:'학습셋은 가중치 학습, 검증셋은 모델과 설정 선택, 테스트셋은 마지막 성능 확인.',
+      a:'연습 문제, 모의고사, 수능.',
+      w:'선택에 쓰지 않은 데이터로 마지막 확인을 해야 실력을 부풀리지 않는다.'},
+    {id:'groupsplit',c:'data',t:'그룹 분할',sub:'grouped split',
+      d:'같은 촬영 세션, 같은 사람처럼 묶음 단위로 학습과 평가를 나누는 것.',
+      a:'같은 반 학생을 한쪽 시험장에만 배치하기.',
+      x:'같은 고객 ID의 행이 학습 시트와 평가 시트에 갈라지지 않게 나누기.',
+      w:'거의 같은 프레임이 양쪽에 섞이면 본 장면을 기억하는 능력을 실력으로 착각한다.',
+      l:'명세의 `split_policy: capture-session-grouped-v1`이 이 방식이다.'},
+    {id:'timesplit',c:'data',t:'시간 분할',sub:'time-based split',
+      d:'과거 데이터로 학습하고 이후 기간으로 검증하는 방식.',
+      a:'작년 기출로 공부하고 올해 시험 보기.',
+      w:'시간에 따른 변화가 문제일 때 실제 상황과 비슷하게 평가할 수 있다.'},
+    {id:'dataversion',c:'data',t:'데이터 버전 · 스냅샷',sub:'dataset snapshot',
+      d:'어떤 데이터를 썼는지 고정해 둔 것. 불변 스냅샷이나 재구성 가능한 식별자.',
+      a:'그날 쓴 재료를 따로 떼어 냉동 보관하기.',
+      w:'데이터에 행 하나만 추가해도 학습 입력이 달라진다.',
+      n:'오늘도 내용이 바뀌는 폴더 이름은 재현 정보로 부족하다. 불변 스냅샷, 파일별 해시, 재구성 가능한 쿼리와 원천 버전이 필요하다.'},
+    {id:'hash',c:'data',t:'해시',sub:'SHA-256',
+      d:'파일 내용으로 계산한 고유 지문. 한 글자만 바뀌어도 완전히 달라진다.',
+      a:'재료의 지문. 경로가 냉장고 주소라면 해시는 그때 들어 있던 내용의 지문이다.',
+      x:'파일 이름은 같아도 내용이 바뀌면 다른 값이 나온다. 버전 정보 시트에 적어 두면 나중에 같은 원본인지 확인할 수 있다.',
+      w:'경로만으로는 그때의 내용을 알 수 없다.',
+      n:'해시는 내용을 복구해 주지 않는다. 원본 스냅샷도 보존해야 한다.'},
+    {id:'lineage',c:'data',t:'계보',sub:'lineage',core:true,
+      d:'모델에서 데이터, 코드, 설정, 실행까지 거슬러 올라가는 연결.'},
+    {id:'pit',c:'data',t:'point-in-time join',sub:'과거 시점 조인',
+      d:'지금의 최신 값이 아니라 학습 샘플의 기준 시점에 맞는 값을 붙이는 방식.',
+      a:'지난 학기 장학금을 다시 계산할 때 그 학기 말 성적을 쓰기.',
+      x:'날짜 조건이 붙은 VLOOKUP.',
+      w:'오전 10시 예측을 재구성하는데 오전 11시 값이 섞이면 미래 정보가 들어간다.',
+      n:'이벤트 시각과 값이 실제로 만들어진 시각도 구분해야 한다. 오전 9시 값이 오후에 보정됐다면 당시 쓸 수 있었는지 따로 확인한다.'},
+
+    {id:'platform',c:'platform',t:'ML 플랫폼',sub:'ML platform',core:true,
+      d:'실험, 학습, 배포, 관측을 반복하게 해 주는 공통 기반.'},
+    {id:'orchestration',c:'platform',t:'파이프라인 오케스트레이션',sub:'orchestration',
+      d:'데이터 준비, 학습, 평가, 배포 단계의 순서와 실행 의존성을 관리하는 것.',
+      a:'주방 작업 순서표.',
+      x:'파워 쿼리의 "적용된 단계"처럼 정해진 순서로 처리.',
+      w:'수동 순서와 누락을 줄이고 운영에서도 같은 절차를 재사용한다.',
+      l:'책은 Kubeflow Pipelines를 쓴다.',
+      n:'모델을 학습하는 알고리즘이 아니라 작업을 실행하고 잇는 쪽이다.'},
+    {id:'tracking',c:'platform',t:'실험 추적',sub:'experiment tracking',
+      d:'실행마다 파라미터, 지표, 산출물을 남기는 것.',
+      a:'실험 노트.',
+      x:'시도마다 조건과 결과를 한 행씩 쌓는 기록 시트.',
+      w:'어떤 조건에서 어떤 결과가 나왔는지 비교할 수 있다.',
+      l:'책은 MLflow를 쓴다.'},
+    {id:'registry',c:'platform',t:'모델 레지스트리',sub:'model registry',
+      d:'관리하고 서비스할 모델을 이름과 버전으로 등록하는 곳.',
+      a:'공식 레시피 금고.',
+      w:'실험 추적과 이어 두면 배포한 모델이 어느 실험에서 나왔는지 찾을 수 있다.'},
+    {id:'featurestore',c:'platform',t:'피처 스토어',sub:'feature store',
+      d:'모델 입력으로 쓸 특성값의 정의, 조회, 재사용을 관리하는 곳.',
+      a:'학습 주방과 매장 주방에 같은 손질 재료를 대는 공용 창고.',
+      w:'학습 때 계산한 특성을 실제 요청에서도 같은 의미로 제공해야 한다. 그래서 그림에서 선이 학습과 API 양쪽으로 이어진다.',
+      l:'책은 Feast를 쓴다.',
+      n:'넣었다고 학습과 서빙의 모든 차이가 사라지지는 않는다.'},
+    {id:'modelapi',c:'platform',t:'Model API',sub:'serving',
+      d:'사용자 요청을 받아 예측을 돌려주는 서비스 창구.',
+      a:'주문 창구.',
+      w:'모델을 실제로 쓰게 하는 접점이다.',
+      n:'REST API가 응답한다고 프로덕션 전환이 끝난 것은 아니다. 데이터 변화, 부하, 롤백도 고려한다.'},
+    {id:'monitoring',c:'platform',t:'모니터링',sub:'monitoring',
+      d:'부하, 오류, 데이터 변화, 예측 품질을 관측하는 것.',
+      a:'손님 반응 관찰.',
+      w:'관측 결과가 다음 개선과 재학습의 근거가 된다.'},
+    {id:'run',c:'platform',t:'run · experiment · artifact',sub:'MLflow 용어',
+      d:'run은 한 번의 실행, experiment는 관련 실행 묶음, artifact는 가중치나 그래프처럼 실행이 남긴 파일.',
+      a:'실험 노트의 한 페이지, 노트 한 권, 페이지에 붙인 사진.',
+      w:'모델 파일을 저장하는 것과 그 모델을 만든 과정을 추적하는 것은 다른 일이다.'},
+    {id:'buildbuy',c:'platform',t:'자체 구축 · 관리형 서비스',sub:'build vs buy',
+      d:'플랫폼을 직접 만들지, 클라우드 등의 관리형 서비스를 쓸지의 선택.',
+      a:'주방을 직접 짓기와 공유 주방 임대.',
+      w:'관리형은 구축 부담을 줄이지만 통합, 권한, 비용 관리가 남고, 자체 구축은 자유롭지만 업그레이드, 장애, 지원을 감당한다.',
+      n:'같은 요구사항과 기간으로 총비용을 비교한다. 학습을 위한 구축과 회사 도입 결정은 분리한다.'},
+    {id:'tco',c:'platform',t:'총비용',sub:'TCO',
+      d:'라이선스나 클라우드 청구서뿐 아니라 구축, 통합, 업그레이드, 온콜, 보안 검토, 사용자 지원, 이전 비용까지 합한 비용.',
+      a:'차 값뿐 아니라 보험, 정비, 기름값까지 더한 유지비.',
+      x:'구입가 한 셀이 아니라 비용 항목별 행을 같은 기간으로 SUM.',
+      n:'오픈소스의 무료 사용과 무료 운영은 다르다.'},
+
+    {id:'skew',c:'release',t:'학습·서빙 불일치',sub:'training-serving skew',core:true,
+      d:'학습 때와 서비스 때 입력 처리가 달라 같은 모델이 다른 입력을 받는 문제.'},
+    {id:'preprocessing',c:'release',t:'전처리',sub:'preprocessing',
+      d:'입력을 모델이 기대하는 형식으로 바꾸는 코드. 이미지 리사이즈, 픽셀 정규화, 좌표 변환 등.',
+      a:'재료 손질.',
+      w:'배포에는 가중치뿐 아니라 전처리와 응답을 만드는 코드가 함께 들어간다.',
+      l:'명세의 `preprocessing: resize-and-coordinate-transform-v1`.'},
+    {id:'manifest',c:'release',t:'출시 명세',sub:'release manifest',core:true,
+      d:'출시 하나를 이루는 코드, 데이터, 모델, 이미지, 평가, 롤백 대상의 조합.'},
+    {id:'releaseid',c:'release',t:'release_id',sub:'출시 조합 식별자',
+      d:'서비스 출시 조합 전체에 붙인 이름.',
+      a:'출고 번호.',
+      w:'무엇이 함께 나갔는지 한 이름으로 부를 수 있다.',
+      n:'모델 버전과 다르다. 모델이 그대로여도 좌표 복원 코드를 바꾸면 새 출시다.'},
+    {id:'modeluri',c:'release',t:'model_uri',sub:'models:/이름/버전',
+      d:'레지스트리에 등록된 모델 버전을 가리키는 주소.',
+      a:'레시피 금고의 칸 번호.',
+      w:'꼬리표가 아닌 구체적인 버전 번호로 적어야 나중에 같은 모델을 찾는다.',
+      l:'`models:/card-detector/3`.'},
+    {id:'imagedigest',c:'release',t:'image_digest',sub:'서빙 이미지 지문',
+      d:'서비스를 실행한 컨테이너 이미지 내용의 지문.',
+      a:'포장된 밀키트의 지문.',
+      w:'태그는 옮겨 붙을 수 있지만 digest는 내용이 같을 때만 같다.',
+      l:'자세한 건 03장의 tag와 digest 비교를 본다.'},
+    {id:'apicontract',c:'release',t:'API 계약',sub:'API contract',
+      d:'API가 무엇을 받고 무엇을 어떤 형식으로 돌려주는지 정한 약속.',
+      a:'주문서 양식과 배달 규칙.',
+      x:'다른 부서와 주고받는 시트의 열 순서, 단위, 빈 값 처리 규칙.',
+      w:'같은 상자라도 표현이 다르면 다른 위치로 잘린다.',
+      l:'좌표 기준(왼쪽 위·오른쪽 아래인지 중심인지), 원본과 리사이즈 중 어느 크기 기준인지, 카드가 없을 때의 응답까지 적는다.'},
+    {id:'bbox',c:'release',t:'좌표 표현',sub:'xyxy · YOLO',
+      d:'같은 상자를 꼭짓점 좌표(x1, y1, x2, y2)로도, 정규화한 중심과 크기(중심x, 중심y, 폭, 높이)로도 표현한다.',
+      a:'같은 건물을 "몇 번지부터 몇 번지"로도, "중심 위치와 가로세로 길이"로도 설명하기.',
+      w:'표현을 잘못 해석하면 모델을 바꾸지 않아도 틀린 크롭이 나온다.',
+      l:'1000×800 사진의 (100, 160, 900, 640)은 YOLO로 (0.5, 0.5, 0.8, 0.6).'},
+    {id:'reproducible',c:'release',t:'재현성',sub:'reproducibility',
+      d:'다른 사람이 같은 모델과 데이터를 찾아 같은 과정을 다시 할 수 있는 성질.',
+      a:'같은 레시피와 재료로 같은 요리를 다시 만들기.',
+      w:'결과를 설명하고 비교하고 고치려면 필요하다.',
+      n:'출시 명세는 무엇을 가져와야 하는지 식별하는 기준이지, 같은 숫자까지 재현했다는 뜻은 아니다. 난수, 라이브러리, 하드웨어 영향은 따로 검증한다.'},
+
+    {id:'llmops',c:'llm',t:'LLMOps',sub:'엘엘엠옵스',
+      d:'LLM 애플리케이션 운영. 버전, 배포, 모니터링에 문서 처리, 임베딩, 벡터 검색, 프롬프트, 답변 평가, 안전, 토큰 비용이 더해진다.',
+      a:'기존 공장에 고객 상담 창구를 새로 붙이기.',
+      w:'어떤 문서와 인덱스, 프롬프트, 모델 API 조합으로 답했는지 추적해야 한다.',
+      l:'책 후반부(12~13장)에서 자세히 다룬다.'},
+    {id:'embedding',c:'llm',t:'임베딩',sub:'embedding',
+      d:'문서나 질문을 의미가 담긴 숫자 목록(벡터)으로 표현하는 방식.',
+      a:'도서관 책마다 붙인 주제 좌표.',
+      w:'뜻이 비슷한 글을 숫자 거리로 비교할 수 있게 된다.'},
+    {id:'vectorsearch',c:'llm',t:'벡터 검색',sub:'vector search',
+      d:'임베딩끼리의 유사도로 관련 자료를 찾는 방식.',
+      a:'주제 좌표가 가까운 책을 꺼내 오기.',
+      w:'단어가 정확히 같지 않아도 의미가 비슷한 문서를 찾는다.'},
+    {id:'prompt',c:'llm',t:'프롬프트 · 토큰 비용',sub:'prompt · tokens',
+      d:'프롬프트는 모델에 주는 지시문, 토큰 비용은 주고받은 글자 양에 따라 드는 비용.',
+      a:'주문서 문구와 글자 수만큼 붙는 요금.',
+      w:'문구가 바뀌면 답이 바뀌고, 길이가 늘면 비용이 는다. 둘 다 버전 관리 대상이다.'},
+    {id:'projects',c:'llm',t:'책의 세 프로젝트',sub:'신분증 · 추천 · DakkaBot',
+      d:'신분증 이미지의 카드 위치 탐지, 사용자·영화 평점 기반 추천, 사내 문서를 검색해 답하는 DakkaBot.',
+      a:'데이터는 달라도 같은 공장 라인(준비 → 실행 → 검증 → 배포 → 관측 → 개선)을 쓰는 세 제품.',
+      w:'기능 이름보다 실제 입력, 출력, 실패 비용을 구분해서 비교한다.',
+      l:'신분증은 라벨·좌표·영상 분할, 추천은 시점·식별자·새 사용자, DakkaBot은 문서 최신성·권한·근거·토큰 비용이 쟁점.'},
+    {id:'objdet',c:'llm',t:'객체 탐지 · OCR',sub:'object detection · OCR',
+      d:'객체 탐지는 사진에서 물체 위치를 찾는 것, OCR은 글자를 읽는 것.',
+      a:'서랍에서 카드를 찾아 꺼내기와 카드에 적힌 글 읽기.',
+      w:'문제 범위를 좁혀야 라벨과 평가 기준을 정할 수 있다.',
+      n:'첫 프로젝트는 OCR이라는 넓은 맥락 안에 있지만 학습 대상은 카드 위치 탐지다.'},
+
+    {id:'mleng',c:'role',t:'ML 엔지니어 역량',sub:'ML engineering',
+      d:'소프트웨어 엔지니어링, ML·통계 이해, 데이터 엔지니어링, 인프라·자동화를 잇는 능력.',
+      a:'요리, 재료, 설비를 모두 이해하는 주방장.',
+      w:'예측 오류가 코드 버그인지, 데이터 오류인지, 모델 한계인지, 인프라 장애인지부터 좁혀야 한다.',
+      l:'카드를 못 찾는 원인이 회전 정보 누락일 수도, 새 카메라일 수도, 모델 로딩 실패로 다른 버전이 도는 것일 수도 있다.',
+      n:'한 사람이 모든 영역의 전문가일 필요는 없다. 같은 실행 흐름을 보며 책임과 연결 지점을 합의하는 게 먼저다.'},
+    {id:'boundary',c:'role',t:'플랫폼 경계와 책임',sub:'ownership',
+      d:'플랫폼이 제공하는 기능, 모델팀의 품질, 데이터팀의 입력, 업무팀의 출시 승인을 나눈 것.',
+      a:'공용 주방 관리팀, 요리사, 재료 공급처, 매장 점장의 역할 분담.',
+      w:'플랫폼팀이 수집부터 업무 성과까지 다 책임진다고 하면 경계가 끝없이 커진다.',
+      l:'"누가 변경을 승인하는가?"도 먼저 정할 질문이다.'},
+    {id:'bizmetric',c:'role',t:'모델 지표와 업무 결과',sub:'business outcome',
+      d:'모델 점수와 실제 업무 성과는 다를 수 있다.',
+      a:'시식 점수와 실제 매출.',
+      w:'처리 시간을 줄여도 카드 누락이나 잘못된 승인 같은 손실이 늘면 성공이 아니다.',
+      l:'재촬영이 120장에서 70장으로 줄어도 잘못 자른 40장을 넘기면 재촬영 비율 하나로 판단할 수 없다.',
+      n:'구체적인 허용치는 업무 담당자와 정할 값이다. 모든 모델에 통하는 정답은 없다.'}
+  ];
+
+  var byId = {};
+  TERMS.forEach(function(t){ byId[t.id] = t; });
+  var state = {cat:'all', q:'', expanded:false};
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var qEl = document.getElementById('q');
+  var toggleEl = document.getElementById('toggleAll');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'); }
+  function renderChips(){
+    var html = '<button type="button" class="chip" data-cat="all" aria-pressed="'+(state.cat==='all')+'">전체</button>';
+    Object.keys(CATS).forEach(function(k){
+      html += '<button type="button" class="chip" data-cat="'+k+'" style="--cat:var(--c-'+k+')" aria-pressed="'+(state.cat===k)+'"><i class="dot"></i>'+CATS[k].name+' <span style="opacity:.7">'+CATS[k].hint+'</span></button>';
+    });
+    chipsEl.innerHTML = html;
+  }
+  function matches(t){
+    if(state.cat!=='all' && t.c!==state.cat) return false;
+    if(!state.q) return true;
+    return [t.t,t.sub,t.d,t.a,t.w,t.x,t.l,t.n].join(' ').toLowerCase().indexOf(state.q) !== -1;
+  }
+  function row(label, val, cls){
+    if(!val) return '';
+    return '<div'+(cls?' class="'+cls+'"':'')+'><dt>'+label+'</dt><dd>'+fmt(val)+'</dd></div>';
+  }
+  function renderList(){
+    var items = TERMS.filter(matches);
+    var openAll = state.expanded || (state.q && items.length <= 4);
+    var html = items.map(function(t){
+      var body = t.core
+        ? '<dl>'+row('한 줄로', t.d)+'</dl><div class="go"><button type="button" class="textbtn" data-term="'+t.id+'">핵심 카드에서 자세히 보기 →</button></div>'
+        : '<dl>'+row('비유', t.a)+row('왜 필요해', t.w)+row('엑셀로 치면', t.x, 'excel')+row('이번 장에서', t.l)+row('주의', t.n, 'warn')+'</dl>';
+      return '<details class="term" id="t-'+t.id+'" style="--cat:var(--c-'+t.c+')"'+(openAll?' open':'')+'>'+
+        '<summary><span class="t-head"><span class="t-name">'+esc(t.t)+'</span><span class="t-sub">'+esc(t.sub||'')+'</span></span>'+
+        '<span class="t-right"><span class="cat-tag">'+(t.core?'핵심 · ':'')+CATS[t.c].name+'</span><i class="chev" aria-hidden="true"></i></span>'+
+        '<span class="t-d">'+fmt(t.core?CATS[t.c].hint+' 구역의 핵심 용어':t.d)+'</span></summary>'+
+        '<div class="t-body">'+body+'</div></details>';
+    }).join('');
+    if(!items.length){ html = '<p class="empty">"'+esc(qEl.value)+'"와 맞는 용어가 없어요. 영어 이름이나 다른 말로 찾아보세요.</p>'; }
+    listEl.innerHTML = html;
+    countEl.textContent = (state.cat==='all' && !state.q) ? '용어 '+TERMS.length+'개' : items.length+'개 / 전체 '+TERMS.length+'개';
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  }
+  function flash(el){
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 1900);
+  }
+  function openTerm(id){
+    var t = byId[id]; if(!t) return;
+    var el;
+    if(t.core){ el = document.getElementById('core-'+id); }
+    else {
+      el = document.getElementById('t-'+id);
+      if(!el){ state.cat='all'; state.q=''; qEl.value=''; renderChips(); renderList(); el = document.getElementById('t-'+id); }
+      if(el) el.open = true;
+    }
+    if(!el) return;
+    el.scrollIntoView({behavior: reduced?'auto':'smooth', block:'start'});
+    flash(el);
+  }
+
+  /* box converter */
+  function n(id){ var v = parseFloat(document.getElementById(id).value); return isFinite(v) ? v : NaN; }
+  function r(v){ return Math.round(v*1000)/1000; }
+  function updateBox(){
+    var W=n('imgW'),H=n('imgH'),x1=n('bx1'),y1=n('by1'),x2=n('bx2'),y2=n('by2');
+    var xy=document.getElementById('outXY'), yo=document.getElementById('outYolo'), note=document.getElementById('boxNote');
+    if([W,H,x1,y1,x2,y2].some(isNaN) || W<=0 || H<=0 || x2<=x1 || y2<=y1 || x1<0 || y1<0 || x2>W || y2>H){
+      xy.textContent='–'; yo.textContent='–';
+      note.textContent='상자가 사진 안에 있고, 오른쪽 아래 좌표가 왼쪽 위보다 커야 합니다. 이런 범위 검사도 데이터 준비 단계의 일이에요.';
+      return;
+    }
+    var cx=r((x1+x2)/2/W), cy=r((y1+y2)/2/H), bw=r((x2-x1)/W), bh=r((y2-y1)/H);
+    xy.textContent='('+x1+', '+y1+', '+x2+', '+y2+')';
+    yo.textContent='('+cx+', '+cy+', '+bw+', '+bh+')';
+    note.textContent='YOLO 라벨의 앞 두 값 ('+cx+', '+cy+')을 왼쪽 위 좌표로 잘못 읽으면 x '+Math.round(cx*W)+', y '+Math.round(cy*H)+'부터 잘라 냅니다. 모델을 바꾸지 않고도 틀린 크롭이 나오는 거예요.';
+  }
+
+  /* hash demo */
+  var ORIG = 'image,label\ncard-001,card\n';
+  var origHash = null;
+  function hex(buf){ return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join(''); }
+  function sha(text){
+    if(!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.reject(new Error('no-subtle'));
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(hex);
+  }
+  function short(h){ return h.slice(0,16)+'…'; }
+  function updateHash(){
+    var txt = document.getElementById('csv').value.replace(/\r\n/g,'\n');
+    var v = document.getElementById('hVerdict');
+    Promise.all([origHash ? Promise.resolve(origHash) : sha(ORIG), sha(txt)]).then(function(res){
+      origHash = res[0];
+      document.getElementById('hOrig').textContent = short(res[0]);
+      document.getElementById('hNow').textContent = short(res[1]);
+      var same = res[0] === res[1];
+      v.className = 'verdict ' + (same ? 'ok' : 'no');
+      v.textContent = 'Matches: ' + (same ? 'True · 기록한 내용과 같습니다' : 'False · 이름은 같은데 내용이 바뀌었습니다');
+    }).catch(function(){
+      document.getElementById('hOrig').textContent = '–'; document.getElementById('hNow').textContent = '–';
+      v.className = 'verdict'; v.textContent = '이 브라우저 환경에서는 해시를 계산할 수 없어요. 원문 코드를 PC에서 실행해 보세요.';
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-term]');
+    if(b){ e.preventDefault(); openTerm(b.getAttribute('data-term')); return; }
+    var c = e.target.closest('.chip');
+    if(c){ state.cat = c.getAttribute('data-cat'); renderChips(); renderList(); }
+  });
+  ['imgW','imgH','bx1','by1','bx2','by2'].forEach(function(id){ document.getElementById(id).addEventListener('input', updateBox); });
+  document.getElementById('csv').addEventListener('input', updateHash);
+  document.getElementById('addRow').addEventListener('click', function(){
+    var ta = document.getElementById('csv'); var v = ta.value;
+    if(v && v.slice(-1) !== '\n') v += '\n';
+    ta.value = v + 'card-002,no-card\n'; updateHash();
+  });
+  document.getElementById('resetCsv').addEventListener('click', function(){ document.getElementById('csv').value = ORIG; updateHash(); });
+  qEl.addEventListener('input', function(){ state.q = qEl.value.trim().toLowerCase(); renderList(); });
+  toggleEl.addEventListener('click', function(){
+    state.expanded = !state.expanded;
+    listEl.querySelectorAll('details.term').forEach(function(d){ d.open = state.expanded; });
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  });
+  renderChips(); renderList(); updateBox(); updateHash();
+})();
+</script>
+</body>
+</html>

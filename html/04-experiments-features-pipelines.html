@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>MLOps 04장 용어 풀이</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 모바일 한 열. 공장 지도 → 핵심 6 → 헷갈리는 짝 → 검색 가능한 용어 사전 → 실습 순서 */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --ink:#15201E; --muted:#56635F; --line:#D3DBD8;
+  --accent:#0B6E69; --soft:#E2EEEB; --mark:rgba(232,178,27,.40); --warn:#8F6200;
+  --c-stage:#2F6DB5; --c-build:#7A4FB8; --c-store:#8C6A2E; --c-lab:#2C8A57;
+  --c-pantry:#B9512A; --c-line:#0B6E69; --c-desk:#5B6770;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --nav-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+    --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+    --c-stage:#7EA9E6; --c-build:#B595E6; --c-store:#D2B06E; --c-lab:#6CCB95;
+    --c-pantry:#EE8F64; --c-line:#4CC2B9; --c-desk:#A7B3BB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+  --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+  --c-stage:#7EA9E6; --c-build:#B595E6; --c-store:#D2B06E; --c-lab:#6CCB95;
+  --c-pantry:#EE8F64; --c-line:#4CC2B9; --c-desk:#A7B3BB;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.68;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:5px;word-break:break-all}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + var(--nav-h) + 12px)}
+h1,h2{font-family:var(--f-display);font-weight:400;text-wrap:balance;letter-spacing:-.01em}
+.mark{background:linear-gradient(transparent 55%,var(--mark) 55%);padding:0 .1em}
+
+/* header */
+header.wrap{padding-block:28px 18px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:0 0 8px}
+h1{font-size:clamp(31px,8.4vw,46px);line-height:1.14;margin:0 0 14px}
+.lede{font-size:17px;margin:0 0 10px;max-width:60ch}
+.how{font-size:14.5px;color:var(--muted);margin:0}
+
+/* sticky nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{flex:none;font-size:14px;font-weight:500;padding:6px 13px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink);text-decoration:none;background:var(--surface);white-space:nowrap}
+.nav a:active{background:var(--soft)}
+
+section.wrap{padding-block:34px 6px}
+h2{font-size:clamp(25px,6.6vw,32px);line-height:1.2;margin:0 0 6px}
+.sec-lead{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:62ch}
+
+/* factory map */
+.map{display:grid;gap:10px}
+.zone{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);min-width:0}
+.zone-label{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.zone-label .hint{font-weight:400;color:var(--muted);font-size:13px}
+.zone.cluster{border:1.5px dashed var(--accent);background:var(--soft);display:grid;gap:10px}
+.zone.cluster>.zone-label{margin-bottom:0}
+.zone.outside{border-style:dashed;background:transparent}
+.zone-note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.nodes{display:flex;flex-wrap:wrap;gap:6px}
+.node{display:inline-flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left}
+.node .k{font-size:12.5px;font-weight:400;color:var(--muted)}
+.node:active,.station:active{background:var(--soft)}
+.node.big{font-size:15px;border-color:var(--accent);color:var(--accent)}
+.tunnel{display:grid;justify-items:center;gap:6px;padding-block:2px}
+.tunnel .node{border-style:dashed}
+.ports{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.ports b{color:var(--ink);font-weight:500}
+.dept{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px;min-width:0}
+.dept-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-weight:700;font-size:14.5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cat);flex:none}
+.stations{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.station{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);cursor:pointer;text-align:left;font-size:14px;font-weight:600}
+.st{font-family:var(--f-mono);font-size:12px;font-weight:500;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:var(--cat);color:var(--surface);flex:none}
+.buckets{display:flex;flex-wrap:wrap;gap:5px}
+.buckets button{font-family:var(--f-mono);font-size:12px;padding:3px 8px;border-radius:6px;border:1px dashed var(--line);background:var(--bg);cursor:pointer}
+@media (min-width:600px){.stations{grid-template-columns:repeat(4,1fr)}}
+
+/* core cards */
+.core-grid{display:grid;gap:14px}
+.core{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;min-width:0}
+.core-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:6px}
+.core-name{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.core-full{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.core-top .cat-tag{margin-left:auto}
+.core-one{font-size:17px;font-weight:600;margin:0 0 14px}
+dl{margin:0;display:grid;gap:12px}
+dl>div{min-width:0}
+dt{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.03em;margin-bottom:2px}
+dd{margin:0}
+.excel dd{background:var(--soft);padding:8px 11px;border-radius:8px}
+.warn dt{color:var(--warn)}
+
+.cat-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--cat);
+  background:color-mix(in srgb,var(--cat) 13%,transparent)}
+
+/* pairs */
+.pairs{display:grid}
+.pair{padding-block:16px;border-top:1px solid var(--line)}
+.pair:last-child{border-bottom:1px solid var(--line)}
+.pair h3{font-size:17.5px;margin:0 0 10px;line-height:1.35}
+.vs{color:var(--muted);font-weight:400;padding-inline:4px}
+.pair-grid{display:grid;gap:8px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.side p{margin:2px 0 0;font-size:15px}
+.side-name{font-weight:700;font-size:14.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.side-name.static{color:var(--ink);text-decoration:none;cursor:default}
+.pair-key{margin:10px 0 0;font-size:15px}
+.pair-key b{font-weight:700;margin-right:6px}
+@media (min-width:520px){.pair-grid{grid-template-columns:1fr 1fr}}
+
+/* glossary */
+.tools{display:grid;gap:10px;margin-bottom:6px}
+.search{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:7px;height:7px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list-bar{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);padding-block:6px}
+.textbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 0}
+.term-list{border-top:1px solid var(--line)}
+details.term{border-bottom:1px solid var(--line)}
+details.term>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding-block:13px}
+details.term>summary::-webkit-details-marker{display:none}
+.t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.t-name{font-weight:700;font-size:17px}
+.t-sub{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.t-d{grid-column:1/-1;color:var(--muted);font-size:15px}
+.t-right{display:flex;align-items:center;gap:8px;align-self:start}
+.chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+details[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.t-body{padding:2px 0 16px}
+.t-body dl{gap:10px}
+.go{margin-top:2px;font-size:14px}
+.empty{padding:22px 0;color:var(--muted)}
+
+/* flow */
+.flow{list-style:none;margin:0;padding:0}
+.flow li{position:relative;padding:0 0 22px 46px}
+.flow li::before{content:attr(data-step);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:14px;background:var(--accent);color:var(--surface)}
+.flow li::after{content:"";position:absolute;left:15px;top:36px;bottom:4px;border-left:2px dotted var(--line)}
+.flow li:last-child::after{display:none}
+.flow h3{margin:3px 0 4px;font-size:17.5px}
+.flow p{margin:0 0 6px;font-size:15px}
+.flow .left{font-size:14px;color:var(--muted)}
+.flow .left b{color:var(--ink);font-weight:600}
+.flow .nodes{margin-top:8px}
+.flow .node{font-size:13px;padding:4px 9px;font-weight:500}
+
+footer.wrap{padding-block:30px 40px;color:var(--muted);font-size:13.5px}
+footer a{color:var(--accent)}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,30%{background:var(--mark)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){
+  .flash{animation:none;outline:2px solid var(--accent);outline-offset:4px}
+  .chev{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">머신러닝 플랫폼 엔지니어링 · 04장 실험, 피처, 파이프라인</p>
+  <h1>04장 용어를 공장으로 풀어 보기</h1>
+  <p class="lede">04장 실습은 사용자 3만 명의 소득 등급을 한꺼번에 예측하는 <span class="mark">예측 공장</span>을 내 PC 안에 짓는 과정입니다. 용어마다 공장 안에서 어떤 자리를 맡는지 보면 왜 필요한지가 보입니다.</p>
+  <p class="how">지도나 카드에서 용어 이름을 누르면 설명으로 바로 이동합니다.</p>
+</header>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap nav-inner">
+    <a href="#map">공장 지도</a>
+    <a href="#core">핵심 6</a>
+    <a href="#pairs">헷갈리는 짝</a>
+    <a href="#dict">용어 사전</a>
+    <a href="#flow">실습 순서</a>
+  </div>
+</nav>
+
+<main>
+<section class="wrap" id="map">
+  <h2>공장 지도</h2>
+  <p class="sec-lead">실습이 끝났을 때 내 PC 안에 서 있는 것들입니다. 위에서 아래로 내 책상, 공장으로 가는 터널, 공장 안 부서 순서예요.</p>
+
+  <div class="map">
+    <div class="zone">
+      <div class="zone-label">내 PC <span class="hint">내 책상</span></div>
+      <div class="nodes">
+        <button class="node" data-term="jupyter">JupyterLab <span class="k">4장 노트북</span></button>
+        <button class="node" data-term="venv">가상환경 <span class="k">공구함</span></button>
+        <button class="node" data-term="image">이미지 빌드 <span class="k">도시락 포장</span></button>
+        <button class="node" data-term="docker">Docker <span class="k">모든 것의 바닥</span></button>
+      </div>
+    </div>
+
+    <div class="tunnel">
+      <button class="node" data-term="portforward">포트포워딩 터널 <span class="k">PC ↔ 공장 직통선</span></button>
+      <div class="ports"><span><b>8080</b> KFP</span><span><b>5000</b> MLflow</span><span><b>8888</b> 저장소 화면</span><span><b>9000</b> S3</span><span><b>6379</b> Redis</span></div>
+    </div>
+
+    <div class="zone cluster">
+      <div class="zone-label">
+        <button class="node big" data-term="kind">kind 클러스터</button>
+        <span class="hint">내 PC 속 미니어처 공장. 안에서는 <button class="node" data-term="k8s" style="padding:2px 7px;font-size:13px">Kubernetes</button> 가 관리한다</span>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-line)">
+        <div class="dept-head"><i class="dot"></i>생산 라인 <button class="node" data-term="kfp">KFP</button></div>
+        <ol class="stations">
+          <li><button class="station" data-term="component"><span class="st">1</span>대상 읽기</button></li>
+          <li><button class="station" data-term="pit"><span class="st">2</span>피처 받기</button></li>
+          <li><button class="station" data-term="stage"><span class="st">3</span>모델로 예측</button></li>
+          <li><button class="station" data-term="batch"><span class="st">4</span>결과 저장</button></li>
+        </ol>
+        <div class="nodes">
+          <button class="node" data-term="argowf">반장 <span class="k">Argo Workflows</span></button>
+          <button class="node" data-term="pod">작업자 <span class="k">Pod</span></button>
+          <button class="node" data-term="pipelineroot">임시 선반 <span class="k">mlpipeline</span></button>
+          <button class="node" data-term="mysql">작업 장부 <span class="k">MySQL</span></button>
+        </div>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-lab)">
+        <div class="dept-head"><i class="dot"></i>연구실 <button class="node" data-term="mlflow">MLflow</button></div>
+        <div class="nodes">
+          <button class="node" data-term="run">실험 노트 <span class="k">Run</span></button>
+          <button class="node" data-term="registry-ml">공식 레시피 금고 <span class="k">Model Registry</span></button>
+          <button class="node" data-term="postgres">장부 <span class="k">PostgreSQL</span></button>
+        </div>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-pantry)">
+        <div class="dept-head"><i class="dot"></i>재료실 <button class="node" data-term="feast">Feast</button></div>
+        <div class="nodes">
+          <button class="node" data-term="registry-feast">재료 목록 대장 <span class="k">Registry</span></button>
+          <button class="node" data-term="offline">큰 창고 <span class="k">Offline store</span></button>
+          <button class="node" data-term="redis">계산대 냉장고 <span class="k">Redis</span></button>
+        </div>
+      </div>
+
+      <div class="dept" style="--cat:var(--c-store)">
+        <div class="dept-head"><i class="dot"></i>창고 <button class="node" data-term="s3">S3</button><button class="node" data-term="seaweedfs">SeaweedFS</button></div>
+        <div class="buckets" aria-label="버킷 목록">
+          <button data-term="bucket">mlflow-datasets</button>
+          <button data-term="bucket">mlflow-artifacts</button>
+          <button data-term="bucket">feature-data-sets</button>
+          <button data-term="bucket">feature-registry</button>
+          <button data-term="bucket">inference-datasets</button>
+          <button data-term="bucket">mlpipeline</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="zone outside">
+      <div class="zone-label">책에서만 쓰는 건설 감독 <span class="hint">이 실습 환경에는 없음</span></div>
+      <div class="nodes">
+        <button class="node" data-term="argocd">Argo CD</button>
+        <button class="node" data-term="gitops">GitOps</button>
+        <button class="node" data-term="kubeflow">Kubeflow 전체</button>
+      </div>
+      <p class="zone-note">책은 Argo CD를 고용해 Kubeflow 전체를 짓습니다. 이 실습은 감독 없이 생산 라인(KFP)만 직접 들여놓았어요.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="core">
+  <h2>핵심 6</h2>
+  <p class="sec-lead">질문하신 kind, GitOps, Argo CD, KFP와 04장의 두 주인공 MLflow, Feast입니다. 이 여섯 개만 잡히면 나머지는 거의 부품 이름이에요.</p>
+
+  <div class="core-grid">
+    <article class="core" id="core-kind" style="--cat:var(--c-stage)">
+      <div class="core-top"><span class="core-name">kind</span><span class="core-full">Kubernetes IN Docker</span><span class="cat-tag">공장 부지</span></div>
+      <p class="core-one">내 PC의 Docker 안에 연습용 쿠버네티스 클러스터를 만드는 도구.</p>
+      <dl>
+        <div><dt>비유</dt><dd>진짜 공장 부지를 사는 대신, 방 안에 실제로 돌아가는 미니어처 공장을 차리는 것. 기계 구조와 규칙은 진짜와 같고 크기만 작습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>쿠버네티스는 원래 서버 여러 대가 필요합니다. kind를 쓰면 노트북 한 대로 연습하고, 망가지면 지우고 다시 만들 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>원본은 그대로 두고 연습용 사본 파일을 만들어 마음껏 고쳐 보는 것.</dd></div>
+        <div><dt>이번 실습에서</dt><dd><code>book-env</code>라는 kind 클러스터에 KFP, MLflow, 저장소, PostgreSQL, Redis를 올립니다. <code>python bookenv.py up</code>으로 만들고 <code>down</code>으로 지워요. 책은 k3s나 MicroK8s를 씁니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>kind는 PC와 분리된 별도 컴퓨터처럼 움직입니다. PC에서 만든 이미지도 <code>bookenv.py load</code>로 안에 넣어 줘야 쓸 수 있어요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-gitops" style="--cat:var(--c-build)">
+      <div class="core-top"><span class="core-name">GitOps</span><span class="core-full">Git + Operations</span><span class="cat-tag">공장 짓기</span></div>
+      <p class="core-one">Git에 적힌 설정을 정답으로 삼는 운영 방식. 서버를 손으로 바꾸지 않고 Git의 설정 파일을 고치면 서버가 그대로 따라갑니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>매장 배치를 바꿀 때 현장 직원이 즉흥적으로 옮기지 않고, 본사 설계도를 고치면 시공팀이 설계도대로 맞추는 방식. 설계도에는 수정 이력이 남습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>누가 언제 무엇을 바꿨는지 Git에 남고, 문제가 생기면 이전 설계도로 되돌리면 됩니다. 손으로 고친 설정이 쌓여 아무도 이유를 모르는 상태가 되는 걸 막아요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>공유 폴더의 원본 서식 파일만 고치고, 각 부서 파일은 원본을 따라 자동으로 바뀌게 하는 규칙.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>책 부록 A가 이 방식으로 Kubeflow를 설치합니다. 이 실습은 GitOps 없이 <code>bookenv.py</code> 스크립트로 직접 설치해요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>GitOps는 도구 이름이 아니라 방식입니다. 그 방식을 실제로 해 주는 도구가 Argo CD예요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-argocd" style="--cat:var(--c-build)">
+      <div class="core-top"><span class="core-name">Argo CD</span><span class="core-full">Argo Continuous Delivery</span><span class="cat-tag">공장 짓기</span></div>
+      <p class="core-one">GitOps를 실행하는 도구. Git의 설정과 클러스터의 실제 상태를 계속 비교하고, 다르면 Git 쪽에 맞춥니다(동기화).</p>
+      <dl>
+        <div><dt>비유</dt><dd>설계도를 들고 현장을 순찰하는 건설 감독. 설계도와 다른 곳을 찾으면 설계도대로 고쳐 놓습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>Kubeflow처럼 부품이 수십 개인 시스템을 한 번에 설치하고, 이후에도 설계도와 어긋나지 않게 유지할 수 있어요.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>책은 <code>kubectl apply -k argocd/</code>로 Argo CD를 먼저 설치하고 <code>kubectl apply -f kubeflow.yaml</code>을 실행합니다. 그러면 Argo CD가 Kubeflow 구성 요소별 Application을 배포하고 동기화해요. 이 실습 환경에는 Argo CD가 없습니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>Argo Workflows와 이름만 비슷하고 하는 일이 다릅니다. Kubeflow를 설치한다고 Argo CD가 자동으로 생기지도 않아요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-kfp" style="--cat:var(--c-line)">
+      <div class="core-top"><span class="core-name">KFP</span><span class="core-full">Kubeflow Pipelines</span><span class="cat-tag">생산 라인</span></div>
+      <p class="core-one">머신러닝 작업을 여러 단계로 나눠 순서대로 실행하고, 실행 기록을 남기는 도구.</p>
+      <dl>
+        <div><dt>비유</dt><dd>공장의 생산 라인. ① 주문서(예측 대상) 읽기 → ② 재료(피처) 받기 → ③ 공식 레시피(모델)로 만들기 → ④ 창고에 넣기. 작업대마다 다른 작업자(Pod)가 서 있고, 결과물은 상자(파일)에 담아 다음 작업대로 넘깁니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>노트북 셀을 손으로 누르면 순서를 틀리기 쉽고 기록도 남지 않습니다. KFP는 단계와 순서를 정해 두고 매번 같은 방식으로 돌리며, 어느 단계에서 실패했는지 화면에 보여 줘요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>파워 쿼리의 "적용된 단계". 단계를 정해 두면 새로 고칠 때마다 같은 순서로 처리됩니다. 다른 점은 단계마다 다른 작업자가 일한다는 것.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>kind에 KFP 2.4.1만 단독 설치하고, 4단계 배치 추론 파이프라인을 돌려 <code>income_predictions.parquet</code>를 만듭니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>5장 파이프라인은 학습을 하지 않습니다. 4장에서 등록한 모델과 Feast 정의를 가져다 예측만 해요. 그래서 MLflow와 Feast 단계를 먼저 끝내야 합니다.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-mlflow" style="--cat:var(--c-lab)">
+      <div class="core-top"><span class="core-name">MLflow</span><span class="core-full">실험 기록과 모델 보관</span><span class="cat-tag">연구실</span></div>
+      <p class="core-one">모델 실험을 기록하고, 고른 모델을 이름과 버전으로 보관하는 도구. 학습 알고리즘이 아닙니다.</p>
+      <dl>
+        <div><dt>비유</dt><dd>연구실의 실험 노트와 공식 레시피 금고. 어떤 설정으로 몇 번 구웠고 맛 점수가 몇 점이었는지 적고, 가장 좋은 레시피를 "공식 레시피 v1"로 금고에 넣습니다.</dd></div>
+        <div><dt>왜 필요해</dt><dd>어떤 데이터와 설정으로 만든 모델인지 나중에 찾을 수 있고, 다른 프로그램이 이름만으로 그 모델을 꺼내 쓸 수 있어요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd>"보고서_최종_진짜최종_v3.xlsx" 대신, 파일 이름은 하나로 두고 버전 번호와 작성 조건이 자동으로 기록되는 것.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>실험 <code>income-classifier</code>에 run 4개를 기록하고, 가장 좋은 Random Forest(ROC AUC 0.855)를 <code>random-forest-classifier</code> 버전 1로 등록해 Production으로 지정합니다.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>기록 정보는 PostgreSQL에, 모델 파일은 S3에 있습니다. MLflow 화면이 열려도 S3 연결이 끊기면 모델을 받을 수 없어요.</dd></div>
+      </dl>
+    </article>
+
+    <article class="core" id="core-feast" style="--cat:var(--c-pantry)">
+      <div class="core-top"><span class="core-name">Feast</span><span class="core-full">Feature Store</span><span class="cat-tag">재료실</span></div>
+      <p class="core-one">모델에 넣을 피처(입력값)를 정의하고, 학습과 예측 때 같은 기준으로 꺼내 주는 피처 스토어.</p>
+      <dl>
+        <div><dt>비유</dt><dd>재료실. "손님 42번 재료를 5월 22일 기준으로 주세요" 하면 그날 있던 재료를 내줍니다. 계산대 옆 냉장고(Redis)에는 바로 꺼낼 최신 재료를 따로 둬요.</dd></div>
+        <div><dt>왜 필요해</dt><dd>학습 때와 예측 때 피처를 다르게 만들면 같은 모델도 엉뚱한 답을 냅니다. 과거 시점을 예측하는데 최신값을 쓰면 미래 정보가 섞여요.</dd></div>
+        <div class="excel"><dt>엑셀로 치면</dt><dd><code>user_id</code>를 기준키로 여러 시트의 열을 붙이는 VLOOKUP인데, 날짜 기준까지 맞춰 주는 VLOOKUP.</dd></div>
+        <div><dt>이번 실습에서</dt><dd>Entity <code>user_id</code>와 FeatureView 3개(demographic, relationship, occupation)를 등록하고 과거 조회와 온라인 조회를 해 봅니다. 5장 파이프라인의 2단계가 Feast로 피처를 가져와요.</dd></div>
+        <div class="warn"><dt>주의</dt><dd>MLflow는 "어떤 모델을 만들었나", Feast는 "모델이 쓸 피처를 어디서 어떤 기준으로 가져오나"를 맡습니다. 책의 학습 노트북은 CSV를 직접 읽고 Feast를 거치지 않아요.</dd></div>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="pairs">
+  <h2>헷갈리는 짝</h2>
+  <p class="sec-lead">원문이 일부러 "둘은 다르다"고 짚은 것들입니다. 실습 중 막히는 곳은 대부분 여기서 나와요.</p>
+  <div class="pairs">
+    <article class="pair">
+      <h3>Argo CD <span class="vs">↔</span> Argo Workflows</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="argocd">Argo CD</button><p>공장을 설계도대로 짓고 유지하는 건설 감독. 설치·배포 담당.</p></div>
+        <div class="side"><button class="side-name" data-term="argowf">Argo Workflows</button><p>생산 라인에서 작업자를 순서대로 부르는 반장. KFP의 실행 엔진.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">KFP를 깔면 Argo Workflows는 따라오지만, Argo CD는 따로 설치해야 합니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>Kubeflow <span class="vs">↔</span> KFP</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="kubeflow">Kubeflow</button><p>대시보드, 노트북, 인증, Istio, Pipelines까지 든 종합 세트.</p></div>
+        <div class="side"><button class="side-name" data-term="kfp">KFP</button><p>그중 파이프라인 부분. 단독 설치(standalone)도 됩니다.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">책은 Kubeflow 전체, 이 실습은 KFP만 씁니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>MLflow 실험 <span class="vs">↔</span> KFP 실험</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="experiment">MLflow Experiment</button><p>학습 run을 묶습니다. "어떤 모델을 만들었나".</p></div>
+        <div class="side"><button class="side-name" data-term="kfprun">KFP Experiment</button><p>파이프라인 실행을 묶습니다. "생산 라인을 언제 돌렸나".</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">둘 다 이름이 income-classifier지만 서로 아무 관계가 없습니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>feast apply <span class="vs">↔</span> materialize</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="apply">feast apply</button><p>재료 목록표(정의)를 대장(Registry)에 등록. 재료는 안 옮깁니다.</p></div>
+        <div class="side"><button class="side-name" data-term="materialize">materialize</button><p>실제 값을 냉장고(Redis)에 채워 넣기.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Registry에 FeatureView가 보여도 Redis에 값이 있다는 뜻은 아닙니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>과거 시점 조회 <span class="vs">↔</span> 온라인 조회</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="pit">과거 시점 조회</button><p>큰 창고에서 기준 시각의 "그때 값"을 찾기. 학습과 과거 날짜 배치 예측용.</p></div>
+        <div class="side"><button class="side-name" data-term="online">온라인 조회</button><p>냉장고(Redis)에서 최신값을 빠르게. 실시간 예측용.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">5장 배치 추론은 과거 시각 기준이라 <code>get_historical_features()</code>를 씁니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>localhost <span class="vs">↔</span> 클러스터 서비스 주소</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="localhost">localhost</button><p>"나 자신". PC에서 쓰면 PC, Pod 안에서 쓰면 그 Pod.</p></div>
+        <div class="side"><button class="side-name" data-term="service">서비스 주소</button><p><code>이름.구역.svc.cluster.local</code>. 공장 어디서 걸어도 같은 곳으로 가는 내선번호.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">PC는 포트포워딩 터널로, Pod는 서비스 주소로 접속합니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>파라미터 <span class="vs">↔</span> 아티팩트</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="paramart">파라미터</button><p>지시서에 적는 짧은 값. 모델 이름, 버킷 이름.</p></div>
+        <div class="side"><button class="side-name" data-term="paramart">아티팩트</button><p>다음 작업대로 보내는 파일. 대상 목록, 피처 표, 예측 결과.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">Pod끼리 메모리를 공유하지 않아서 큰 데이터는 파일로 넘깁니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>컴파일 <span class="vs">↔</span> 실행</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="compile">컴파일</button><p>파이썬 정의를 YAML 지시서로 옮겨 적기. 아직 아무것도 돌지 않습니다.</p></div>
+        <div class="side"><button class="side-name" data-term="kfprun">실행(Run)</button><p>지시서대로 Pod가 뜨고 실제 데이터를 읽습니다.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">이미지 이름, 주소, 권한 문제는 실행해 봐야 드러납니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>Production 지정 <span class="vs">↔</span> 배포</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="stage">Production 지정</button><p>MLflow에서 "이 버전이 공식"이라는 꼬리표를 붙이는 일.</p></div>
+        <div class="side"><span class="side-name static">배포</span><p>모델을 API 서버로 띄워 요청을 받게 하는 일.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">꼬리표를 붙여도 서버는 뜨지 않습니다. 5장 파이프라인이 꼬리표로 모델을 찾을 뿐이에요.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>PC의 이미지 <span class="vs">↔</span> kind 안의 이미지</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="image">PC의 이미지</button><p><code>docker build</code>로 내 PC에 만든 도시락.</p></div>
+        <div class="side"><button class="side-name" data-term="kind">kind 안의 이미지</button><p>공장 안으로 반입한 도시락. Pod는 이것만 씁니다.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">다시 빌드하면 <code>bookenv.py load</code>로 다시 넣어야 합니다. 안 넣으면 <code>ErrImageNeverPull</code>.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>MinIO <span class="vs">↔</span> SeaweedFS</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="minio">MinIO</button><p>책이 쓰는 S3 방식 창고. 콘솔 로그인 minio / minio123.</p></div>
+        <div class="side"><button class="side-name" data-term="seaweedfs">SeaweedFS</button><p>이 실습이 대신 넣은 창고. 웹 화면은 로그인 없는 Filer.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">서비스 이름과 계정을 그대로 둬서 책 코드는 고치지 않아도 됩니다.</span></p>
+    </article>
+
+    <article class="pair">
+      <h3>실행 성공 <span class="vs">↔</span> 예측 품질</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">실행 성공</span><p>네 단계가 모두 초록 체크. 파일이 끝까지 전달됐다는 뜻.</p></div>
+        <div class="side"><span class="side-name static">예측 품질</span><p>예측이 맞는지, 누구의 예측인지, 임계값이 적절한지.</p></div>
+      </div>
+      <p class="pair-key"><b>핵심</b><span class="mark">책 코드의 결과에는 <code>user_id</code>가 빠져 있습니다. 초록 체크는 품질 보증이 아니에요.</span></p>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="dict">
+  <h2>용어 사전</h2>
+  <p class="sec-lead">원문에 나오는 용어를 공장 구역별로 모았습니다. 항목을 누르면 비유, 필요한 이유, 이번 실습에서 쓰이는 곳이 펼쳐져요.</p>
+  <div class="tools">
+    <input id="q" class="search" type="search" aria-label="용어 검색" placeholder="용어 찾기 (예: Redis, 버킷, 누설)" autocomplete="off" enterkeyhint="search">
+    <div class="chips" id="chips" role="group" aria-label="구역 고르기"></div>
+  </div>
+  <div class="list-bar"><span id="count"></span><button class="textbtn" id="toggleAll" type="button">모두 펼치기</button></div>
+  <div class="term-list" id="list"></div>
+</section>
+
+<section class="wrap" id="flow">
+  <h2>실습 순서와 등장 용어</h2>
+  <p class="sec-lead">원문의 A~E 순서입니다. 앞 단계가 끝나야 다음 단계가 돌아가요. 칩을 누르면 해당 용어로 이동합니다.</p>
+  <ol class="flow">
+    <li data-step="A">
+      <h3>환경과 버킷 준비</h3>
+      <p>kind 클러스터에 KFP, 저장소, PostgreSQL, Redis, MLflow를 설치하고, 포트포워딩을 켠 뒤 버킷 다섯 개를 만듭니다.</p>
+      <p class="left"><b>끝나면 남는 것</b> 서비스들과 버킷 다섯 개, 그리고 KFP가 만든 mlpipeline</p>
+      <div class="nodes">
+        <button class="node" data-term="kind">kind</button><button class="node" data-term="standalone">KFP standalone</button><button class="node" data-term="seaweedfs">SeaweedFS</button><button class="node" data-term="postgres">PostgreSQL</button><button class="node" data-term="redis">Redis</button><button class="node" data-term="portforward">포트포워딩</button><button class="node" data-term="bucket">버킷</button><button class="node" data-term="venv">가상환경</button>
+      </div>
+    </li>
+    <li data-step="B">
+      <h3>MLflow로 학습과 모델 등록</h3>
+      <p>노트북에서 데이터를 S3에 올리고 모델 세 개를 학습해 기록한 뒤, 가장 좋은 모델을 등록하고 Production으로 지정합니다.</p>
+      <p class="left"><b>끝나면 남는 것</b> 실험 income-classifier, 모델 random-forest-classifier의 Production 버전</p>
+      <div class="nodes">
+        <button class="node" data-term="experiment">Experiment</button><button class="node" data-term="run">Run</button><button class="node" data-term="metric">Metric</button><button class="node" data-term="artifact">Artifact</button><button class="node" data-term="registry-ml">Model Registry</button><button class="node" data-term="stage">Production</button><button class="node" data-term="onehot">원-핫 인코딩</button>
+      </div>
+    </li>
+    <li data-step="C">
+      <h3>Feast로 피처 정의와 조회</h3>
+      <p>피처 원천 파일을 올리고 정의를 등록(apply)한 뒤, 과거 시점 조회와 온라인 적재(materialize), 온라인 조회를 해 봅니다.</p>
+      <p class="left"><b>끝나면 남는 것</b> 원천 parquet, 로컬용 Registry, Redis의 온라인 피처</p>
+      <div class="nodes">
+        <button class="node" data-term="entity">Entity</button><button class="node" data-term="featureview">FeatureView</button><button class="node" data-term="apply">feast apply</button><button class="node" data-term="pit">과거 시점 조회</button><button class="node" data-term="materialize">materialize</button><button class="node" data-term="online">Online store</button><button class="node" data-term="fsyaml">feature_store.yaml</button>
+      </div>
+    </li>
+    <li data-step="D">
+      <h3>KFP로 배치 추론</h3>
+      <p>이미지를 빌드해 kind에 넣고, Job으로 클러스터용 Registry를 만든 뒤 파이프라인을 컴파일, 업로드, 실행합니다.</p>
+      <p class="left"><b>끝나면 남는 것</b> 클러스터용 Registry와 설정, 파이프라인 실행 기록</p>
+      <div class="nodes">
+        <button class="node" data-term="image">이미지</button><button class="node" data-term="job">Job</button><button class="node" data-term="compile">컴파일</button><button class="node" data-term="component">컴포넌트</button><button class="node" data-term="paramart">파라미터와 아티팩트</button><button class="node" data-term="service">서비스 주소</button><button class="node" data-term="argowf">Argo Workflows</button>
+      </div>
+    </li>
+    <li data-step="E">
+      <h3>결과 확인과 정리</h3>
+      <p>예측 파일이 업무용 버킷에 저장됐는지 보고, 실패했다면 해당 단계의 Logs부터 확인합니다.</p>
+      <p class="left"><b>끝나면 남는 것</b> <code>inference-datasets/income_predictions.parquet</code></p>
+      <div class="nodes">
+        <button class="node" data-term="batch">배치 추론</button><button class="node" data-term="parquet">parquet</button><button class="node" data-term="pipelineroot">pipeline root</button><button class="node" data-term="leak">데이터 누설</button>
+      </div>
+    </li>
+  </ol>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>이전 장: <a href="03-kubernetes-foundation.html" target="_blank" rel="noopener">MLOps 03장 용어 풀이</a></p>
+  <p>원문: <a href="https://johklo.github.io/docs/tech/machine-learning-platform-engineering/04-experiments-features-pipelines/" target="_blank" rel="noopener">04. 실험, 피처, 파이프라인 연결하기</a>. 숫자와 명령은 원문 기준이고, 공장 비유와 엑셀 예시는 이해를 돕기 위해 단순화한 것입니다.</p>
+</footer>
+
+<script>
+(function(){
+  var CATS = {
+    stage:{name:'공장 부지', hint:'클러스터 기반'},
+    build:{name:'공장 짓기', hint:'설치·배포'},
+    store:{name:'창고와 장부', hint:'저장소'},
+    lab:{name:'연구실', hint:'MLflow'},
+    pantry:{name:'재료실', hint:'Feast'},
+    line:{name:'생산 라인', hint:'KFP'},
+    desk:{name:'내 PC', hint:'작업 도구'}
+  };
+  var TERMS = [
+    {id:'docker',c:'stage',t:'Docker · 컨테이너',sub:'Docker',
+      d:'프로그램과 실행에 필요한 것을 한 상자에 담아 어디서든 똑같이 돌리는 기술.',
+      a:'재료, 양념, 조리법이 다 들어 있는 밀키트. 누구 부엌에서 만들어도 같은 맛이 난다.',
+      w:'"내 PC에서는 되는데 서버에서는 안 돼요" 문제를 막는다. 파이썬 버전과 라이브러리까지 상자째 옮기기 때문.',
+      l:'Docker에 메모리 8GB 이상을 할당한다. kind 클러스터 자체도 Docker 컨테이너 안에서 돈다.'},
+    {id:'image',c:'stage',t:'컨테이너 이미지',sub:'image',
+      d:'컨테이너를 찍어 내는 원본 틀. 이미지 하나로 컨테이너를 몇 개든 만들 수 있다.',
+      a:'밀키트 포장 설계도. 공장은 이 설계대로 밀키트를 계속 찍어 낸다.',
+      w:'KFP의 각 단계는 "어떤 이미지로 작업자를 만들지"가 정해져 있어야 실행된다.',
+      l:'`book-ch5/components:0.1`, `book-ch5/feast-job:0.1`을 docker build로 만든다. 책은 Docker Hub에 올리지만 여기서는 `bookenv.py load`로 kind 안에 바로 넣는다.'},
+    {id:'k8s',c:'stage',t:'Kubernetes',sub:'k8s · 쿠버네티스',
+      d:'여러 컨테이너를 어디에 몇 개 띄울지 정하고, 멈추면 다시 살려 주는 관리 시스템.',
+      a:'공장 관리 본부. "작업자 3명 필요"라고 적어 두면 사람을 배치하고, 누가 쓰러지면 대신할 사람을 넣는다.',
+      w:'서비스가 수십 개가 되면 사람이 일일이 켜고 끌 수 없다. 원하는 상태만 적어 두면 쿠버네티스가 그 상태를 유지한다.',
+      l:'KFP, MLflow, 저장소, PostgreSQL, Redis가 모두 쿠버네티스 위에서 돈다.'},
+    {id:'kind',c:'stage',t:'kind',sub:'Kubernetes IN Docker',core:true,
+      d:'내 PC의 Docker 안에 연습용 쿠버네티스 클러스터를 만드는 도구. 방 안의 미니어처 공장.'},
+    {id:'k3s',c:'stage',t:'k3s · MicroK8s',sub:'가벼운 쿠버네티스',
+      d:'작은 서버에서도 돌도록 가볍게 만든 실제 쿠버네티스 배포판.',
+      a:'kind가 방 안의 미니어처 공장이라면, k3s는 작지만 진짜 땅 위에 지은 공장.',
+      w:'서버 한두 대로 실제 운영에 가까운 클러스터를 만들 때 쓴다.',
+      l:'책 부록 A는 k3s나 MicroK8s에 설치한다. 이 실습은 노트북 한 대로 하려고 kind를 쓴다.'},
+    {id:'pod',c:'stage',t:'Pod',sub:'파드',
+      d:'쿠버네티스에서 컨테이너가 실제로 돌아가는 가장 작은 단위.',
+      a:'공장의 작업자 한 명. 맡은 일을 하고, 일이 끝나면 퇴근(종료)하기도 한다.',
+      w:'쿠버네티스는 컨테이너를 Pod 단위로 배치하고 관리한다.',
+      l:'KFP의 네 단계가 각각 다른 Pod에서 돈다. 앞 Pod의 메모리를 뒤 Pod가 볼 수 없어서 결과를 파일로 넘긴다.'},
+    {id:'namespace',c:'stage',t:'Namespace',sub:'네임스페이스',
+      d:'클러스터 안을 칸막이로 나눈 구역.',
+      a:'공장 안의 부서. 같은 이름의 직원이 있어도 부서가 다르면 다른 사람이다.',
+      w:'서비스가 많아지면 이름이 겹치고 권한을 나누기 어렵다. 구역별로 묶어서 관리한다.',
+      l:'`kubeflow`, `mlflow` 같은 구역이 있다. 명령의 `-n kubeflow`는 "kubeflow 구역에서"라는 뜻.'},
+    {id:'service',c:'stage',t:'Service · 서비스 주소',sub:'svc.cluster.local',
+      d:'Pod 묶음에 붙이는 고정 이름과 주소. Pod는 다시 뜰 때마다 주소가 바뀌어서 고정 창구가 필요하다.',
+      a:'담당자가 바뀌어도 그대로인 부서 대표 내선번호.',
+      w:'Pod끼리 서로를 찾으려면 바뀌지 않는 주소가 있어야 한다.',
+      l:'`mlflow-service.mlflow.svc.cluster.local:5000`은 "mlflow 구역의 mlflow-service, 5000번"이라는 뜻. 파이프라인 Pod는 이 주소로 MLflow에 접속한다.'},
+    {id:'kubectl',c:'stage',t:'kubectl',sub:'큐브컨트롤',
+      d:'쿠버네티스에 명령을 내리는 명령줄 도구.',
+      a:'공장 관리 본부로 거는 업무용 전화기.',
+      w:'설치, 조회, 로그 확인을 모두 이 도구로 한다.',
+      l:'`kubectl apply -f feast-job.yaml`은 "이 설정대로 만들어라", `kubectl logs job/feast-job`은 "작업 일지를 보여 달라".'},
+    {id:'manifest',c:'stage',t:'매니페스트 · YAML',sub:'manifest',
+      d:'쿠버네티스에 "이런 상태를 만들어 달라"고 적은 설정 파일. 보통 YAML 형식으로 쓴다.',
+      a:'공장에 내는 주문서 한 장.',
+      w:'원하는 상태를 파일로 남겨 두면 똑같이 다시 만들 수 있고, Git으로 이력도 관리할 수 있다.',
+      l:'`feast-job.yaml`, PostgreSQL·Redis 설치 파일이 매니페스트다. KFP 파이프라인 YAML도 같은 YAML 형식이지만 쿠버네티스가 아니라 KFP가 읽는 실행 명세다.'},
+    {id:'job',c:'stage',t:'Job',sub:'쿠버네티스 Job',
+      d:'한 번 실행하고 끝나는 작업을 위한 쿠버네티스 단위.',
+      a:'상주 직원이 아니라 하루 일하고 끝나는 단기 아르바이트.',
+      w:'초기 설정처럼 한 번만 하면 되는 일을 클러스터 안에서 실행할 때 쓴다.',
+      l:'`feast-job`이 클러스터 안에서 feast apply를 한 번 실행해 클러스터용 Registry를 만든다. 다시 하려면 기존 Job을 지우고 적용한다.'},
+    {id:'helm',c:'stage',t:'Helm 차트',sub:'Helm chart',
+      d:'쿠버네티스에 무언가를 설치할 때 필요한 설정 파일들을 묶은 설치 꾸러미.',
+      a:'부품과 설명서가 함께 든 조립 가구 키트.',
+      w:'PostgreSQL 하나를 설치해도 매니페스트가 여러 장 필요하다. 차트로 받으면 값 몇 개만 바꿔 한 번에 설치한다.',
+      l:'책은 Bitnami Helm 차트로 PostgreSQL과 Redis를 설치한다. 이 실습은 같은 서비스 이름을 쓰는 매니페스트로 대신한다.'},
+
+    {id:'gitops',c:'build',t:'GitOps',sub:'Git + Operations',core:true,
+      d:'Git에 적힌 설정을 정답으로 삼고, 서버가 그 설정을 따라가게 하는 운영 방식.'},
+    {id:'argocd',c:'build',t:'Argo CD',sub:'Argo Continuous Delivery',core:true,
+      d:'Git의 설정과 클러스터 상태를 비교해 맞춰 주는 GitOps 도구. 설계도를 든 건설 감독.'},
+    {id:'application',c:'build',t:'Application',sub:'Argo CD의 배포 단위',
+      d:'"Git의 이 폴더를 클러스터의 이 위치와 똑같이 맞춰라"라는 Argo CD의 관리 단위.',
+      a:'감독이 들고 다니는 구역별 설계도 한 장.',
+      w:'큰 시스템을 부품별로 나눠 각각 동기화 상태를 확인하고 고칠 수 있다.',
+      l:'책 방식에서는 Kubeflow의 구성 요소마다 Application이 하나씩 생긴다.'},
+    {id:'kubeflow',c:'build',t:'Kubeflow',sub:'큐브플로',
+      d:'쿠버네티스 위에서 머신러닝을 하기 위한 도구 모음 세트.',
+      a:'연구동, 사무동, 출입 관리, 생산 라인까지 다 갖춘 종합 공장 패키지.',
+      w:'ML에 필요한 노트북, 파이프라인, 대시보드, 인증을 한곳에서 쓸 수 있다.',
+      l:'책은 Kubeflow 전체(Istio, 인증, 대시보드, Notebooks 포함)를 설치한다. 이 실습은 그중 Pipelines만 쓴다.'},
+    {id:'standalone',c:'build',t:'KFP standalone',sub:'단독 설치',
+      d:'Kubeflow 전체 없이 Pipelines 부분만 따로 설치하는 방식.',
+      a:'종합 공장 대신 생산 라인만 들여놓기.',
+      w:'가볍고 설치가 빠르다. 노트북 한 대의 kind 클러스터에 맞는 크기다.',
+      l:'kind에 KFP standalone 2.4.1을 설치한다. MySQL, 저장소, Argo Workflows가 함께 깔린다.'},
+    {id:'istio',c:'build',t:'Istio',sub:'서비스 메시',
+      d:'서비스끼리 주고받는 통신과 출입을 관리하는 도구.',
+      a:'공장 출입 게이트와 사내 통신망 관리실.',
+      w:'여러 사용자가 쓰는 Kubeflow에서 로그인과 접근 권한을 관리하는 데 쓰인다.',
+      l:'책의 Kubeflow 전체 설치에 들어 있다. 이 실습 환경에는 없다.'},
+
+    {id:'s3',c:'store',t:'S3 · 오브젝트 저장소',sub:'S3 API',
+      d:'파일을 버킷에 넣고 경로 이름으로 꺼내는 저장 방식. 원래 AWS 서비스 이름인데, 사용법(S3 API)이 사실상 표준이 됐다.',
+      a:'칸마다 이름표가 붙은 대형 물류 창고.',
+      w:'데이터, 모델, 결과 파일을 여러 도구가 같은 방식으로 주고받을 수 있다.',
+      l:'학습 CSV, 모델, parquet가 전부 여기에 있다. 주소는 `s3://버킷이름/파일` 형태.'},
+    {id:'bucket',c:'store',t:'버킷',sub:'bucket',
+      d:'S3 창고의 최상위 칸.',
+      a:'창고 안의 구역. 구역 이름만 봐도 무엇이 들었는지 알 수 있게 나눈다.',
+      x:'파일을 용도별 최상위 폴더로 나눠 두는 것과 같다.',
+      w:'학습 데이터, 모델, 피처, 예측 결과를 섞지 않고 도구별 책임을 나눈다.',
+      l:'직접 만드는 5개(mlflow-datasets, mlflow-artifacts, feature-data-sets, feature-registry, inference-datasets)와 KFP가 만드는 mlpipeline. 이름에 밑줄(_)을 쓸 수 없어서 책의 `feature_data_sets`는 `feature-data-sets`로 맞춘다.'},
+    {id:'minio',c:'store',t:'MinIO',sub:'미니오',
+      d:'내 서버에 직접 설치하는 S3 호환 창고 프로그램.',
+      a:'AWS 창고와 똑같은 방식으로 쓰는 우리 공장 전용 창고.',
+      w:'클라우드 없이도 S3 방식으로 파일을 저장할 수 있다.',
+      l:'책이 쓰는 저장소. KFP에 포함되지만 실습용 버킷까지 만들어 주지는 않는다. 계정은 minio / minio123.'},
+    {id:'seaweedfs',c:'store',t:'SeaweedFS',sub:'시위드FS',
+      d:'역시 S3 방식으로 쓸 수 있는 저장소 프로그램.',
+      a:'간판(서비스 이름)은 그대로 두고 안의 창고 시스템만 바꾼 것.',
+      w:'KFP 2.4.1이 쓰는 옛 MinIO 이미지를 받을 수 없어서 대신 넣었다. KFP 공식 문서도 2.15부터 기본 저장소로 SeaweedFS를 안내한다.',
+      l:'서비스 이름(minio-service)과 계정은 그대로라 코드를 고칠 필요가 없다. 웹 화면(Filer)은 로그인이 없고, `/buckets/` 아래 폴더 하나가 버킷 하나다.'},
+    {id:'postgres',c:'store',t:'PostgreSQL',sub:'포스트그레스',
+      d:'표 형태로 데이터를 저장하는 관계형 데이터베이스.',
+      a:'칸이 잘 정리된 공식 장부.',
+      x:'여러 시트가 키로 연결된 큰 통합 문서와 비슷하다.',
+      w:'run 기록이나 모델 버전처럼 검색하고 서로 연결해야 하는 정보를 안전하게 보관한다.',
+      l:'MLflow가 run과 모델 버전의 메타데이터를 여기 저장한다. 모델 파일 자체는 S3에 있다.'},
+    {id:'mysql',c:'store',t:'MySQL',sub:'마이에스큐엘',
+      d:'PostgreSQL과 같은 종류의 관계형 데이터베이스.',
+      a:'생산 라인 전용 작업 장부.',
+      w:'KFP가 파이프라인, 실행, 실험 기록을 저장하는 데 쓴다.',
+      l:'KFP와 함께 설치된다. 설치 중 `ml-pipeline`이 MySQL이 준비되길 기다리며 몇 번 재시작할 수 있다.'},
+    {id:'redis',c:'store',t:'Redis',sub:'레디스',
+      d:'데이터를 메모리에 올려 두고 아주 빠르게 읽는 키-값 저장소.',
+      a:'계산대 바로 옆 냉장고. 자주 쓰는 최신 재료만 넣어 두고 바로 꺼낸다.',
+      w:'실시간 예측처럼 아주 짧은 시간 안에 값을 꺼내야 할 때 쓴다.',
+      l:'Feast의 온라인 저장소. 비밀번호는 redis123으로 맞춘다.'},
+    {id:'parquet',c:'store',t:'parquet',sub:'파케이',
+      d:'표 데이터를 열 단위로 압축해 저장하는 파일 형식.',
+      a:'CSV를 차곡차곡 압축해 담은 업무용 상자.',
+      x:'CSV보다 작고 빠르며, 숫자·날짜 같은 열 형식이 그대로 유지되는 표 파일.',
+      w:'수만 행 이상의 표를 빠르게 읽고 쓸 수 있다.',
+      l:'피처 원천, 예측 대상(`entity_df.parquet`), 최종 결과가 parquet다. 텍스트로 열면 `PAR1` 같은 깨진 글자가 보이는데 정상이다.'},
+
+    {id:'mlflow',c:'lab',t:'MLflow',sub:'실험 기록과 모델 보관',core:true,
+      d:'모델 실험을 기록하고 고른 모델을 이름과 버전으로 보관하는 도구. 연구실의 실험 노트와 레시피 금고.'},
+    {id:'experiment',c:'lab',t:'Experiment',sub:'MLflow 실험',
+      d:'같은 목적의 run을 묶어 두는 폴더.',
+      a:'"소득 예측 레시피 개발"이라는 제목의 실험 노트 한 권.',
+      w:'여러 번 돌린 결과를 한곳에서 비교할 수 있다.',
+      l:'`income-classifier`. KFP에도 같은 이름의 실험을 만들지만 둘은 별개다.'},
+    {id:'run',c:'lab',t:'Run',sub:'실행 기록',
+      d:'학습을 한 번 돌린 기록. `start_run()`으로 열고 그 안에서 학습하고 기록한다.',
+      a:'실험 노트의 한 페이지.',
+      w:'어떤 설정으로 돌렸고 결과가 어땠는지 페이지 단위로 남는다.',
+      l:'데이터 탐색 1개와 Decision Tree, Random Forest, XGBoost 3개, 모두 4개.'},
+    {id:'param',c:'lab',t:'Parameter',sub:'파라미터',
+      d:'실행할 때 정한 설정값.',
+      a:'오븐 온도와 굽는 시간.',
+      w:'점수가 왜 달라졌는지 설명하려면 설정이 남아 있어야 한다.',
+      l:'트리 깊이 같은 모델 설정.'},
+    {id:'metric',c:'lab',t:'Metric',sub:'지표',
+      d:'실행 결과를 숫자로 잰 점수.',
+      a:'시식단이 매긴 맛 점수.',
+      w:'모델끼리 비교하고 가장 좋은 것을 고르는 기준이 된다.',
+      l:'`roc_auc_score_test`. 이번 실행에서 Random Forest 0.855, Decision Tree 약 0.817, XGBoost 0.714. ROC AUC는 0.5면 찍기 수준이고 1에 가까울수록 좋다. 분할이 무작위라 다시 돌리면 조금씩 다르다.'},
+    {id:'artifact',c:'lab',t:'Artifact',sub:'아티팩트',
+      d:'실행에서 남긴 파일. 모델 파일, 그래프, 열 목록 등.',
+      a:'실험 사진과 완성품 샘플.',
+      w:'나중에 모델을 다시 꺼내 쓰려면 파일 자체가 어딘가에 남아 있어야 한다.',
+      l:'모델, 그래프, `column_list.pkl`이 `mlflow-artifacts` 버킷에 저장된다. KFP에서도 단계 사이에 넘기는 파일을 아티팩트라고 부른다.'},
+    {id:'metadata',c:'lab',t:'메타데이터',sub:'metadata',
+      d:'데이터에 대한 데이터. 파일 자체가 아니라 그 파일의 이름, 버전, 만든 시각, 점수 같은 정보.',
+      a:'창고 물건에 붙은 송장과 재고 대장.',
+      w:'정보(장부)와 실물(창고)을 나눠 두면 각각에 맞는 저장소를 쓸 수 있다.',
+      l:'MLflow의 메타데이터는 PostgreSQL, 실물 모델 파일은 S3. 그래서 MLflow 화면이 열려도 S3 연결이 끊기면 모델 업로드나 다운로드가 실패할 수 있다.'},
+    {id:'registry-ml',c:'lab',t:'Model Registry',sub:'모델 레지스트리',
+      d:'고른 모델에 이름과 버전을 붙여 관리하는 곳.',
+      a:'공식 레시피 금고. 레시피마다 어느 실험 페이지에서 나왔는지 적혀 있다.',
+      x:'"보고서_v3_최종.xlsx" 대신 이름은 하나로 두고 버전 번호만 올리는 방식.',
+      w:'다른 프로그램이 "random-forest-classifier의 Production 버전"처럼 이름만으로 모델을 찾을 수 있다.',
+      l:'`random-forest-classifier` 버전 1. 원천 run과 연결돼 있다. Feast의 Registry와는 다른 것이다.'},
+    {id:'stage',c:'lab',t:'Stage · Production',sub:'모델 꼬리표',
+      d:'모델 버전에 붙이는 상태 꼬리표(Staging, Production 등). MLflow 3에서는 stage가 폐지 예정이라 경고가 뜬다.',
+      a:'금고 속 레시피에 붙인 "현재 공식" 스티커.',
+      w:'파이프라인이 버전 번호 대신 "Production"으로 모델을 찾을 수 있다.',
+      l:'책에는 빠져 있지만 5장의 `model_stage`가 이 값을 찾으므로 직접 지정한다. 지정했다고 API 서버가 배포되지는 않는다. 꼬리표는 나중에 다른 버전으로 옮겨질 수 있어서, 운영에서는 실제로 쓴 버전 번호(`models:/이름/숫자`)를 기록하는 편이 좋다.'},
+    {id:'onehot',c:'lab',t:'원-핫 인코딩',sub:'column_list.pkl',
+      d:'직업처럼 글자로 된 범주를 0과 1로 된 여러 열로 펼치는 변환.',
+      a:'"직업" 칸 하나를 "교사인가?", "간호사인가?" 같은 예/아니오 칸 여러 개로 나누기.',
+      x:'한 열을 범주 수만큼 0/1 열로 펼친 표. 열 순서가 바뀌면 VLOOKUP 열 번호가 어긋나는 것과 같은 사고가 난다.',
+      w:'모델은 글자를 계산할 수 없어서 숫자로 바꿔야 한다. 학습과 예측의 열 순서가 다르면 엉뚱한 칸을 읽는다.',
+      l:'학습 때 열 목록을 `column_list.pkl`로 모델과 함께 저장하고, 5장 추론 단계가 이를 내려받아 같은 순서로 맞춘다.'},
+
+    {id:'feature',c:'pantry',t:'피처',sub:'feature',
+      d:'모델에 넣는 입력값 하나.',
+      a:'요리에 들어가는 재료 하나.',
+      x:'표의 열 하나. 성별, 학력, 직업 같은 열이 각각 피처다.',
+      w:'모델은 피처만 보고 판단한다. 같은 피처를 같은 방식으로 넣어야 같은 답이 나온다.',
+      l:'Sex, Race, Native_country, Relationship, Marital-Status, Workclass, Education, Occupation.'},
+    {id:'feast',c:'pantry',t:'Feast',sub:'Feature Store',core:true,
+      d:'피처를 정의하고 학습과 예측 때 같은 기준으로 꺼내 주는 피처 스토어. 날짜까지 맞춰 주는 재료실.'},
+    {id:'entity',c:'pantry',t:'Entity',sub:'엔티티',
+      d:'"누구의 값인가"를 가리키는 조인 키.',
+      a:'재료 상자에 붙은 손님 번호표.',
+      x:'VLOOKUP의 찾을 값. 학번으로 여러 시트의 정보를 붙이는 것과 같다.',
+      w:'여러 원천에 흩어진 피처를 한 사람 기준으로 모으려면 공통 키가 필요하다.',
+      l:'`user_id`.'},
+    {id:'datasource',c:'pantry',t:'Data source',sub:'원천',
+      d:'피처 값이 실제로 있는 곳. 위치, 시간 필드, 접속 정보를 함께 정의한다.',
+      a:'재료를 받아 오는 산지 목록.',
+      w:'Feast는 값을 직접 만들지 않는다. 어디서 읽을지 알아야 한다.',
+      l:'S3 `feature-data-sets` 버킷의 parquet 3개.'},
+    {id:'featureview',c:'pantry',t:'FeatureView',sub:'피처 뷰',
+      d:'한 원천에서 오는 피처 묶음의 정의. 피처 이름과 타입, Entity, 유효 기간(TTL)을 적는다.',
+      a:'재료 선반 하나에 붙은 목록표.',
+      x:'값 없이 머리글 행만 있는 시트. 값은 원천에 있다.',
+      w:'피처를 묶음으로 관리하면 조회할 때 `demographic:Sex`처럼 짧게 부를 수 있다.',
+      l:'demographic, relationship, occupation 세 개.'},
+    {id:'registry-feast',c:'pantry',t:'Registry (Feast)',sub:'피처 정의 대장',
+      d:'Entity와 FeatureView 정의를 모아 둔 장부 파일.',
+      a:'재료실의 목록 대장. 재료 자체가 아니라 "어떤 재료가 어느 선반에 있는지"만 적혀 있다.',
+      w:'노트북과 파이프라인이 같은 대장을 보면 같은 피처 정의를 쓰게 된다.',
+      l:'PC용 `registry_local.db`와 클러스터용 `registry.db` 두 개가 `feature-registry` 버킷에 생긴다. MLflow의 Model Registry와는 다른 것이다.'},
+    {id:'fsyaml',c:'pantry',t:'feature_store.yaml',sub:'Feast 설정 파일',
+      d:'Registry 위치, 온라인 저장소 주소 같은 Feast 접속 설정.',
+      a:'재료실 출입 안내문. 대장은 어디 있고 냉장고는 어디 있는지 적혀 있다.',
+      w:'어디서 실행하느냐에 따라 주소가 달라서 설정 파일이 따로 필요하다.',
+      l:'PC용(localhost)과 클러스터용(`feature_store_k8s.yaml`)을 따로 둔다. PC용을 덮어쓰지 않으려고 이름을 바꿨다.'},
+    {id:'offline',c:'pantry',t:'Offline store',sub:'오프라인 저장소',
+      d:'과거 피처 이력을 모두 담은 저장소.',
+      a:'날짜별 입고 기록이 다 남은 대형 창고.',
+      w:'학습이나 과거 날짜 기준 배치 예측에서 "그때의 값"을 찾을 때 쓴다.',
+      l:'`feature-data-sets` 버킷의 parquet.'},
+    {id:'online',c:'pantry',t:'Online store',sub:'온라인 저장소',
+      d:'최신 피처 값만 빠르게 꺼낼 수 있게 둔 저장소.',
+      a:'계산대 옆 냉장고.',
+      w:'실시간 예측은 기다려 줄 시간이 없다. 큰 창고를 뒤질 수 없으니 최신값을 가까이 둔다.',
+      l:'Redis. `materialize`를 해야 값이 채워진다. 비어 있으면 조회 결과가 None으로 나온다.'},
+    {id:'apply',c:'pantry',t:'feast apply',sub:'정의 등록',
+      d:'Entity와 FeatureView 정의를 Registry에 등록하는 명령.',
+      a:'재료 목록표를 대장에 올리기. 재료를 옮기지는 않는다.',
+      w:'정의가 등록돼야 조회와 적재를 할 수 있다.',
+      l:'`s3://feature-registry/registry_local.db`에 기록되고 "Deploying infrastructure" 세 줄이 나온다. 이때 Redis에는 아직 값이 없다.'},
+    {id:'materialize',c:'pantry',t:'materialize',sub:'온라인 적재',
+      d:'원천의 최신값을 온라인 저장소로 옮겨 담는 명령.',
+      a:'창고에서 오늘 쓸 재료를 꺼내 냉장고 채우기.',
+      w:'온라인 조회는 냉장고(Redis)만 본다. 채우지 않으면 값이 비어 있다.',
+      l:'2022-09-16부터 2023-09-17까지 원천을 읽어 Redis에 넣는다.'},
+    {id:'pit',c:'pantry',t:'과거 시점 조회',sub:'point-in-time · get_historical_features',
+      d:'각 행의 기준 시각에 "그때 알 수 있었던 값"을 붙이는 조회.',
+      a:'지난 학기 장학금을 다시 계산할 때는 그 학기 말 성적을 써야 한다. 오늘 성적을 쓰면 안 된다.',
+      x:'날짜 조건이 붙은 VLOOKUP. "기준 날짜 이전 값 중 가장 최근 값"을 찾는다.',
+      w:'과거 시점을 예측하는데 최신값을 쓰면 미래 정보가 섞여 점수가 부풀려진다.',
+      l:'사용자 42의 근무 시간이 5/21에 36, 6/4에 52라면 5/22 기준 조회는 36을 돌려준다. 5장 파이프라인도 이 방식으로 피처를 가져온다.'},
+    {id:'leak',c:'pantry',t:'데이터 누설',sub:'leakage',
+      d:'예측하는 시점에는 몰랐을 정보가 학습이나 평가에 섞이는 것.',
+      a:'시험 전에 답안지를 본 학생. 모의고사 점수는 높지만 실전에서 무너진다.',
+      w:'누설이 있으면 실험 점수만 좋고 실제 서비스에서는 성능이 나오지 않는다.',
+      l:'시간 필드 하나 넣는다고 다 막히지 않는다. 늦게 도착한 데이터는 "실제로 알게 된 시각"까지 따져야 한다.'},
+    {id:'ttl',c:'pantry',t:'TTL',sub:'Time To Live · 유효 기간',
+      d:'피처 값을 믿고 쓸 수 있는 기간.',
+      a:'우유 유통기한.',
+      w:'너무 오래된 값을 최신인 척 쓰지 않게 막는다.',
+      l:'TTL이 2일이면 5/25 조회에서 5/21 값은 기한이 지나 빠진다.'},
+    {id:'featureservice',c:'pantry',t:'FeatureService',sub:'피처 서비스',
+      d:'모델 하나가 쓰는 FeatureView들을 한 이름으로 묶은 것.',
+      a:'"이 레시피에는 이 재료들"이라고 적은 재료 계약서.',
+      w:'학습과 추론이 정확히 같은 피처 세트를 쓰는지 이름 하나로 확인할 수 있다.',
+      l:'책 코드에는 없다. 보충 예제에서 `income_model_v1`을 만들어 MLflow 모델 버전에 기록해 본다.'},
+
+    {id:'kfp',c:'line',t:'KFP',sub:'Kubeflow Pipelines',core:true,
+      d:'ML 작업을 단계로 나눠 순서대로 실행하고 기록을 남기는 도구. 공장의 생산 라인.'},
+    {id:'pipeline',c:'line',t:'파이프라인',sub:'pipeline',
+      d:'여러 단계를 순서와 의존성에 따라 이은 작업 흐름.',
+      a:'생산 라인 전체 설계도.',
+      x:'파워 쿼리의 "적용된 단계" 목록.',
+      w:'매번 같은 순서로 실행되고 기록이 남는다.',
+      l:'`income-classifier-pipeline`. 대상 읽기 → 피처 조회 → 추론 → 결과 쓰기.'},
+    {id:'component',c:'line',t:'컴포넌트',sub:'component',
+      d:'파이프라인의 단계 하나. 컨테이너 이미지 하나로 실행된다.',
+      a:'생산 라인의 작업대 하나와 그 자리의 작업자.',
+      w:'단계를 나누면 실패한 곳만 찾아 고치고 다시 돌릴 수 있다.',
+      l:'read-data-from-minio, retrieve-features-from-feast, model-inference, write-data-to-minio 네 개.'},
+    {id:'batch',c:'line',t:'배치 추론',sub:'batch inference',
+      d:'모아 둔 대상 전체를 한꺼번에 예측하는 방식. 요청마다 하나씩 답하는 실시간 예측과 반대.',
+      a:'주문을 모아 한 번에 굽는 대량 생산.',
+      w:'매일 밤 전체 고객 점수 갱신처럼 즉시 응답이 필요 없는 일에 맞다.',
+      l:'30,162명을 한 번에 예측해 `inference-datasets/income_predictions.parquet`에 저장한다. 이 파이프라인은 학습하지 않는다.'},
+    {id:'compile',c:'line',t:'컴파일',sub:'compile',
+      d:'파이썬으로 쓴 파이프라인 정의를 KFP가 읽는 실행 명세 YAML로 바꾸는 일.',
+      a:'작업 지시서를 공식 양식에 옮겨 적기. 아직 아무도 일을 시작하지 않았다.',
+      w:'KFP 서버는 파이썬 코드가 아니라 이 YAML을 받아 실행한다.',
+      l:'`python inference_pipeline.py`를 실행하면 `income_classifier_pipeline.yaml`이 생긴다. 이미지 이름이 모두 `book-ch5/components:0.1`인지 확인한다.'},
+    {id:'kfprun',c:'line',t:'Run · Experiment (KFP)',sub:'KFP 실행 기록',
+      d:'파이프라인을 한 번 실행한 기록이 Run, Run 묶음이 Experiment.',
+      a:'생산 라인 가동 일지.',
+      w:'언제 어떤 파라미터로 돌렸고 어느 단계에서 실패했는지 화면에서 볼 수 있다.',
+      l:'실험 `income-classifier`, 실행 `income-classifier-run-1`, 약 2분 걸렸다. MLflow 실험과는 별개다.'},
+    {id:'argowf',c:'line',t:'Argo Workflows',sub:'아르고 워크플로',
+      d:'KFP가 각 단계를 실제 Pod로 실행시킬 때 쓰는 엔진.',
+      a:'생산 라인 반장. 지시서 순서대로 작업자를 불러 일을 시킨다.',
+      w:'KFP는 "무엇을 어떤 순서로"를 정하고, 실제로 Pod를 띄우는 일은 Argo Workflows가 맡는다.',
+      l:'KFP standalone에 함께 설치된다. Argo CD와는 이름만 비슷하다.'},
+    {id:'paramart',c:'line',t:'파라미터와 아티팩트',sub:'KFP에서 값 넘기기',
+      d:'단계에 넘기는 작은 값은 파라미터, 큰 데이터는 파일(아티팩트)로 넘긴다.',
+      a:'파라미터는 지시서에 적는 메모, 아티팩트는 다음 작업대로 보내는 상자.',
+      w:'Pod끼리는 메모리를 공유하지 않아서 표 같은 큰 데이터는 파일로 저장해 넘겨야 한다.',
+      l:'모델 이름, 버킷 이름은 파라미터. 대상 목록, 피처 표, 예측 결과는 아티팩트. 책은 접속 키도 파라미터로 넘기는데, 화면에 노출되므로 로컬 실습에서만 쓴다.'},
+    {id:'dataset',c:'line',t:'Input[Dataset] · Output[Dataset]',sub:'파일 전달 표시',
+      d:'컴포넌트가 파일을 받고 내보낸다는 표시.',
+      a:'상자에 붙인 송장. 상자가 어디로 가는지는 알려 주지만 내용물을 검사하지는 않는다.',
+      w:'KFP가 파일 위치를 자동으로 연결해 준다.',
+      l:'열 타입이나 빈 값 검사는 해 주지 않는다. 그런 검사는 컴포넌트 코드에서 직접 해야 한다.'},
+    {id:'pipelineroot',c:'line',t:'pipeline root',sub:'mlpipeline 버킷',
+      d:'단계 사이에 넘기는 중간 파일을 두는 기본 위치.',
+      a:'생산 라인 옆 임시 선반.',
+      w:'다음 Pod가 앞 Pod의 결과를 찾아갈 공용 자리가 필요하다.',
+      l:'KFP가 준비하는 `mlpipeline` 버킷. 화면에 `minio://mlpipeline/...`로 보이지만 실제 저장소는 SeaweedFS다.'},
+
+    {id:'portforward',c:'desk',t:'포트포워딩',sub:'port-forward',
+      d:'클러스터 안의 서비스를 내 PC의 localhost 포트에 연결하는 터널.',
+      a:'공장 안 부서로 바로 이어지는 직통 전화선.',
+      w:'클러스터 내부 주소는 PC에서 바로 접속할 수 없다.',
+      l:'`python bookenv.py forward`를 켜 두면 8080 KFP, 5000 MLflow, 8888 저장소 화면, 9000 S3, 6379 Redis로 연결된다. 창을 닫으면 끊긴다. `Reconnecting ...`이 잠깐 보이는 건 Pod가 재시작돼 터널을 다시 연다는 뜻.'},
+    {id:'localhost',c:'desk',t:'localhost',sub:'127.0.0.1',
+      d:'"지금 이 컴퓨터 자신"을 가리키는 주소.',
+      a:'"우리 집". 내가 말하면 내 집, 옆집 사람이 말하면 그 사람 집이다.',
+      w:'같은 주소라도 어디서 쓰느냐에 따라 가리키는 곳이 달라진다.',
+      l:'PC의 노트북은 `localhost:5000`으로 MLflow에 가지만, Pod 안에서 localhost는 그 Pod 자신이다. 그래서 파이프라인 파라미터에는 서비스 주소를 쓴다.'},
+    {id:'jupyter',c:'desk',t:'JupyterLab',sub:'주피터랩',
+      d:'코드를 셀 단위로 실행하고 결과를 바로 보는 화면.',
+      a:'실험대 위에 펼친 연구 노트.',
+      w:'데이터를 보면서 한 단계씩 시도하기 좋다.',
+      l:'저장소 화면(8888)과 겹치지 않게 8890 포트로 띄우고 `ch04` 노트북 두 개를 실행한다.'},
+    {id:'venv',c:'desk',t:'가상환경 · uv',sub:'venv',
+      d:'프로젝트마다 파이썬 패키지를 따로 담는 칸. uv는 이를 빠르게 만들고 설치하는 도구.',
+      a:'프로젝트별 공구함. 서로 다른 버전의 공구가 섞이지 않는다.',
+      w:'MLflow 3.0.0 실습과 MLflow 2.16.2 보충 예제를 같은 칸에 넣으면 충돌한다.',
+      l:'`.venv-book`에 mlflow 3.0.0, feast 0.40.1, kfp 2.9.0, scikit-learn 1.5.2를 설치한다.'},
+    {id:'sdk',c:'desk',t:'서버와 SDK 버전',sub:'KFP 2.4.1 vs kfp 2.9.0',
+      d:'서버는 클러스터에서 도는 프로그램, SDK는 내 파이썬 코드에서 그 서버를 다루는 라이브러리.',
+      a:'공장 기계와, 그 기계에 지시서를 보내는 리모컨.',
+      w:'둘은 다른 구성 요소라 버전 번호가 같을 필요는 없다.',
+      l:'KFP 서버 2.4.1, 파이썬 SDK 2.9.0. 반면 scikit-learn은 학습 노트북과 추론 이미지 모두 1.5.2로 맞춰야 모델을 읽을 수 있다.'}
+  ];
+
+  var byId = {};
+  TERMS.forEach(function(t){ byId[t.id] = t; });
+
+  var state = {cat:'all', q:'', expanded:false};
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var qEl = document.getElementById('q');
+  var toggleEl = document.getElementById('toggleAll');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'); }
+
+  function renderChips(){
+    var html = '<button type="button" class="chip" data-cat="all" aria-pressed="'+(state.cat==='all')+'">전체</button>';
+    Object.keys(CATS).forEach(function(k){
+      html += '<button type="button" class="chip" data-cat="'+k+'" style="--cat:var(--c-'+k+')" aria-pressed="'+(state.cat===k)+'"><i class="dot"></i>'+CATS[k].name+' <span style="opacity:.7">'+CATS[k].hint+'</span></button>';
+    });
+    chipsEl.innerHTML = html;
+  }
+
+  function matches(t){
+    if(state.cat!=='all' && t.c!==state.cat) return false;
+    if(!state.q) return true;
+    var hay = [t.t,t.sub,t.d,t.a,t.w,t.x,t.l].join(' ').toLowerCase();
+    return hay.indexOf(state.q) !== -1;
+  }
+
+  function row(label, val, cls){
+    if(!val) return '';
+    return '<div'+(cls?' class="'+cls+'"':'')+'><dt>'+label+'</dt><dd>'+fmt(val)+'</dd></div>';
+  }
+
+  function renderList(){
+    var items = TERMS.filter(matches);
+    var openAll = state.expanded || (state.q && items.length <= 4);
+    var html = items.map(function(t){
+      var body = t.core
+        ? '<dl>'+row('한 줄로', t.d)+'</dl><div class="go"><button type="button" class="textbtn" data-term="'+t.id+'">핵심 카드에서 자세히 보기 →</button></div>'
+        : '<dl>'+row('비유', t.a)+row('왜 필요해', t.w)+row('엑셀로 치면', t.x, 'excel')+row('이번 실습에서', t.l)+'</dl>';
+      return '<details class="term" id="t-'+t.id+'" style="--cat:var(--c-'+t.c+')"'+(openAll?' open':'')+'>'+
+        '<summary><span class="t-head"><span class="t-name">'+esc(t.t)+'</span><span class="t-sub">'+esc(t.sub||'')+'</span></span>'+
+        '<span class="t-right"><span class="cat-tag">'+(t.core?'핵심 · ':'')+CATS[t.c].name+'</span><i class="chev" aria-hidden="true"></i></span>'+
+        '<span class="t-d">'+fmt(t.core?CATS[t.c].hint+' 구역의 핵심 용어':t.d)+'</span></summary>'+
+        '<div class="t-body">'+body+'</div></details>';
+    }).join('');
+    if(!items.length){
+      html = '<p class="empty">"'+esc(qEl.value)+'"와 맞는 용어가 없어요. 영어 이름이나 다른 말로 찾아보세요.</p>';
+    }
+    listEl.innerHTML = html;
+    countEl.textContent = (state.cat==='all' && !state.q) ? '용어 '+TERMS.length+'개' : items.length+'개 / 전체 '+TERMS.length+'개';
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  }
+
+  function flash(el){
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 1900);
+  }
+
+  function openTerm(id){
+    var t = byId[id]; if(!t) return;
+    var el;
+    if(t.core){
+      el = document.getElementById('core-'+id);
+    } else {
+      el = document.getElementById('t-'+id);
+      if(!el){ state.cat='all'; state.q=''; qEl.value=''; renderChips(); renderList(); el = document.getElementById('t-'+id); }
+      if(el) el.open = true;
+    }
+    if(!el) return;
+    el.scrollIntoView({behavior: reduced?'auto':'smooth', block:'start'});
+    flash(el);
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-term]');
+    if(b){ e.preventDefault(); openTerm(b.getAttribute('data-term')); return; }
+    var c = e.target.closest('.chip');
+    if(c){ state.cat = c.getAttribute('data-cat'); renderChips(); renderList(); }
+  });
+  qEl.addEventListener('input', function(){ state.q = qEl.value.trim().toLowerCase(); renderList(); });
+  toggleEl.addEventListener('click', function(){
+    state.expanded = !state.expanded;
+    listEl.querySelectorAll('details.term').forEach(function(d){ d.open = state.expanded; });
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  });
+
+  renderChips();
+  renderList();
+})();
+</script>
+</body>
+</html>

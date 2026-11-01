@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>MLOps 00장 책 지도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 모바일 한 열. 관통 질문 → 책 지도(Part 1~4) → 역할로 기억하기 → 헷갈리는 짝 → 도구 사전 → 업무 연결 */
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --ink:#15201E; --muted:#56635F; --line:#D3DBD8;
+  --accent:#0B6E69; --soft:#E2EEEB; --mark:rgba(232,178,27,.40); --warn:#8F6200;
+  --c-base:#2F6DB5; --c-mlcore:#0B6E69; --c-serve:#B9512A; --c-llm:#7A4FB8; --c-concept:#8C6A2E;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --nav-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+    --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+    --c-base:#7EA9E6; --c-mlcore:#4CC2B9; --c-serve:#EE8F64; --c-llm:#B595E6; --c-concept:#D2B06E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172020; --ink:#E4EBE9; --muted:#9AA8A4; --line:#2A3634;
+  --accent:#4CC2B9; --soft:#15302D; --mark:rgba(242,194,48,.26); --warn:#F2C230;
+  --c-base:#7EA9E6; --c-mlcore:#4CC2B9; --c-serve:#EE8F64; --c-llm:#B595E6; --c-concept:#D2B06E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.68;
+  word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:5px;word-break:break-all}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + var(--nav-h) + 12px)}
+h1,h2{font-family:var(--f-display);font-weight:400;text-wrap:balance;letter-spacing:-.01em}
+.mark{background:linear-gradient(transparent 55%,var(--mark) 55%);padding:0 .1em}
+a{color:var(--accent)}
+
+header.wrap{padding-block:28px 18px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:0 0 8px}
+h1{font-size:clamp(31px,8.4vw,46px);line-height:1.14;margin:0 0 14px}
+.lede{font-size:17px;margin:0 0 10px;max-width:60ch}
+.how{font-size:14.5px;color:var(--muted);margin:0}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{flex:none;font-size:14px;font-weight:500;padding:6px 13px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink);text-decoration:none;background:var(--surface);white-space:nowrap}
+.nav a:active{background:var(--soft)}
+
+section.wrap{padding-block:34px 6px}
+h2{font-size:clamp(25px,6.6vw,32px);line-height:1.2;margin:0 0 6px}
+.sec-lead{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:62ch}
+
+/* question */
+.question{background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:18px}
+.question p.q{font-family:var(--f-display);font-size:clamp(22px,5.6vw,27px);line-height:1.35;margin:0 0 14px}
+.three{display:grid;gap:8px}
+.three div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.three b{display:block;font-size:15px}
+.three span{font-size:14px;color:var(--muted)}
+@media (min-width:560px){.three{grid-template-columns:repeat(3,1fr)}}
+
+/* book map */
+.parts{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.part{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.part-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-bottom:4px}
+.part-no{font-family:var(--f-mono);font-size:13px;color:var(--surface);background:var(--accent);border-radius:999px;padding:1px 9px}
+.part-name{font-family:var(--f-display);font-size:24px;line-height:1.2}
+.part-meta{font-size:13px;color:var(--muted)}
+.part .fac{font-size:15px;margin:2px 0 4px;font-weight:600}
+.part .desc{font-size:15px;color:var(--muted);margin:0 0 10px}
+.chs{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.chs li{display:grid;grid-template-columns:34px 1fr;gap:8px;padding-block:10px;border-bottom:1px solid var(--line)}
+.chs li:last-child{border-bottom:0}
+.chs .no{font-family:var(--f-mono);font-size:14px;color:var(--muted);padding-top:1px}
+.chs .tt{font-weight:600;font-size:15.5px}
+.chs .iss{font-size:14px;color:var(--muted)}
+.chs a.open{display:inline-block;margin-top:4px;font-size:13.5px;font-weight:600;text-decoration:none;padding:3px 10px;border-radius:999px;border:1px solid var(--accent)}
+.chs .here{display:inline-block;margin-top:4px;font-size:13px;color:var(--muted)}
+.appx{margin-top:12px;font-size:14.5px;color:var(--muted)}
+
+/* roles */
+.roles{display:grid;gap:12px}
+.role{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.role h3{margin:0;font-size:17.5px}
+.role .fac{font-size:14px;color:var(--muted);margin:2px 0 10px}
+.role .prob{font-size:15px;margin:10px 0 0}
+.role .prob b{color:var(--accent);font-size:12.5px;margin-right:6px;letter-spacing:.03em}
+.nodes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{display:inline-flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;padding:5px 10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--bg);cursor:pointer;text-align:left}
+.node:active{background:var(--soft)}
+.node.static{cursor:default;color:var(--muted);font-weight:500}
+@media (min-width:600px){.roles{grid-template-columns:1fr 1fr}}
+
+/* pairs */
+.pair{padding-block:16px;border-top:1px solid var(--line)}
+.pair:last-child{border-bottom:1px solid var(--line)}
+.pair h3{font-size:17.5px;margin:0 0 10px;line-height:1.35}
+.vs{color:var(--muted);font-weight:400;padding-inline:4px}
+.pair-grid{display:grid;gap:8px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.side p{margin:2px 0 0;font-size:15px}
+.side-name{font-weight:700;font-size:14.5px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.side-name.static{color:var(--ink);text-decoration:none;cursor:default}
+.pair-key{margin:10px 0 0;font-size:15px}
+.pair-key b{font-weight:700;margin-right:6px}
+@media (min-width:520px){.pair-grid{grid-template-columns:1fr 1fr}}
+
+/* glossary */
+.tools{display:grid;gap:10px;margin-bottom:6px}
+.search{width:100%;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cat);flex:none}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list-bar{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);padding-block:6px}
+.textbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 0}
+.term-list{border-top:1px solid var(--line)}
+details.term{border-bottom:1px solid var(--line)}
+details.term>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding-block:13px}
+details.term>summary::-webkit-details-marker{display:none}
+.t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.t-name{font-weight:700;font-size:17px}
+.t-sub{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.t-d{grid-column:1/-1;color:var(--muted);font-size:15px}
+.t-right{display:flex;align-items:center;gap:8px;align-self:start}
+.cat-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--cat);
+  background:color-mix(in srgb,var(--cat) 13%,transparent)}
+.chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+details[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.t-body{padding:2px 0 16px}
+dl{margin:0;display:grid;gap:10px}
+dl>div{min-width:0}
+dt{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.03em;margin-bottom:2px}
+dd{margin:0}
+.excel dd{background:var(--soft);padding:8px 11px;border-radius:8px}
+.warn dt{color:var(--warn)}
+.more{margin-top:8px;font-size:14px;font-weight:600}
+.empty{padding:22px 0;color:var(--muted)}
+
+/* work */
+.work{display:grid;gap:8px}
+.work div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.work b{display:block;font-size:14px;color:var(--accent)}
+.work span{font-size:15px}
+ol.check{margin:0;padding-left:22px;display:grid;gap:8px;font-size:15.5px}
+ol.check b{font-weight:700}
+.closing{background:var(--soft);border-radius:14px;padding:14px 16px;font-size:16px;margin-top:18px}
+h3.sub{font-size:18px;margin:26px 0 10px}
+
+footer.wrap{padding-block:30px 40px;color:var(--muted);font-size:13.5px}
+footer p{margin:0 0 8px}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,30%{background:var(--mark)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){
+  .flash{animation:none;outline:2px solid var(--accent);outline-offset:4px}
+  .chev{transition:none}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">머신러닝 플랫폼 엔지니어링 · 00장 책의 구성과 흐름</p>
+  <h1>책 전체를 공장 짓기로 보기</h1>
+  <p class="lede">이 책은 <span class="mark">예측 공장을 바닥부터 짓는 이야기</span>입니다. Part 1은 바닥 공사, Part 2는 공용 설비, Part 3은 실제 제품 두 개 생산, Part 4는 새 상담 라인(LLM) 추가예요.</p>
+  <p class="how">『Machine Learning Platform Engineering』 · Benjamin Tan Wei Hao, Shanoop Padmanabhan, Varun Mallya · Manning · 4개 Part, 13개 장, 부록 2개</p>
+</header>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap nav-inner">
+    <a href="#question">관통 질문</a>
+    <a href="#book">책 지도</a>
+    <a href="#roles">역할로 기억하기</a>
+    <a href="#pairs">헷갈리는 짝</a>
+    <a href="#dict">도구 사전</a>
+    <a href="#work">업무 연결</a>
+  </div>
+</nav>
+
+<main>
+<section class="wrap" id="question">
+  <h2>책 전체를 관통하는 질문</h2>
+  <p class="sec-lead">네 Part는 이 질문에 답하는 데 필요한 기능을 하나씩 붙이는 구성입니다.</p>
+  <div class="question">
+    <p class="q">이 모델은 어떤 데이터와 코드로 만들었고, 왜 출시했고, 문제가 생기면 어디로 되돌릴 수 있는가?</p>
+    <div class="three">
+      <div><b>출처</b><span>어떤 데이터와 코드로 만들었나. 01장의 계보</span></div>
+      <div><b>근거</b><span>왜 출시해도 된다고 판단했나. 02장의 검증 게이트</span></div>
+      <div><b>복구</b><span>문제가 생기면 어느 조합으로 되돌리나. 01장의 출시 명세</span></div>
+    </div>
+  </div>
+  <p class="sec-lead" style="margin-top:14px">모델을 API로 배포하는 것과 그 모델을 다시 만들고 안전하게 바꾸는 것은 다른 일입니다. 이 책은 후자, 즉 <span class="mark">플랫폼 쪽의 문제</span>를 다뤄요.</p>
+</section>
+
+<section class="wrap" id="book">
+  <h2>책 지도</h2>
+  <p class="sec-lead">Part 순서대로 공장이 지어집니다. 정리가 끝난 장은 용어 풀이 페이지로 바로 갈 수 있어요.</p>
+  <ol class="parts">
+    <li class="part">
+      <div class="part-top"><span class="part-no">Part 1</span><span class="part-name">MLOps의 기초</span><span class="part-meta">1~3장</span></div>
+      <p class="fac">공장 비유: 바닥 공사와 운영 원칙</p>
+      <p class="desc">ML을 한 번 끝내는 작업이 아니라 계속 도는 생애주기로 보고, 컨테이너와 Kubernetes, 배포 자동화, 기본 모니터링으로 모델이 올라갈 바닥을 만듭니다.</p>
+      <ul class="chs">
+        <li><span class="no">01</span><div><div class="tt">시작하기</div><div class="iss">실험에서 서비스 운영으로 넘어갈 때 필요한 요건</div><a class="open" href="01-getting-started.html" target="_blank" rel="noopener">01장 용어 풀이 열기</a></div></li>
+        <li><span class="no">02</span><div><div class="tt">MLOps란 무엇인가</div><div class="iss">모델 산출물과 생성 과정의 자동화 범위</div><a class="open" href="02-what-is-mlops.html" target="_blank" rel="noopener">02장 용어 풀이 열기</a></div></li>
+        <li><span class="no">03</span><div><div class="tt">Kubernetes 기반</div><div class="iss">애플리케이션의 반복 배포와 관측에 필요한 기반</div><a class="open" href="03-kubernetes-foundation.html" target="_blank" rel="noopener">03장 용어 풀이 열기</a></div></li>
+      </ul>
+    </li>
+    <li class="part">
+      <div class="part-top"><span class="part-no">Part 2</span><span class="part-name">공통 ML 플랫폼 기능</span><span class="part-meta">4~6장</span></div>
+      <p class="fac">공장 비유: 연구실, 재료실, 생산 라인 같은 공용 설비</p>
+      <p class="desc">실험 결과를 기록하고 피처를 재사용하며, 여러 작업을 이어 예측을 서비스합니다. 소득 분류 예제로 각 기능을 연결해요.</p>
+      <ul class="chs">
+        <li><span class="no">04</span><div><div class="tt">실험, 피처, 파이프라인</div><div class="iss">모델 버전과 피처 정의를 배치 추론까지 잇는 저장소 구성. 책의 4~5장을 합쳐 정리</div><a class="open" href="04-experiments-features-pipelines.html" target="_blank" rel="noopener">04장 용어 풀이 열기</a></div></li>
+        <li><span class="no">06</span><div><div class="tt">모델의 프로덕션화</div><div class="iss">배포 후 입력 변화의 감지</div></div></li>
+      </ul>
+    </li>
+    <li class="part">
+      <div class="part-top"><span class="part-no">Part 3</span><span class="part-name">실제 프로젝트에 적용</span><span class="part-meta">7~11장</span></div>
+      <p class="fac">공장 비유: 실제 제품 두 개 생산 (신분증 카드 탐지, 영화 추천)</p>
+      <p class="desc">이미지와 표 데이터의 차이가 저장, 검증, 운영 관측에 어떻게 영향을 주는지 비교합니다. 카드 위치를 찾는 객체 탐지와 글자를 읽는 OCR은 구분해요.</p>
+      <ul class="chs">
+        <li><span class="no">07</span><div><div class="tt">데이터 분석과 준비</div><div class="iss">노트북 탐색을 재실행 가능한 데이터 준비로 전환</div></div></li>
+        <li><span class="no">08</span><div><div class="tt">학습과 검증 I</div><div class="iss">학습 완료와 모델 실용성 평가의 차이</div></div></li>
+        <li><span class="no">09</span><div><div class="tt">학습과 검증 II</div><div class="iss">데이터 이동 비용과 실험 추적의 조정</div></div></li>
+        <li><span class="no">10</span><div><div class="tt">추론과 서빙</div><div class="iss">모델 파일을 재사용 가능한 서비스로 전환</div></div></li>
+        <li><span class="no">11</span><div><div class="tt">모니터링과 설명가능성</div><div class="iss">서비스 가용성과 예측 품질의 별도 관측</div></div></li>
+      </ul>
+    </li>
+    <li class="part">
+      <div class="part-top"><span class="part-no">Part 4</span><span class="part-name">LLM 운영</span><span class="part-meta">12~13장</span></div>
+      <p class="fac">공장 비유: 사내 문서로 답하는 상담 창구(DakkaBot) 추가</p>
+      <p class="desc">직접 학습한 가중치를 관리하던 문제에 검색 문서, 벡터 인덱스, 프롬프트, 외부 모델 API 관리가 더해집니다.</p>
+      <ul class="chs">
+        <li><span class="no">12</span><div><div class="tt">LLM 기반 시스템</div><div class="iss">잘못된 답변의 검색과 생성 원인 구분</div></div></li>
+        <li><span class="no">13</span><div><div class="tt">프로덕션 LLM 설계</div><div class="iss">답변 품질, 안전, 비용 변경의 검증과 롤백</div></div></li>
+      </ul>
+    </li>
+  </ol>
+  <p class="appx">부록 A는 클러스터, Kubeflow, MLflow 등의 설치 참고 자료이고(로컬 안내가 Mac, Linux 중심이라 Windows는 <button class="node" data-term="wsl2" style="font-size:13px;padding:2px 8px">WSL2</button> 등 실행 환경부터 정해야 함), 부록 B는 Kubernetes 설정을 읽기 위한 <button class="node" data-term="yaml" style="font-size:13px;padding:2px 8px">YAML</button> 기초입니다.</p>
+</section>
+
+<section class="wrap" id="roles">
+  <h2>도구 이름보다 역할로 기억하기</h2>
+  <p class="sec-lead">책에 도구가 아주 많이 나옵니다. 공장의 어느 자리인지로 묶어 두면 새 도구가 나와도 "이건 그 자리의 다른 선택지"로 읽을 수 있어요. 도구 이름을 누르면 설명으로 갑니다.</p>
+  <div class="roles">
+    <article class="role" style="--cat:var(--c-base)"><h3>실행 환경과 클러스터</h3><p class="fac">공장 부지와 기계</p>
+      <div class="nodes"><button class="node" data-term="docker">Docker</button><button class="node" data-term="k8s">Kubernetes</button><button class="node" data-term="helm">Helm</button></div>
+      <p class="prob"><b>해결</b>의존성과 자원을 관리하며 반복 배포하기</p></article>
+    <article class="role"><h3>빌드와 배포 자동화</h3><p class="fac">출고 라인과 건설 감독</p>
+      <div class="nodes"><button class="node" data-term="gitlabci">GitLab CI</button><button class="node" data-term="argocd">Argo CD</button></div>
+      <p class="prob"><b>해결</b>변경을 검증하고 선언된 상태로 배포하기</p></article>
+    <article class="role"><h3>실험 추적과 모델 관리</h3><p class="fac">실험 노트와 레시피 금고</p>
+      <div class="nodes"><button class="node" data-term="mlflow">MLflow</button></div>
+      <p class="prob"><b>해결</b>어떤 조건으로 만든 모델인지 추적하기</p></article>
+    <article class="role"><h3>피처 재사용</h3><p class="fac">날짜까지 맞춰 주는 재료실</p>
+      <div class="nodes"><button class="node" data-term="feast">Feast</button></div>
+      <p class="prob"><b>해결</b>학습, 배치, 온라인 예측에 필요한 피처 제공하기</p></article>
+    <article class="role"><h3>작업 오케스트레이션</h3><p class="fac">생산 라인과 작업 순서표</p>
+      <div class="nodes"><button class="node" data-term="kfp">Kubeflow Pipelines</button></div>
+      <p class="prob"><b>해결</b>단계 사이의 데이터와 실행 의존성 관리하기</p></article>
+    <article class="role"><h3>모델 서비스</h3><p class="fac">판매 창구</p>
+      <div class="nodes"><button class="node" data-term="bentoml">BentoML</button><button class="node" data-term="mlflowserving">MLflow Serving</button><button class="node" data-term="kserve">KServe</button></div>
+      <p class="prob"><b>해결</b>모델을 사용할 수 있는 인터페이스 제공하기</p></article>
+    <article class="role"><h3>운영 관측과 학습 분석</h3><p class="fac">공장 계기판과 오븐 온도 기록계</p>
+      <div class="nodes"><button class="node" data-term="prometheus">Prometheus</button><button class="node" data-term="grafana">Grafana</button><button class="node" data-term="loki">Loki</button><button class="node" data-term="alertmanager">Alertmanager</button><button class="node" data-term="tensorboard">TensorBoard</button></div>
+      <p class="prob"><b>해결</b>서비스 상태와 학습 과정을 각각 살피기</p></article>
+    <article class="role"><h3>데이터 변화와 모델 설명</h3><p class="fac">손님 변화 보고서와 시선 추적</p>
+      <div class="nodes"><button class="node" data-term="evidently">Evidently</button><button class="node" data-term="deepchecks">Deepchecks</button><button class="node" data-term="eigencam">Eigen-CAM</button><span class="node static">EMF</span></div>
+      <p class="prob"><b>해결</b>입력 변화와 예측 행동 조사하기</p></article>
+    <article class="role"><h3>RAG와 대화 UI</h3><p class="fac">오픈북 상담 창구</p>
+      <div class="nodes"><button class="node" data-term="gemini">Gemini</button><button class="node" data-term="faiss">FAISS</button><button class="node" data-term="langchain">LangChain</button><button class="node" data-term="chainlit">Chainlit</button></div>
+      <p class="prob"><b>해결</b>문서 검색과 답변 생성을 연결하기</p></article>
+    <article class="role"><h3>LLM 품질, 안전, 비용</h3><p class="fac">상담 녹취, 채점표, 검열관, 메모판</p>
+      <div class="nodes"><button class="node" data-term="langfuse">Langfuse</button><button class="node" data-term="deepeval">DeepEval</button><button class="node" data-term="promptfoo">Promptfoo</button><button class="node" data-term="guardrails">Guardrails AI</button><button class="node" data-term="redisvl">RedisVL</button></div>
+      <p class="prob"><b>해결</b>추적, 평가, 방어, 캐시를 운영하기</p></article>
+  </div>
+  <p class="sec-lead" style="margin-top:14px">필요한 도구만 고르고, 해결할 문제와 기존 체계의 한계를 먼저 따지는 게 원문의 권고입니다.</p>
+</section>
+
+<section class="wrap" id="pairs">
+  <h2>헷갈리는 짝</h2>
+  <p class="sec-lead">책을 읽기 전에 미리 구분해 두면 좋은 것들입니다.</p>
+  <div>
+    <article class="pair"><h3>API로 배포하기 <span class="vs">↔</span> 다시 만들고 안전하게 바꾸기</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">API로 배포</span><p>모델을 한 번 서비스에 올린다.</p></div>
+        <div class="side"><span class="side-name static">플랫폼의 일</span><p>그 모델을 다시 만들고, 검증하고, 바꾸고, 되돌릴 수 있게 한다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">이 책은 학습 코드보다 데이터, 실험 기록, 배포, 복구를 잇는 쪽을 다룹니다.</span></p></article>
+    <article class="pair"><h3>도구 설치 <span class="vs">↔</span> 플랫폼 완성</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">도구 설치</span><p>MLflow, Feast, KFP가 떠 있다.</p></div>
+        <div class="side"><button class="side-name" data-term="handover">플랫폼 완성</button><p>운영 책임, 장애 대응, 인수 자료까지 갖춰져 있다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">도구가 있어도 운영 책임과 장애 대응이 빠지면 완성이라 보기 어렵습니다.</span></p></article>
+    <article class="pair"><h3>모델 크기 <span class="vs">↔</span> 검색 품질</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="gemini">더 큰 모델</button><p>답을 더 잘 쓸 수는 있다.</p></div>
+        <div class="side"><button class="side-name" data-term="rag">문서 검색</button><p>애초에 맞는 문서를 찾아야 한다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">문서를 잘못 찾으면 모델이 커져도 답이 좋아지지 않을 수 있습니다.</span></p></article>
+    <article class="pair"><h3>검색 붙이기 <span class="vs">↔</span> 위험 해결</h3>
+      <div class="pair-grid">
+        <div class="side"><button class="side-name" data-term="rag">RAG 도입</button><p>근거 문서를 참고해 답한다.</p></div>
+        <div class="side"><button class="side-name" data-term="guardrails">환각·유출 방어</button><p>권한, 근거 확인, 입출력 검사가 따로 필요하다.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">검색을 붙였다고 환각이나 정보 유출 위험이 사라지지는 않습니다.</span></p></article>
+    <article class="pair"><h3>가중치 관리 <span class="vs">↔</span> LLM 운영</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">Part 1~3</span><p>직접 학습한 모델의 가중치, 데이터, 코드를 관리.</p></div>
+        <div class="side"><button class="side-name" data-term="llmops">Part 4</button><p>검색 문서, 벡터 인덱스, 프롬프트, 외부 모델 API 관리가 더해짐.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">추적할 대상이 늘어날 뿐, 출처·근거·복구라는 질문은 같습니다.</span></p></article>
+    <article class="pair"><h3>책의 동작 원리 <span class="vs">↔</span> 최신 버전에서 실행</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">동작 원리</span><p>왜 이렇게 연결하는지는 버전과 상관없이 유효.</p></div>
+        <div class="side"><span class="side-name static">명령과 API</span><p>KFP의 데이터 전달, BentoML의 Service·Runner API, MLflow 모델 단계 관리는 지금과 다를 수 있음.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">04장 실습에서 MLflow stage 경고가 뜬 것도 이 차이 때문입니다.</span></p></article>
+    <article class="pair"><h3>설계한 구조 <span class="vs">↔</span> 실제 구현</h3>
+      <div class="pair-grid">
+        <div class="side"><span class="side-name static">설계</span><p>그림과 문서에 적힌 구조.</p></div>
+        <div class="side"><span class="side-name static">구현</span><p>실제로 돌려 본 결과. 성능과 복구 시간은 여기서 확인.</p></div></div>
+      <p class="pair-key"><b>핵심</b><span class="mark">성능과 복구 시간은 실행 결과로 확인해야 합니다.</span></p></article>
+  </div>
+</section>
+
+<section class="wrap" id="dict">
+  <h2>도구 사전</h2>
+  <p class="sec-lead">책에 나오는 도구와 개념을 역할별로 모았습니다. 03·04장에서 자세히 다룬 도구는 해당 페이지로 이어져요.</p>
+  <div class="tools">
+    <input id="q" class="search" type="search" aria-label="도구 검색" placeholder="도구 찾기 (예: KServe, FAISS, SLO)" autocomplete="off" enterkeyhint="search">
+    <div class="chips" id="chips" role="group" aria-label="구역 고르기"></div>
+  </div>
+  <div class="list-bar"><span id="count"></span><button class="textbtn" id="toggleAll" type="button">모두 펼치기</button></div>
+  <div class="term-list" id="list"></div>
+</section>
+
+<section class="wrap" id="work">
+  <h2>실제 업무와 연결하기</h2>
+  <p class="sec-lead">구간마다 엔지니어가 결과물로 남길 것입니다. 읽으면서 "우리 일에서는 이게 뭘까"를 같이 떠올려 보면 좋아요.</p>
+  <div class="work">
+    <div><b>1~3장</b><span>생애주기, 책임 경계, 재현 가능한 실행, 배포 기반</span></div>
+    <div><b>4~6장</b><span>실험, 피처 계보, 작업 계약, 서비스와 드리프트 대응</span></div>
+    <div><b>7~9장</b><span><button class="node" data-term="datacontract" style="font-size:13px;padding:1px 7px">데이터 계약</button> 검증 게이트, 학습 자원, 성능 측정</span></div>
+    <div><b>10~11장</b><span>출시 명세, 부하, 복구 결과, <button class="node" data-term="slo" style="font-size:13px;padding:1px 7px">SLO</button>와 <button class="node" data-term="runbook" style="font-size:13px;padding:1px 7px">실행 지침</button></span></div>
+    <div><b>12~13장</b><span>검색, 답변 평가, 권한 경계, 변경, 비용 통제</span></div>
+  </div>
+
+  <h3 class="sub">프로젝트에서 확인할 것</h3>
+  <ol class="check">
+    <li><b>문제와 기준</b>: 업무 목표, 데이터 사용 범위, 현재 병목과 성공 기준.</li>
+    <li><b>설계 결정</b>: 채택하고 제외한 대안, 의존성, 운영 비용과 담당자.</li>
+    <li><b>검증 증거</b>: 데이터, 모델, 서비스 시험 결과, 실패 재현과 복구 기록.</li>
+    <li><b>인수 자료</b>: 배포와 롤백 절차, SLO, 알림, 실행 지침, 접근, 보존 정책.</li>
+  </ol>
+  <div class="closing">책의 도구를 모두 설치하는 것보다, 지금 반복해서 겪는 실패가 무엇이고 그 판단 근거를 어디에 남길지 정하는 편이 먼저입니다. 정확도가 높은 모델을 고르는 일도 지연 시간, 데이터 누수, 재현성, 복구까지 함께 보면 다른 결정이 될 수 있어요.</div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>다음 장: <a href="01-getting-started.html" target="_blank" rel="noopener">MLOps 01장 용어 풀이</a></p>
+  <p>원문: <a href="https://johklo.github.io/docs/tech/machine-learning-platform-engineering/00-overview/" target="_blank" rel="noopener">00. 책의 구성과 흐름</a> · <a href="https://livebook.manning.com/book/machine-learning-platform-engineering" target="_blank" rel="noopener">Manning liveBook</a> · <a href="https://github.com/practical-mlops" target="_blank" rel="noopener">저자 코드</a></p>
+  <p>공장 비유와 엑셀 예시는 이해를 돕기 위해 단순화한 것입니다. 도구 설명은 책에서 맡는 역할 중심의 요약이에요.</p>
+</footer>
+
+<script>
+(function(){
+  var PAGES = {
+    ch02:{name:'02장', url:'02-what-is-mlops.html'},
+    ch03:{name:'03장', url:'03-kubernetes-foundation.html'},
+    ch04:{name:'04장', url:'04-experiments-features-pipelines.html'}
+  };
+  var CATS = {
+    base:{name:'기반', hint:'실행·배포'},
+    mlcore:{name:'ML 기능', hint:'실험·피처·파이프라인'},
+    serve:{name:'서빙·관측', hint:'서비스·모니터링'},
+    llm:{name:'LLM', hint:'RAG·품질·안전'},
+    concept:{name:'개념', hint:'운영 용어'}
+  };
+  var TERMS = [
+    {id:'docker',c:'base',t:'Docker',sub:'컨테이너',
+      d:'앱과 실행 환경을 이미지로 포장해 어디서든 같은 방식으로 실행하게 하는 도구.',
+      a:'재료와 조리법이 다 든 밀키트.',p:'ch03'},
+    {id:'k8s',c:'base',t:'Kubernetes',sub:'k8s',
+      d:'컨테이너를 어디에 몇 개 띄울지 정하고, 선언한 상태를 계속 유지하는 관리 체계.',
+      a:'공장 관리 본부.',p:'ch03'},
+    {id:'helm',c:'base',t:'Helm',sub:'차트',
+      d:'여러 Kubernetes 설정을 템플릿과 환경별 값으로 묶은 설치 꾸러미.',
+      a:'부품과 설명서가 함께 든 조립 가구 키트.',
+      x:'서식 하나에 값만 바꿔 끼우는 메일 머지.',p:'ch03'},
+    {id:'gitlabci',c:'base',t:'GitLab CI',sub:'CI',
+      d:'코드 변경마다 검사와 이미지 빌드를 자동으로 돌리는 도구.',
+      a:'출고 전 품질 검사와 포장 라인.',p:'ch03'},
+    {id:'argocd',c:'base',t:'Argo CD',sub:'GitOps',
+      d:'Git에 적힌 선언과 클러스터 실제 상태를 비교해 맞추는 배포 도구.',
+      a:'설계도를 들고 현장을 순찰하는 건설 감독.',p:'ch03'},
+
+    {id:'mlflow',c:'mlcore',t:'MLflow',sub:'실험 추적 · 모델 레지스트리',
+      d:'실험 조건과 결과를 기록하고, 고른 모델을 이름과 버전으로 보관하는 도구.',
+      a:'연구실의 실험 노트와 공식 레시피 금고.',p:'ch04'},
+    {id:'feast',c:'mlcore',t:'Feast',sub:'피처 스토어',
+      d:'모델 입력 피처를 정의하고 학습, 배치, 온라인 예측에 같은 기준으로 꺼내 주는 도구.',
+      a:'날짜 기준까지 맞춰 재료를 내주는 재료실.',
+      x:'날짜 조건까지 맞춰 주는 VLOOKUP.',p:'ch04'},
+    {id:'kfp',c:'mlcore',t:'Kubeflow Pipelines',sub:'KFP',
+      d:'ML 작업을 단계로 나누고 단계 사이의 데이터와 실행 순서를 관리하는 도구.',
+      a:'생산 라인과 작업 순서표.',
+      x:'파워 쿼리의 "적용된 단계".',p:'ch04'},
+
+    {id:'bentoml',c:'serve',t:'BentoML',sub:'모델 서빙',
+      d:'학습한 모델을 API 서비스로 포장해 내보내는 파이썬 서빙 도구.',
+      a:'레시피를 매장 메뉴로 바꿔 주는 포장 키트.',
+      w:'모델 파일을 다른 사람이 요청해서 쓸 수 있는 서비스로 바꾼다.',
+      l:'10장 추론과 서빙에서 다룬다.',
+      n:'책의 Service, Runner API는 현재 버전과 다를 수 있다.'},
+    {id:'mlflowserving',c:'serve',t:'MLflow Serving',sub:'모델 서빙',
+      d:'MLflow에 등록한 모델을 바로 API로 띄우는 기능.',
+      a:'레시피 금고에서 꺼낸 레시피로 바로 판매 시작.',
+      w:'레지스트리와 서빙이 같은 도구 안에서 이어진다.'},
+    {id:'kserve',c:'serve',t:'KServe',sub:'Kubernetes 서빙',
+      d:'Kubernetes 위에서 모델 서빙을 표준 방식으로 띄우고 관리하는 도구.',
+      a:'공장 관리 본부가 직접 운영하는 판매 창구.',
+      w:'여러 모델 서비스를 같은 규칙으로 배포하고 요청량에 맞춰 늘리고 줄일 수 있다.'},
+    {id:'prometheus',c:'serve',t:'Prometheus',sub:'메트릭 수집',
+      d:'서비스가 내보이는 숫자(요청 수, 지연, 오류)를 주기적으로 모아 저장하는 도구.',
+      a:'계량기를 돌며 숫자를 적어 가는 검침원.',p:'ch03'},
+    {id:'grafana',c:'serve',t:'Grafana',sub:'대시보드',
+      d:'수집한 숫자와 로그로 대시보드를 그리는 도구.',
+      a:'공장 상황판.',
+      x:'기록 시트로 만든 피벗 차트 대시보드.',p:'ch03'},
+    {id:'loki',c:'serve',t:'Loki',sub:'로그 수집',
+      d:'여러 서비스의 로그를 모아 검색하게 해 주는 시스템. 주로 Grafana에서 함께 본다.',
+      a:'공장 전체의 사건 일지 보관소.',
+      w:'숫자(메트릭)로 이상을 알아챈 뒤 "어느 요청이 어떻게"를 로그로 찾는다.'},
+    {id:'alertmanager',c:'serve',t:'Alertmanager',sub:'알림',
+      d:'경보를 묶고 담당자에게 보내는 도구.',
+      a:'경보 배분 담당.',p:'ch03'},
+    {id:'tensorboard',c:'serve',t:'TensorBoard',sub:'학습 시각화',
+      d:'학습하는 동안 손실과 지표가 어떻게 변하는지 그래프로 보는 도구.',
+      a:'시제품을 굽는 동안의 오븐 온도 기록계.',
+      w:'서비스 상태가 아니라 학습 과정 자체를 살핀다.'},
+    {id:'evidently',c:'serve',t:'Evidently',sub:'드리프트 리포트',
+      d:'입력 분포 변화(드리프트)와 데이터 품질을 리포트로 보여 주는 도구.',
+      a:'손님 구성이 어떻게 바뀌었는지 보여 주는 월간 보고서.',
+      x:'지난달과 이번 달 피벗을 나란히 비교하는 보고서.',
+      n:'변화가 보인다고 곧 품질 하락은 아니다. 정답 기반 평가는 따로 본다.',p:'ch02'},
+    {id:'deepchecks',c:'serve',t:'Deepchecks',sub:'데이터·모델 검증',
+      d:'데이터와 모델을 미리 정한 점검 항목으로 테스트하는 검증 도구.',
+      a:'출고 전 점검표.',
+      x:'데이터 유효성 검사 규칙을 한꺼번에 돌리는 것.',
+      w:'결측, 중복, 분포 차이, 성능 저하를 사람이 매번 눈으로 보지 않아도 된다.'},
+    {id:'eigencam',c:'serve',t:'Eigen-CAM',sub:'설명 기법',
+      d:'이미지 모델이 사진의 어느 부분을 보고 판단했는지 열지도로 보여 주는 설명 기법.',
+      a:'검사원의 시선 추적 안경.',
+      w:'카드를 맞게 찾았어도 엉뚱한 배경을 보고 맞힌 건 아닌지 확인할 수 있다.',
+      l:'11장 모니터링과 설명가능성에서 쓰인다.'},
+
+    {id:'rag',c:'llm',t:'RAG',sub:'검색 증강 생성',
+      d:'필요한 문서를 먼저 찾고, 그 내용을 참고해 답하게 하는 방식.',
+      a:'오픈북 시험. 책을 잘못 펴면 아무리 똑똑해도 틀린다.',
+      w:'모델이 학습하지 않은 사내 문서로도 답할 수 있다.',
+      n:'문서를 잘못 찾으면 모델이 커져도 답이 좋아지지 않을 수 있다. 검색을 붙였다고 환각이나 정보 유출 위험이 사라지지 않는다.'},
+    {id:'dakkabot',c:'llm',t:'DakkaBot',sub:'책의 LLM 예제',
+      d:'사내 문서를 찾아 답하는, 책 마지막 프로젝트의 챗봇.',
+      a:'사내 규정집을 들고 있는 상담원.',
+      l:'문서 최신성, 권한, 근거, 토큰 비용이 운영 쟁점이다.'},
+    {id:'gemini',c:'llm',t:'Gemini',sub:'LLM',
+      d:'Google의 대형 언어 모델. 책에서는 답변 생성을 맡는 외부 모델 API.',
+      a:'외부에서 부르는 전문 작가.',
+      w:'직접 학습하지 않고 API로 불러 쓴다. 그래서 모델 이름과 버전, 호출 설정도 추적 대상이 된다.'},
+    {id:'faiss',c:'llm',t:'FAISS',sub:'벡터 검색',
+      d:'숫자 벡터 사이의 유사도로 비슷한 항목을 빠르게 찾는 라이브러리.',
+      a:'주제 좌표로 책을 찾아 주는 도서관 색인.',
+      w:'문서를 임베딩으로 바꿔 넣어 두면 질문과 가까운 문서를 찾을 수 있다.'},
+    {id:'langchain',c:'llm',t:'LangChain',sub:'LLM 앱 프레임워크',
+      d:'문서 검색, 프롬프트, 모델 호출 같은 단계를 이어 LLM 앱을 조립하는 프레임워크.',
+      a:'상담 창구용 조립 부품 세트.',
+      w:'검색과 생성을 매번 직접 잇지 않아도 된다.'},
+    {id:'chainlit',c:'llm',t:'Chainlit',sub:'대화 UI',
+      d:'파이썬으로 채팅 화면을 빠르게 만드는 도구.',
+      a:'상담 창구 인테리어.',
+      w:'사용자가 직접 질문해 볼 수 있는 화면을 붙인다.'},
+    {id:'langfuse',c:'llm',t:'Langfuse',sub:'LLM 추적',
+      d:'LLM 요청과 답변, 검색 결과, 비용을 추적하고 평가를 남기는 관측 도구.',
+      a:'상담 녹취 기록부.',
+      w:'잘못된 답이 검색 문제인지 생성 문제인지 거슬러 올라가 볼 수 있다.'},
+    {id:'deepeval',c:'llm',t:'DeepEval',sub:'답변 평가',
+      d:'LLM 답변의 품질을 테스트처럼 평가하는 도구.',
+      a:'답변 채점표.',
+      w:'프롬프트나 모델을 바꿨을 때 답이 나빠졌는지 확인한다.'},
+    {id:'promptfoo',c:'llm',t:'Promptfoo',sub:'프롬프트 테스트',
+      d:'프롬프트와 모델 조합을 여러 테스트 질문으로 비교하고, 공격적인 질문으로 약점을 찾는 도구.',
+      a:'모의 상담 테스트.',
+      w:'변경 전후를 같은 질문 세트로 비교할 수 있다.'},
+    {id:'guardrails',c:'llm',t:'Guardrails AI',sub:'입출력 방어',
+      d:'LLM의 입력과 출력을 규칙으로 검사해 위험한 내용을 막는 도구.',
+      a:'상담 내용 검열관.',
+      w:'개인정보 노출, 형식 위반, 부적절한 답을 내보내기 전에 거른다.'},
+    {id:'redisvl',c:'llm',t:'RedisVL',sub:'벡터·캐시',
+      d:'Redis를 벡터 검색과 의미 기반 캐시로 쓰게 해 주는 라이브러리.',
+      a:'자주 묻는 질문의 답을 붙여 둔 메모판.',
+      w:'비슷한 질문에 이전 답을 재사용해 비용과 지연을 줄인다.'},
+
+    {id:'llmops',c:'concept',t:'LLMOps',sub:'LLM 운영',
+      d:'MLOps에 문서, 벡터 인덱스, 프롬프트, 외부 모델 API, 답변 평가, 안전, 토큰 비용 관리가 더해진 운영.',
+      a:'기존 공장에 상담 창구 라인을 추가하기.',
+      w:'어떤 문서와 프롬프트, 모델 조합으로 답했는지까지 추적해야 한다.'},
+    {id:'slo',c:'concept',t:'SLO',sub:'서비스 수준 목표',
+      d:'서비스가 지켜야 할 목표치. 예: 요청의 99%가 1초 안에 응답.',
+      a:'"배달 30분 안에" 같은 약속.',
+      w:'무엇이 장애인지, 언제 대응할지의 기준이 된다.',
+      l:'10~11장의 결과물이다.'},
+    {id:'runbook',c:'concept',t:'실행 지침',sub:'runbook',
+      d:'알림이나 장애가 왔을 때 누가 무엇을 어떤 순서로 할지 적은 문서.',
+      a:'화재 대피 매뉴얼.',
+      x:'업무 매뉴얼 시트.',
+      w:'알림만 있고 다음 행동이 없으면 대응이 늦어진다.'},
+    {id:'datacontract',c:'concept',t:'데이터 계약',sub:'data contract',
+      d:'데이터를 주고받는 쪽끼리 정한 열, 형식, 품질, 갱신 주기 약속.',
+      a:'납품 계약서.',
+      x:'부서끼리 주고받는 엑셀 양식의 열 순서, 단위, 빈 값 처리 규칙.',
+      w:'원천이 바뀌어도 받는 쪽이 조용히 망가지지 않게 한다.',
+      l:'7~9장의 결과물이다.'},
+    {id:'handover',c:'concept',t:'인수 자료',sub:'handover',
+      d:'운영팀이 넘겨받을 수 있도록 정리한 배포·롤백 절차, SLO, 알림, 실행 지침, 접근, 보존 정책.',
+      a:'매장 인수인계서.',
+      w:'만든 사람이 없어도 서비스가 굴러가게 한다.'},
+    {id:'yaml',c:'concept',t:'YAML',sub:'부록 B',
+      d:'Kubernetes 설정을 적는 형식. 들여쓰기, 문자열, 리스트, 맵, 앵커, 별칭을 다룬다.',
+      a:'들여쓰기로 계층을 나타내는 주문서.',
+      x:'들여쓰기가 곧 상위·하위 항목을 나타내는 개요 목록.',
+      n:'들여쓰기 한 칸이 틀리면 의미가 바뀐다.',p:'ch03'},
+    {id:'wsl2',c:'concept',t:'WSL2',sub:'Windows Subsystem for Linux',
+      d:'Windows 안에서 리눅스 환경을 돌리는 기능.',
+      a:'사무실 안에 들인 리눅스 작업실.',
+      w:'부록 A의 로컬 안내가 Mac, Linux 중심이라 Windows에서는 실행 환경부터 정해야 한다.'}
+  ];
+
+  var byId = {};
+  TERMS.forEach(function(t){ byId[t.id] = t; });
+  var state = {cat:'all', q:'', expanded:false};
+  var listEl = document.getElementById('list');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var qEl = document.getElementById('q');
+  var toggleEl = document.getElementById('toggleAll');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'); }
+  function renderChips(){
+    var html = '<button type="button" class="chip" data-cat="all" aria-pressed="'+(state.cat==='all')+'">전체</button>';
+    Object.keys(CATS).forEach(function(k){
+      html += '<button type="button" class="chip" data-cat="'+k+'" style="--cat:var(--c-'+k+')" aria-pressed="'+(state.cat===k)+'"><i class="dot"></i>'+CATS[k].name+' <span style="opacity:.7">'+CATS[k].hint+'</span></button>';
+    });
+    chipsEl.innerHTML = html;
+  }
+  function matches(t){
+    if(state.cat!=='all' && t.c!==state.cat) return false;
+    if(!state.q) return true;
+    return [t.t,t.sub,t.d,t.a,t.w,t.x,t.l,t.n].join(' ').toLowerCase().indexOf(state.q) !== -1;
+  }
+  function row(label, val, cls){
+    if(!val) return '';
+    return '<div'+(cls?' class="'+cls+'"':'')+'><dt>'+label+'</dt><dd>'+fmt(val)+'</dd></div>';
+  }
+  function renderList(){
+    var items = TERMS.filter(matches);
+    var openAll = state.expanded || (state.q && items.length <= 4);
+    var html = items.map(function(t){
+      var more = t.p ? '<div class="more"><a href="'+PAGES[t.p].url+'" target="_blank" rel="noopener">'+PAGES[t.p].name+' 용어 풀이에서 자세히 보기 →</a></div>' : '';
+      var body = '<dl>'+row('비유', t.a)+row('왜 필요해', t.w)+row('엑셀로 치면', t.x, 'excel')+row('책에서', t.l)+row('주의', t.n, 'warn')+'</dl>'+more;
+      return '<details class="term" id="t-'+t.id+'" style="--cat:var(--c-'+t.c+')"'+(openAll?' open':'')+'>'+
+        '<summary><span class="t-head"><span class="t-name">'+esc(t.t)+'</span><span class="t-sub">'+esc(t.sub||'')+'</span></span>'+
+        '<span class="t-right"><span class="cat-tag">'+CATS[t.c].name+'</span><i class="chev" aria-hidden="true"></i></span>'+
+        '<span class="t-d">'+fmt(t.d)+'</span></summary>'+
+        '<div class="t-body">'+body+'</div></details>';
+    }).join('');
+    if(!items.length){ html = '<p class="empty">"'+esc(qEl.value)+'"와 맞는 항목이 없어요. 영어 이름이나 다른 말로 찾아보세요.</p>'; }
+    listEl.innerHTML = html;
+    countEl.textContent = (state.cat==='all' && !state.q) ? '항목 '+TERMS.length+'개' : items.length+'개 / 전체 '+TERMS.length+'개';
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  }
+  function flash(el){
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 1900);
+  }
+  function openTerm(id){
+    if(!byId[id]) return;
+    var el = document.getElementById('t-'+id);
+    if(!el){ state.cat='all'; state.q=''; qEl.value=''; renderChips(); renderList(); el = document.getElementById('t-'+id); }
+    if(!el) return;
+    el.open = true;
+    el.scrollIntoView({behavior: reduced?'auto':'smooth', block:'start'});
+    flash(el);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-term]');
+    if(b){ e.preventDefault(); openTerm(b.getAttribute('data-term')); return; }
+    var c = e.target.closest('.chip');
+    if(c){ state.cat = c.getAttribute('data-cat'); renderChips(); renderList(); }
+  });
+  qEl.addEventListener('input', function(){ state.q = qEl.value.trim().toLowerCase(); renderList(); });
+  toggleEl.addEventListener('click', function(){
+    state.expanded = !state.expanded;
+    listEl.querySelectorAll('details.term').forEach(function(d){ d.open = state.expanded; });
+    toggleEl.textContent = state.expanded ? '모두 접기' : '모두 펼치기';
+  });
+  renderChips(); renderList();
+})();
+</script>
+</body>
+</html>
