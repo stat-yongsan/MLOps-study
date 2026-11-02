@@ -1,0 +1,13 @@
+{
+  "name": "mlops-study",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build && node .vitepress/copy-static.mjs",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

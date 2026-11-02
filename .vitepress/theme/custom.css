@@ -1,0 +1,42 @@
+/* 색 · 글꼴 = 참고 사이트(skgreenstar.github.io/ml-platform)에서 뽑은 값. 항상 밝은 테마(config appearance: false) */
+:root {
+  --vp-c-brand-1: #2563eb;
+  --vp-c-brand-2: #1d4ed8;
+  --vp-c-brand-3: #1e40af;
+  --vp-c-brand-soft: #eff6ff;
+
+  --vp-c-text-1: #17243b;
+  --vp-c-text-2: #506079;
+  --vp-c-text-3: #6e7e94;
+
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-alt: #f8fafc;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f4f7fc;
+  --vp-c-divider: #e3e9f1;
+  --vp-c-gutter: #edf1f7;
+
+  --vp-code-color: var(--vp-c-brand-1);
+
+  --vp-font-family-base: Inter, -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+}
+
+.vp-doc table th {
+  background-color: #f2f6fd;
+  color: #214d89;
+  font-weight: 600;
+}
+
+/* 큰 제목은 참고 사이트처럼 크게(넓은 화면에서만) */
+@media (min-width: 768px) {
+  .vp-doc h1 {
+    font-size: 43px;
+    line-height: 1.25;
+  }
+}
+
+/* README 의 큰 그림(width 940 등)이 본문 폭을 넘지 않게 */
+.vp-doc img {
+  max-width: 100%;
+  height: auto;
+}
